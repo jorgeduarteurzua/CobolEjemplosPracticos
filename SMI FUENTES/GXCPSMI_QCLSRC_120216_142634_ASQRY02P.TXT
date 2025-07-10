@@ -1,0 +1,8 @@
+             PGM
+
+             DCL VAR(&USUARIO) TYPE(*CHAR) LEN(10)
+             RTVJOBA    USER(&USUARIO)
+
+             CALL PGM(ASQRY02) PARM(&USUARIO)
+
+ FIN:        ENDPGM

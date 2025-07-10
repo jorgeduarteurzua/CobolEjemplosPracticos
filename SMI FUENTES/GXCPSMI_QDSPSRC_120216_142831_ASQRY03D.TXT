@@ -1,0 +1,106 @@
+     A*%%TS  SD  20011116  180136  DUARTEJ     REL-V4R4M0  5769-PW1
+     A*%%EC
+     A                                      DSPSIZ(24 80 *DS3)
+     A                                      INDARA
+     A                                      CF03(03 'Salir')
+     A                                      CF09(09 'Insertar')
+     A                                      CF07(07 'Modifica')
+     A                                      CF23(23 'Eliminar')
+     A                                      CF04(04 'Ayuda')
+     A                                      CF12(12 'Anterior')
+     A                                      CF10(10 'Autorizacion')
+     A          R WS01                      SFL
+     A*%%TS  SD  20010709  191853  DUARTEJ     REL-V4R4M0  5769-PW1
+     A            CODEVE        10A  H
+     A            DESEVE        50   H
+     A            CTL001         1Y 0H      SFLCHCCTL
+     A            DETSFL        69A  O  9  1
+     A          R WC01                      SFLCTL(WS01)
+     A*%%TS  SD  20011116  180136  DUARTEJ     REL-V4R4M0  5769-PW1
+     A                                      SFLSIZ(0100)
+     A                                      SFLPAG(0010)
+     A                                      WINDOW(2 2 20 74)
+     A  30                                  SFLDSP
+     A  31                                  SFLDSPCTL
+     A  32                                  SFLCLR
+     A  30                                  SFLEND(*SCRBAR *SCRBAR)
+     A                                      WDWTITLE((*TEXT 'EVENTOS DE QUERYS'-
+     A                                      ) (*COLOR WHT))
+     A                                      WDWBORDER((*COLOR BLU) (*DSPATR RI)-
+     A                                       (*CHAR '        '))
+     A                                      SFLRTNSEL
+     A                                      SFLSNGCHC
+     A                                      USRRSTDSP
+     A            DATECUR        8Y 0B  1 64
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                      CHECK(RB)
+     A                                      EDTWRD('  /  /    ')
+     A                                  2 66TIME
+     A                                  3 66'ASQRY04 '
+     A                                      DSPATR(HI)
+     A            BOTON          2Y 0B  4  2PSHBTNFLD
+     A                                      PSHBTNCHC(1 'F3-Salir' CF03)
+     A                                      PSHBTNCHC(2 'F9-Nuevo Evento' CF09)
+     A                                      PSHBTNCHC(3 'F7-Mod.  Evento' CF07)
+     A                                      PSHBTNCHC(4 'F23-Borra Evento' CF23)
+     A                                  7  1'Evento     Descripción Evento     -
+     A                                                                         -
+     A                                        '
+     A                                      DSPATR(HI)
+     A                                      DSPATR(UL)
+     A          R WS02                      SFL
+     A*%%TS  SD  20010710  183625  ZAVALAC     REL-V4R4M0  5769-PW1
+     A            NUMPRO         5Y 0B 10  9CHECK(RB)
+     A                                      EDTCDE(Z)
+     A            DESPRO        50A  B 10 18
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A          R WC02                      SFLCTL(WS02)
+     A*%%TS  SD  20011116  180136  DUARTEJ     REL-V4R4M0  5769-PW1
+     A                                      SFLSIZ(0100)
+     A                                      SFLPAG(0010)
+     A                                      WINDOW(2 2 20 74)
+     A                                      RTNCSRLOC(*RECNAME &REGCURSOR &CAMC-
+     A                                      URSOR)
+     A                                      SFLCSRRRN(&REGREL)
+     A  30                                  SFLDSP
+     A  31                                  SFLDSPCTL
+     A  32                                  SFLCLR
+     A  30                                  SFLEND(*SCRBAR *SCRBAR)
+     A                                      WDWBORDER((*COLOR BLU) (*DSPATR RI)-
+     A                                       (*CHAR '        '))
+     A                                      USRRSTDSP
+     A                                      WDWTITLE((*TEXT 'F12-Anterior F9-Gr-
+     A                                      abar F4-Ayuda F10-Autorizaciones') -
+     A                                      (*COLOR WHT) *BOTTOM)
+     A            REGCURSOR     10A  H
+     A            CAMCURSOR     10A  H
+     A            POSCUR         4S 0H      SFLRCDNBR(CURSOR)
+     A            REGREL         5S 0H
+     A            OPCION         5S 0H
+     A            DATECUR        8Y 0B  1 64
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                      CHECK(RB)
+     A                                      EDTWRD('  /  /    ')
+     A                                  2 66TIME
+     A                                  3 66'ASQRY04 '
+     A                                      DSPATR(HI)
+     A                                  4  1'Evento :'
+     A                                      DSPATR(HI)
+     A            CODEVE        10A  B  4 16
+     A  50                                  DSPATR(PR)
+     A                                      DSPATR(PC)
+     A            DESEVE        40A  B  4 27
+     A                                  5  1'Mandato:'
+     A                                      DSPATR(HI)
+     A            MANDATO       50A  B  5 16DSPATR(PR)
+     A                                  7  1'Nota : Ordene en forma secuencial -
+     A                                      los Procesos para el Evento'
+     A                                      COLOR(YLW)
+     A                                  8  1'     N° Proceso  Descripción Proce-
+     A                                      so                                 -
+     A                                        '
+     A                                      DSPATR(HI)
+     A                                      DSPATR(UL)

@@ -1,0 +1,18 @@
+           PGM        PARM( &PGM &RUTUSU &CODRETURN )
+           DCL        VAR(&PGM)       TYPE(*CHAR) LEN(10)
+           DCL        VAR(&RUTUSU )   TYPE(*CHAR) LEN(10)
+           DCL        VAR(&CODRETURN) TYPE(*CHAR) LEN(2)
+           DCL        VAR(&RUT9   )   TYPE(*CHAR) LEN(09)
+
+           RMVLIBLE   LIB(GXCPSCA)
+           MONMSG     MSGID(CPF2104)
+           ADDLIBLE   LIB(GXCPSCA)
+           RMVLIBLE   LIB(GXDBSCA)
+           MONMSG     MSGID(CPF2104)
+           ADDLIBLE   LIB(GXDBSCA)
+
+           CHGVAR VAR(&RUT9) VALUE(%SST(&RUTUSU 2 9))
+           CALL       PGM(GXCPSCA/PRTNPGMR) PARM(&PGM &RUT9 +
+                      &CODRETURN)
+
+           ENDPGM

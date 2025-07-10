@@ -1,0 +1,142 @@
+       IDENTIFICATION DIVISION.
+      *-----------------------*
+       PROGRAM-ID. ASQRY39.
+       AUTHOR. JORGE DUARTE U.
+       ENVIRONMENT DIVISION.
+      *--------------------*
+       CONFIGURATION SECTION.
+       SOURCE-COMPUTER.      IBM-AS400.
+       OBJECT-COMPUTER.      IBM-AS400.
+       SPECIAL-NAMES.        LOCAL-DATA IS LOCAL-DATA-AREA .
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+       DATA DIVISION.
+      *--------------*
+       FILE SECTION.
+      *-------------*
+       WORKING-STORAGE SECTION.
+      *------------------------*
+       77 WS-RET                  PIC X(01).
+       77 WS-ARCFTP               PIC X(50).
+
+           EXEC SQL
+              INCLUDE SQLCA
+           END-EXEC.
+
+
+       01 DATOS-SQL.
+          05 ARCBAS-SQL       PIC X(10).
+          05 BIBBAS-SQL       PIC X(10).
+          05 ARCGEN-SQL       PIC X(10).
+          05 BIBGEN-SQL       PIC X(10).
+
+       01 DATOS-SQL2.
+          05 ARCFTP-SQL2      PIC X(20).
+
+       01 VARIABLES-DE-TRABAJO.
+          05 CUENTA-USR       PIC S9(6).
+
+       LINKAGE SECTION.
+      *----------------
+       01 CONSULTA-LNK   PIC X(10).
+
+       PROCEDURE DIVISION USING CONSULTA-LNK.
+      *-------------------------------------------
+           INSPECT CONSULTA-LNK  CONVERTING "." TO " "
+           MOVE 0                               TO CUENTA-USR
+
+           EXEC SQL
+           SELECT CAST(COUNT(*) AS NUMERIC(6, 0)) INTO :CUENTA-USR FROM
+           GXDBSMI/ASQRY38F WHERE NOMCONS = :CONSULTA-LNK
+           END-EXEC
+           IF CUENTA-USR = 1
+           EXEC SQL
+           DELETE FROM GXDBSMI/ASQRY23F WHERE NOMCONS = :CONSULTA-LNK
+           END-EXEC
+           EXEC SQL
+           DELETE FROM GXDBSMI/ASQRY24F WHERE NOMCONS = :CONSULTA-LNK
+           END-EXEC
+           EXEC SQL
+           DELETE FROM GXDBSMI/ASQRY25F WHERE NOMCONS = :CONSULTA-LNK
+           END-EXEC
+           EXEC SQL
+           DELETE FROM GXDBSMI/ASQRY26F WHERE NOMCONS = :CONSULTA-LNK
+           END-EXEC
+           EXEC SQL
+           DELETE FROM GXDBSMI/ASQRY28F WHERE NOMCONS = :CONSULTA-LNK
+           END-EXEC
+           EXEC SQL
+           DELETE FROM GXDBSMI/ASQRY38F WHERE NOMCONS = :CONSULTA-LNK
+           END-EXEC
+           END-IF
+
+           PERFORM ELIMINA-ARCHIVOS-27F
+           PERFORM ELIMINA-ARCHIVOS-4F
+
+           GOBACK.
+
+      *
+       ELIMINA-ARCHIVOS-27F.
+      *---------------------
+           EXEC SQL
+           DECLARE C1 CURSOR FOR SELECT ARCBAS, BIBBAS, ARCGEN, BIBGEN
+           FROM GXDBSMI/ASQRY27F WHERE NOMCONS = :CONSULTA-LNK
+           END-EXEC
+           EXEC SQL  OPEN   C1  END-EXEC
+           PERFORM FETCH-C1
+           IF SQLCODE = 0
+               MOVE SPACES    TO    WS-RET
+               CALL   "ASQRY14P" USING BIBBAS-SQL ARCBAS-SQL WS-RET
+               CANCEL "ASQRY14P"
+           END-IF
+           PERFORM UNTIL SQLCODE NOT = 0
+               MOVE SPACES    TO    WS-RET
+               CALL   "ASQRY14P" USING BIBGEN-SQL ARCGEN-SQL WS-RET
+               CANCEL "ASQRY14P"
+
+               PERFORM FETCH-C1
+           END-PERFORM
+           EXEC SQL  CLOSE  C1  END-EXEC
+
+           EXEC SQL
+           DELETE FROM GXDBSMI/ASQRY27F WHERE NOMCONS = :CONSULTA-LNK
+           END-EXEC
+           .
+      *
+       ELIMINA-ARCHIVOS-4F.
+      *---------------------
+           EXEC SQL
+           DECLARE C2 CURSOR FOR SELECT ARCH4F FROM GXDBSMI/ASQRY4F
+           WHERE NOMC4F = :CONSULTA-LNK
+           END-EXEC
+           EXEC SQL  OPEN   C2  END-EXEC
+           PERFORM FETCH-C2
+           PERFORM UNTIL SQLCODE NOT = 0
+               MOVE SPACES       TO    WS-ARCFTP
+               MOVE ARCFTP-SQL2  TO    WS-ARCFTP
+               INSPECT WS-ARCFTP   CONVERTING " " TO ";"
+
+               CALL   "DELFTP" USING WS-ARCFTP
+               CANCEL "DELFTP"
+
+               PERFORM FETCH-C2
+           END-PERFORM
+           EXEC SQL  CLOSE  C2  END-EXEC
+
+           EXEC SQL
+           DELETE FROM GXDBSMI/ASQRY4F WHERE NOMC4F = :CONSULTA-LNK
+           END-EXEC
+           .
+      *
+       FETCH-C1.
+      *----------
+           EXEC SQL
+                FETCH NEXT FROM C1 INTO :DATOS-SQL
+           END-EXEC.
+      *
+       FETCH-C2.
+      *----------
+           EXEC SQL
+                FETCH NEXT FROM C2 INTO :DATOS-SQL2
+           END-EXEC.
+      *

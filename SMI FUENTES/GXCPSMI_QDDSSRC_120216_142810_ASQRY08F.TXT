@@ -1,0 +1,10 @@
+     A                                      UNIQUE
+     A          R RASQRY08F
+     A*
+     A            OPCION         5S 0       COLHDG('Correlativo OpciÍn')
+     A            USUARIO       10A         COLHDG('Usuario Autorizado')
+     A            FECCRE         8S 0       COLHDG('Fecha CreaciÍn')
+     A            USRCRE        10A         COLHDG('Usuario CreaciÍn')
+     A          K OPCION
+     A          K USUARIO
+     A*

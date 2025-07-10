@@ -1,0 +1,17 @@
+     A                                      UNIQUE
+     A*
+     A          R RASQRY05F
+     A*
+     A            AYUDA         10A         COLHDG('AYUDA')
+     A            ARCHBASE      10A         COLHDG('ARCHIVO BASE    ')
+     A            TITAYUDA      25A         COLHDG('TITULO AYUDA    ')
+     A            BIBLBASE      10A         COLHDG('BIBLIOTECA ARCH.')
+     A            NOMKEYCO     500A         COLHDG('SQL CAMPO COD.   ')
+     A            COLHDGCO      20A         COLHDG('CABECERA CODIGO')
+     A            LARKEYCO       3S 0       COLHDG('LARGO LLAVE      ')
+     A            NOMKEYDE     500A         COLHDG('SQL CAMPO DES.   ')
+     A            COLHDGDE      20A         COLHDG('CABECERA DESCRIPC')
+     A            LARKEYDE       3S 0       COLHDG('LARGO CAMPO DESC.')
+     A            CONDAYUDA    500A         COLHDG('CONDICION AYUDA  ')
+     A*
+     A          K AYUDA

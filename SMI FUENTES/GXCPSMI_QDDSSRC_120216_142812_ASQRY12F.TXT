@@ -1,0 +1,10 @@
+     A                                      UNIQUE
+     A          R RASQRY12F
+     A*
+     A            NROPRO         5S 0       COLHDG('NUMERO Proceso')
+     A            CORPRO         5S 0       COLHDG('Correl. Proceso')
+     A            NOMARC        10A         COLHDG('Arch.Seleccionados')
+     A          K NROPRO
+     A          K CORPRO
+     A          K NOMARC
+     A*

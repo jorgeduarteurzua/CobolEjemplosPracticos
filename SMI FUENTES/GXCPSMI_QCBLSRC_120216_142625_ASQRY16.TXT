@@ -1,0 +1,538 @@
+       IDENTIFICATION DIVISION.
+      *------------------------
+       PROGRAM-ID.  ASQRY16.
+       AUTHOR. JORGE DUARTE U.
+       ENVIRONMENT DIVISION.
+       CONFIGURATION SECTION.
+       SOURCE-COMPUTER.  IBM-AS400.
+       OBJECT-COMPUTER.  IBM-AS400.
+       SPECIAL-NAMES. LOCAL-DATA IS LOCAL.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+      *-------------
+
+           SELECT ASQRY16F    ASSIGN       TO DATABASE-ASQRY16F
+                             ORGANIZATION IS INDEXED
+                             ACCESS MODE  IS DYNAMIC
+                             RECORD KEY   IS EXTERNALLY-DESCRIBED-KEY
+                             FILE STATUS  IS FS-ASQRY16F.
+
+           SELECT PANTALLA   ASSIGN        TO WORKSTATION-ASQRY14D-SI
+                             ORGANIZATION  IS TRANSACTION
+                             ACCESS MODE   IS DYNAMIC
+                             RELATIVE KEY  IS NREL
+                             CONTROL-AREA  IS AREA-CONTROL
+                             FILE STATUS   IS FS-PANTALLA.
+
+           SELECT PANTALLA2  ASSIGN        TO WORKSTATION-ASQRY14D-SI
+                             ORGANIZATION  IS TRANSACTION
+                             ACCESS MODE   IS DYNAMIC
+                             RELATIVE KEY  IS NREL2
+                             CONTROL-AREA  IS AREA-CONTROL
+                             FILE STATUS   IS FS-PANTALLA2.
+
+           SELECT PANTALLA3  ASSIGN        TO WORKSTATION-ASQRY14D-SI
+                             ORGANIZATION  IS TRANSACTION
+                             ACCESS MODE   IS DYNAMIC
+                             RELATIVE KEY  IS NREL3
+                             CONTROL-AREA  IS AREA-CONTROL
+                             FILE STATUS   IS FS-PANTALLA3.
+
+
+       DATA DIVISION.
+       FILE SECTION.
+      *-------------
+       FD  ASQRY16F  LABEL RECORD STANDARD.
+       01  R-ASQRY16F.
+           COPY  DDS-ALL-FORMAT OF ASQRY16F.
+
+       FD  PANTALLA LABEL RECORD STANDARD.
+       01  R-PANTALLA           PIC X(1920).
+
+       FD  PANTALLA2 LABEL RECORD STANDARD.
+       01  R-PANTALLA2          PIC X(1920).
+
+       FD  PANTALLA3 LABEL RECORD STANDARD.
+       01  R-PANTALLA3          PIC X(1920).
+
+      *
+       WORKING-STORAGE SECTION.
+      *------------------------
+       77 NOMFUN-WS             PIC X(10).
+       77 CUENTA-WS             PIC S9(5).
+
+       77 WS-NOMFUN             PIC X(10).
+       77 WS-TEXFUN             PIC X(50).
+       77 WS-TIPFLD             PIC X(01).
+       77 WS-SENSQL             PIC X(1330).
+       77 WS-NROFLD             PIC S9(2).
+       77 WS-CONGRP             PIC S9(2).
+
+       77 NREL                  PIC 9(4).
+       77 NREL2                 PIC 9(4).
+       77 NREL3                 PIC 9(4).
+       77 WS-DATECUR            PIC 9(08).
+       77 I-ON                  PIC 1 VALUE B"1".
+       77 I-OFF                 PIC 1 VALUE B"0".
+
+           EXEC SQL
+              INCLUDE SQLCA
+           END-EXEC.
+
+       01 WS-VARIABLES-DE-TRABAJO.
+          05 INSREG             PIC X(500).
+
+       01 WS-ESTADOS.
+          05 FS-ASQRY16F         PIC X(02) VALUE "00".
+          05 FS-PANTALLA        PIC X(02) VALUE "00".
+          05 FS-PANTALLA2       PIC X(02) VALUE "00".
+          05 FS-PANTALLA3       PIC X(02) VALUE "00".
+
+       01 AREA-CONTROL.
+          05 MDTO               PIC 9(02).
+             88 INTRO           VALUE 00.
+             88 F3              VALUE 03.
+             88 F5              VALUE 05.
+             88 F7              VALUE 07.
+             88 F9              VALUE 09.
+             88 F12             VALUE 12.
+             88 F13             VALUE 13.
+             88 F18             VALUE 18.
+             88 F23             VALUE 23.
+
+       01 DATOS-SQL.
+          05 NOMFUN-SQL         PIC X(10).
+          05 TEXFUN-SQL         PIC X(50).
+
+       01 ARREGLOS-DE-TRABAJO.
+          05 CTA-MSG              PIC 9(3).
+          05 VARIABLE-3250        PIC X(6500).
+          05 VAR-ARR-3250 REDEFINES VARIABLE-3250 OCCURS 100 TIMES
+                          ASCENDING KEY IS TEXTO-ARR.
+             10 TEXTO-ARR         PIC X(65).
+      *
+       01 WC01-II.
+          COPY DDS-WC01-I       OF ASQRY14D.
+
+       01 WC01-IND.
+          COPY DDS-WC01-INDIC   OF ASQRY14D.
+
+       01 WS01-OO.
+          COPY DDS-WS01-O       OF ASQRY14D.
+
+      *
+       01 WC02-II.
+          COPY DDS-WC02-I       OF ASQRY14D.
+
+       01 WC02-IND.
+          COPY DDS-WC02-INDIC   OF ASQRY14D.
+
+       01 WS02-OO.
+          COPY DDS-WS02-O       OF ASQRY14D.
+
+      *
+       01 W01-II.
+          COPY DDS-W01-I        OF ASQRY14D.
+
+       PROCEDURE DIVISION.
+      *-------------------
+           PERFORM INICIO
+           PERFORM PROCESO UNTIL F3
+           PERFORM TERMINO
+           GOBACK.
+
+      *
+       INICIO.
+      *-------
+           OPEN I-O PANTALLA PANTALLA2 PANTALLA3 ASQRY16F.
+           INITIALIZE WC01-I REPLACING
+                      ALPHANUMERIC DATA BY SPACES
+                      NUMERIC      DATA BY ZEROES.
+           CALL "MRTVDAF1" USING WS-DATECUR
+           MOVE WS-DATECUR       TO DATECUR OF WC01-II.
+           MOVE ZEROES           TO MDTO
+           PERFORM CARGAR-ARCHIVOS-WS01.
+      *
+       PROCESO.
+      *--------
+           WRITE R-PANTALLA FROM WC01-II FORMAT "WC01"
+                             INDICATORS ARE WC01-O-INDIC END-WRITE
+           READ  PANTALLA   INTO WC01-II FORMAT "WC01"
+                             INDICATORS ARE WC01-I-INDIC END-READ.
+
+           MOVE    SPACES        TO VARIABLE-3250
+           MOVE    ZEROES        TO CTA-MSG
+
+           IF F5
+              PERFORM CARGAR-ARCHIVOS-WS01
+           ELSE
+           IF F7
+              PERFORM SELECCIONA-FUNCION
+           ELSE
+           IF F23
+              PERFORM ELIMINAR-FUNCION
+              PERFORM CARGAR-ARCHIVOS-WS01
+           ELSE
+           IF F13
+              INITIALIZE WC01-I REPLACING
+                         ALPHANUMERIC DATA BY SPACES
+                         NUMERIC      DATA BY ZEROES
+              MOVE I-OFF       TO IN50 OF WC01-O-INDIC
+           ELSE
+           IF F9
+              IF NROCAM OF WC01-II > 0
+                 MOVE ZEROES      TO MDTO
+                 PERFORM SOLICITA-WC02
+              END-IF
+              IF TIPCAM OF WC01-II = 0
+                 MOVE ZEROES      TO MDTO
+                 ADD    1         TO CTA-MSG
+                 STRING "Debe seleccionar Tipo" DELIMITED SIZE
+                        " de Campo "            DELIMITED SIZE
+                                           INTO TEXTO-ARR(CTA-MSG)
+              END-IF
+              IF F9
+                 PERFORM MAS-SENTENCIA UNTIL INTRO
+                 PERFORM INSERTAR-MODIFICAR-FUNCION
+              END-IF
+              MOVE ZEROES      TO MDTO
+              MOVE I-OFF       TO IN50 OF WC01-O-INDIC
+              PERFORM CARGAR-ARCHIVOS-WS01.
+
+           IF CTA-MSG NOT = ZEROES
+              CALL    "VISERR2" USING VARIABLE-3250
+              CANCEL  "VISERR2"
+           END-IF.
+      *
+       SOLICITA-WC02.
+      *--------------
+           INITIALIZE WC02-I REPLACING
+                      ALPHANUMERIC DATA BY SPACES
+                      NUMERIC      DATA BY ZEROES.
+
+           PERFORM LIMPIA-WS02
+           PERFORM START-ASQRY16F
+           PERFORM LEER-NEXT-ASQRY16F
+           PERFORM LLENA-WS02 UNTIL FS-ASQRY16F  NOT = "00" OR
+                   NOMFUN OF ASQRY16F NOT = NOMFUN OF WC01-II.
+
+           PERFORM UNTIL NREL2 = NROCAM OF WC01-II
+               ADD  1      TO NREL2
+               MOVE NREL2  TO SECFUN OF WS02-OO
+               MOVE SPACES TO TEXFLD OF WS02-OO
+               MOVE "A"    TO TIPFLD OF WS02-OO
+               MOVE "C"    TO VALFLD OF WS02-OO
+               WRITE SUBFILE R-PANTALLA2 FROM WS02-OO FORMAT "WS02"
+                     END-WRITE
+           END-PERFORM
+           MOVE I-ON     TO IN30 OF WC02-O-INDIC
+                            IN31 OF WC02-O-INDIC
+           MOVE I-OFF    TO IN32 OF WC02-O-INDIC
+           MOVE ZEROES   TO NREL2
+           MOVE WS-DATECUR        TO DATECUR OF WC02-II
+           MOVE NOMFUN OF WC01-II TO NOMFUN  OF WC02-II
+           MOVE TEXFUN OF WC01-II TO TEXFUN  OF WC02-II
+           PERFORM PROCESA-WC02 UNTIL F9.
+      *
+       PROCESA-WC02.
+      *-------------
+           WRITE R-PANTALLA2 FROM WC02-II FORMAT "WC02"
+                             INDICATORS ARE WC02-O-INDIC END-WRITE
+           READ  PANTALLA2   INTO WC02-II FORMAT "WC02"
+                             INDICATORS ARE WC02-I-INDIC END-READ.
+
+           MOVE    SPACES        TO VARIABLE-3250
+           MOVE    ZEROES        TO CTA-MSG
+           IF F9
+              PERFORM RECORRE-WS02
+              IF CTA-MSG = ZEROES
+                 PERFORM ACTUALIZAR-ASQRY16F.
+
+           IF CTA-MSG NOT = ZEROES
+              CALL    "VISERR2" USING VARIABLE-3250
+              CANCEL  "VISERR2"
+              MOVE ZEROES   TO MDTO
+           END-IF.
+
+      *
+       MAS-SENTENCIA.
+      *--------------
+           WRITE R-PANTALLA3 FROM W01-II FORMAT "W01"
+                             END-WRITE
+           READ  PANTALLA3   INTO W01-II FORMAT "W01"
+                             END-READ.
+
+      *
+       RECORRE-WS02.
+      *-------------
+           MOVE ZEROES   TO NREL2
+           PERFORM UNTIL FS-PANTALLA2 NOT = "00"
+               ADD  1    TO NREL2
+               READ SUBFILE PANTALLA2 INTO WS02-OO FORMAT "WS02"
+                    END-READ
+               IF FS-PANTALLA2 = "00"
+                  IF TEXFLD OF WS02-OO = SPACES
+                     ADD    1    TO CTA-MSG
+                     STRING "Debe ingresar Texto " DELIMITED SIZE
+                            "para la secuencia "   DELIMITED SIZE
+                            SECFUN OF WS02-OO      DELIMITED SIZE
+                                          INTO TEXTO-ARR(CTA-MSG)
+                  END-IF
+                  IF TIPCAM OF WC01-II = 1 AND
+                     TIPFLD OF WS02-OO NOT = "N"
+                     ADD    1    TO CTA-MSG
+                     STRING "Debe ingresar 'N' en" DELIMITED SIZE
+                            " tipo de Campo par"   DELIMITED SIZE
+                            "a secuencia "         DELIMITED SIZE
+                            SECFUN OF WS02-OO      DELIMITED SIZE
+                                          INTO TEXTO-ARR(CTA-MSG)
+                  END-IF
+                  IF TIPCAM OF WC01-II = 2 AND
+                     TIPFLD OF WS02-OO NOT = "A"
+                     ADD    1    TO CTA-MSG
+                     STRING "Debe ingresar 'A' en" DELIMITED SIZE
+                            " tipo de Campo par"   DELIMITED SIZE
+                            "a secuencia "         DELIMITED SIZE
+                            SECFUN OF WS02-OO      DELIMITED SIZE
+                                          INTO TEXTO-ARR(CTA-MSG)
+                  END-IF
+               END-IF
+           END-PERFORM.
+      *
+       ACTUALIZAR-ASQRY16F.
+      *------------------
+           MOVE NOMFUN OF WC01-II       TO WS-NOMFUN
+           EXEC SQL
+           DELETE FROM  ASQRY16F WHERE NOMFUN = :WS-NOMFUN
+           END-EXEC.
+           MOVE ZEROES   TO NREL2
+           MOVE "00"     TO FS-PANTALLA2
+           PERFORM UNTIL FS-PANTALLA2 NOT = "00"
+               ADD  1    TO NREL2
+               READ SUBFILE PANTALLA2 INTO WS02-OO FORMAT "WS02"
+                    END-READ
+               IF FS-PANTALLA2 = "00"
+                  MOVE NOMFUN OF WC01-II  TO NOMFUN OF ASQRY16F
+                  MOVE SECFUN OF WS02-OO  TO SECFUN OF ASQRY16F
+                  MOVE TEXFLD OF WS02-OO  TO TEXFLD OF ASQRY16F
+                  MOVE TIPFLD OF WS02-OO  TO TIPFLD OF ASQRY16F
+                  MOVE VALFLD OF WS02-OO  TO VALFLD OF ASQRY16F
+                  WRITE R-ASQRY16F END-WRITE
+               END-IF
+           END-PERFORM.
+      *
+       LLENA-WS02.
+      *-----------
+           ADD  1                 TO NREL2
+           MOVE SECFUN  OF ASQRY16F TO SECFUN OF WS02-OO
+           MOVE TEXFLD  OF ASQRY16F TO TEXFLD OF WS02-OO
+           MOVE TIPFLD  OF ASQRY16F TO TIPFLD OF WS02-OO
+           MOVE VALFLD  OF ASQRY16F TO VALFLD OF WS02-OO
+           WRITE SUBFILE R-PANTALLA2 FROM WS02-OO FORMAT "WS02"
+                 END-WRITE
+           PERFORM LEER-NEXT-ASQRY16F.
+      *
+       START-ASQRY16F.
+      *--------------
+           MOVE NOMFUN OF WC01-II TO NOMFUN OF ASQRY16F
+           MOVE ZEROES            TO SECFUN OF ASQRY16F
+           START ASQRY16F KEY IS NOT < EXTERNALLY-DESCRIBED-KEY
+                 END-START.
+      *
+       LEER-NEXT-ASQRY16F.
+      *------------------
+           READ ASQRY16F NEXT RECORD END-READ.
+      *
+       TERMINO.
+      *-------
+           CLOSE    PANTALLA PANTALLA2 PANTALLA3 ASQRY16F.
+      *
+       SELECCIONA-FUNCION.
+      *-------------------
+           READ SUBFILE PANTALLA NEXT MODIFIED INTO WS01-OO
+                        FORMAT "WS01" END-READ.
+           IF FS-PANTALLA = "00"
+              MOVE NOMFUN OF WS01-OO   TO NOMFUN-WS
+              MOVE SPACES              TO WS-NOMFUN
+                                          WS-TEXFUN
+                                          WS-SENSQL
+                                          WS-TIPFLD
+              MOVE ZEROES              TO WS-NROFLD
+
+              EXEC SQL
+           SELECT NOMFUN, TEXFUN, TIPFLD, SENSQL, NROFLD, CONGRP INTO
+           :WS-NOMFUN, :WS-TEXFUN, :WS-TIPFLD, :WS-SENSQL, :WS-NROFLD,
+           :WS-CONGRP FROM  ASQRY14F WHERE NOMFUN = :NOMFUN-WS
+              END-EXEC
+
+              EVALUATE WS-TIPFLD
+                 WHEN "N"  MOVE 1   TO TIPCAM OF WC01-II
+                 WHEN "A"  MOVE 2   TO TIPCAM OF WC01-II
+                 WHEN "X"  MOVE 3   TO TIPCAM OF WC01-II
+              END-EVALUATE
+              MOVE WS-NOMFUN      TO NOMFUN OF WC01-II
+              MOVE WS-TEXFUN      TO TEXFUN OF WC01-II
+              MOVE WS-NROFLD      TO NROCAM OF WC01-II
+              MOVE WS-CONGRP      TO PIDEGRUPO OF WC01-II
+              MOVE WS-SENSQL      TO SENTENCIA OF W01-II
+              MOVE I-ON           TO IN50 OF WC01-O-INDIC.
+
+      *
+       ELIMINAR-FUNCION.
+      *-----------------
+           READ SUBFILE PANTALLA NEXT MODIFIED INTO WS01-OO
+                        FORMAT "WS01" END-READ.
+           IF FS-PANTALLA = '00'
+              MOVE NOMFUN OF WS01-OO   TO NOMFUN-WS
+              PERFORM CHEQUEA-ELIMINACION.
+
+      *
+       CHEQUEA-ELIMINACION.
+      *--------------------
+           EXEC SQL
+               DELETE FROM  ASQRY14F WHERE NOMFUN = :NOMFUN-WS
+           END-EXEC
+           EXEC SQL
+               DELETE FROM  ASQRY16F WHERE NOMFUN = :NOMFUN-WS
+           END-EXEC
+           ADD 1                   TO CTA-MSG
+           STRING 'SE HA ELIMINADO '            DELIMITED SIZE
+                   NOMFUN-WS                     DELIMITED BY ' '
+                   INTO TEXTO-ARR(CTA-MSG).
+      *
+       INSERTAR-MODIFICAR-FUNCION.
+      *---------------------------
+           MOVE NOMFUN OF WC01-II       TO NOMFUN-WS
+           MOVE ZEROES                  TO CUENTA-WS
+           EXEC SQL
+           SELECT CAST(COUNT(*) AS NUMERIC (5, 0)) INTO :CUENTA-WS
+           FROM  ASQRY14F WHERE NOMFUN = :NOMFUN-WS
+           END-EXEC.
+
+           IF CUENTA-WS > 0
+              PERFORM MODIFICAR-FUNCION
+           ELSE
+              PERFORM INSERTAR-FUNCION.
+
+      *
+       MODIFICAR-FUNCION.
+      *------------------
+           IF TIPCAM OF WC01-II = 1
+              MOVE "N"         TO WS-TIPFLD
+           ELSE
+             IF TIPCAM OF WC01-II = 2
+                MOVE "A"         TO WS-TIPFLD
+             ELSE
+                MOVE "X"         TO WS-TIPFLD
+             END-IF
+           END-IF
+           MOVE NOMFUN OF WC01-II    TO WS-NOMFUN
+           MOVE TEXFUN OF WC01-II    TO WS-TEXFUN
+           MOVE NROCAM OF WC01-II    TO WS-NROFLD
+           MOVE PIDEGRUPO OF WC01-II TO WS-CONGRP
+           MOVE SENTENCIA OF W01-II  TO WS-SENSQL
+
+           EXEC SQL
+           UPDATE  ASQRY14F SET NOMFUN = :WS-NOMFUN, TEXFUN =
+           :WS-TEXFUN, TIPFLD = :WS-TIPFLD, SENSQL = :WS-SENSQL, NROFLD
+           = :WS-NROFLD, CONGRP = :WS-CONGRP WHERE NOMFUN = :NOMFUN-WS
+           END-EXEC
+
+           ADD 1                   TO CTA-MSG
+           STRING "SE HA MODIFICADO LA FUNCION " DELIMITED SIZE
+                   NOMFUN-WS                     DELIMITED BY " "
+                   INTO TEXTO-ARR(CTA-MSG).
+      *
+       INSERTAR-FUNCION.
+      *------------------
+           IF TIPCAM OF WC01-II = 1
+              MOVE "N"         TO WS-TIPFLD
+           ELSE
+             IF TIPCAM OF WC01-II = 2
+                MOVE "A"         TO WS-TIPFLD
+             ELSE
+                MOVE "X"         TO WS-TIPFLD
+             END-IF
+           END-IF
+           MOVE NOMFUN OF WC01-II    TO WS-NOMFUN
+           MOVE TEXFUN OF WC01-II    TO WS-TEXFUN
+           MOVE NROCAM OF WC01-II    TO WS-NROFLD
+           MOVE PIDEGRUPO OF WC01-II TO WS-CONGRP
+           MOVE SENTENCIA OF W01-II  TO WS-SENSQL
+
+           EXEC SQL
+           INSERT INTO  ASQRY14F (NOMFUN, TEXFUN, TIPFLD,
+           SENSQL, NROFLD, CONGRP) VALUES(:WS-NOMFUN, :WS-TEXFUN,
+           :WS-TIPFLD, :WS-SENSQL, :WS-NROFLD, :WS-CONGRP)
+           END-EXEC
+           ADD 1                   TO CTA-MSG
+           STRING "SE HA INSERTADO LA FUNCION " DELIMITED SIZE
+                   NOMFUN-WS                    DELIMITED BY " "
+                   INTO TEXTO-ARR(CTA-MSG).
+      *
+       CARGAR-ARCHIVOS-WS01.
+      *---------------------
+           PERFORM LIMPIA-WS01
+
+           EXEC SQL
+           DECLARE C1 CURSOR FOR SELECT NOMFUN, TEXFUN FROM
+            ASQRY14F ORDER BY NOMFUN
+           END-EXEC
+
+           EXEC SQL
+                OPEN C1
+           END-EXEC
+           PERFORM LEER-FETCH-C1
+           PERFORM UNTIL SQLCODE NOT = 0
+                   ADD   1                     TO NREL
+                   MOVE SPACES                 TO DETSFL OF WS01-OO
+                   MOVE ZEROES                 TO CTL001 OF WS01-OO
+                   MOVE NOMFUN-SQL             TO NOMFUN OF WS01-OO
+                   MOVE TEXFUN-SQL             TO TEXFUN OF WS01-OO
+                   STRING NOMFUN-SQL           DELIMITED SIZE
+                          ' '                  DELIMITED SIZE
+                          TEXFUN-SQL           DELIMITED SIZE
+                          ' '                  DELIMITED SIZE
+
+                                            INTO DETSFL OF WS01-OO
+               WRITE SUBFILE R-PANTALLA FROM WS01-OO FORMAT 'WS01'
+                     END-WRITE
+
+               PERFORM LEER-FETCH-C1
+           END-PERFORM
+           EXEC SQL
+                CLOSE C1
+           END-EXEC.
+           IF NREL > 0
+              MOVE I-ON           TO IN30 OF WC01-O-INDIC
+                                     IN31 OF WC01-O-INDIC
+              MOVE I-OFF          TO IN32 OF WC01-O-INDIC
+           ELSE
+              MOVE I-ON           TO IN31 OF WC01-O-INDIC
+              MOVE I-OFF          TO IN30 OF WC01-O-INDIC
+                                     IN32 OF WC01-O-INDIC.
+
+      *
+       LEER-FETCH-C1.
+      *--------------
+           EXEC SQL
+                FETCH NEXT FROM C1 INTO :DATOS-SQL
+           END-EXEC.
+      *
+       LIMPIA-WS01.
+      *------------
+           MOVE I-ON            TO IN32 OF WC01-O-INDIC
+           MOVE I-OFF           TO IN30 OF WC01-O-INDIC
+                                   IN31 OF WC01-O-INDIC
+           MOVE ZEROES          TO NREL
+           WRITE R-PANTALLA FROM WC01-II FORMAT "WC01"
+                                 INDICATORS ARE WC01-O-INDIC.
+      *
+       LIMPIA-WS02.
+      *------------
+           MOVE I-ON            TO IN32 OF WC02-O-INDIC
+           MOVE I-OFF           TO IN30 OF WC02-O-INDIC
+                                   IN31 OF WC02-O-INDIC
+           MOVE ZEROES          TO NREL2
+           WRITE R-PANTALLA2 FROM WC01-II FORMAT "WC02"
+                                 INDICATORS ARE WC02-O-INDIC.

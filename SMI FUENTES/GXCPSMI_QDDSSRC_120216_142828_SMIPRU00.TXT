@@ -1,0 +1,9 @@
+     A          R GXSMIPRU00
+     A            SMICOD     00004P
+     A                                      COLHDG(+
+     A                                      'smicod' +
+     A                                      )
+     A            SMIDSC     00020A
+     A                                      COLHDG(+
+     A                                      'smidsc' +
+     A                                      )

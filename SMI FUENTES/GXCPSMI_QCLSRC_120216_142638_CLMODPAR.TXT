@@ -1,0 +1,20 @@
+    PGM  PARM(&CONS &USR &FEC &HOR &SEC &RET)
+         DCL VAR(&CONS)    TYPE(*CHAR) LEN(10)
+         DCL VAR(&USR)     TYPE(*CHAR) LEN(10)
+         DCL VAR(&FEC)     TYPE(*CHAR) LEN(08)
+         DCL VAR(&HOR)     TYPE(*CHAR) LEN(06)
+         DCL VAR(&SEC)     TYPE(*CHAR) LEN(05)
+         DCL VAR(&RET)     TYPE(*CHAR) LEN(01)
+
+
+         ADDLIBLE   LIB(GXCPSMI)
+         MONMSG     MSGID(CPF0000)
+         ADDLIBLE   LIB(GXDBSMI)
+         MONMSG     MSGID(CPF0000)
+
+         SBMJOB  CMD(CALL PGM(MODPARAM) PARM(&CONS &USR &FEC &HOR +
+                 &SEC &RET)) +
+                 JOB(SBMMODP) LOG(4 0 *MSG) +
+                 LOGCLPGM(*YES) HOLD(*YES) JOBMSGQFL(*WRAP)
+
+    FIN: ENDPGM

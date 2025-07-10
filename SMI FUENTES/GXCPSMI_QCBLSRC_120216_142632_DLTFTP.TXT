@@ -1,0 +1,130 @@
+       IDENTIFICATION DIVISION.
+      *-----------------------*
+       PROGRAM-ID. DLTFTP.
+       AUTHOR. JORGE DUARTE.
+       ENVIRONMENT DIVISION.
+      *--------------------*
+       CONFIGURATION SECTION.
+       SOURCE-COMPUTER.      IBM-AS400.
+       OBJECT-COMPUTER.      IBM-AS400.
+       SPECIAL-NAMES.        LOCAL-DATA IS LOCAL-DATA-AREA .
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+
+       DATA DIVISION.
+      *--------------*
+       FILE SECTION.
+      *-------------*
+
+       WORKING-STORAGE SECTION.
+      *------------------------*
+       77 P-ARR                PIC 9(4).
+       77 SEL-C1               PIC X(2000).
+
+           EXEC SQL
+              INCLUDE SQLCA
+           END-EXEC.
+
+       01 VARIABLES-DE-TRABAJO.
+           05 USR-FTP   PIC X(10).
+           05 PSW-FTP   PIC X(10).
+           05 RUTA-FTP  PIC X(40).
+           05 STR-SQL   PIC X(80).
+           05 WX-SEC    PIC X(03).
+
+      *
+       LINKAGE SECTION.
+      *----------------
+       01 IDFTP-LNK      PIC X(10).
+       01 ARCHIVO-LNK    PIC X(50).
+      *
+       01 IP-FTP         PIC X(20).
+
+       PROCEDURE DIVISION USING IDFTP-LNK,
+                                ARCHIVO-LNK,
+                                IP-FTP.
+      *----------------------------------------------------
+           INSPECT ARCHIVO-LNK CONVERTING ';' TO ' '
+
+           EXEC SQL
+                DELETE FROM ARCFTP
+           END-EXEC
+
+           EXEC SQL
+           SELECT IPFTP, USRFTP, PSWFTP, RUTAFTP INTO :IP-FTP,
+           :USR-FTP, :PSW-FTP, :RUTA-FTP FROM ARCIPFTP WHERE IDFTP =
+           :IDFTP-LNK
+           END-EXEC
+
+           MOVE SPACES         TO STR-SQL
+
+           EXEC SQL
+                INSERT INTO ARCFTP VALUES(:STR-SQL)
+           END-EXEC
+           MOVE SPACES         TO STR-SQL
+
+           EXEC SQL
+                INSERT INTO ARCFTP VALUES(:STR-SQL)
+           END-EXEC
+
+           MOVE SPACES         TO STR-SQL
+           STRING 'user '         DELIMITED SIZE
+                  USR-FTP         DELIMITED BY ' '
+                  ' '             DELIMITED SIZE
+                   PSW-FTP        DELIMITED SIZE
+                              INTO STR-SQL
+
+           EXEC SQL
+                INSERT INTO ARCFTP VALUES(:STR-SQL)
+           END-EXEC
+
+           MOVE SPACES         TO STR-SQL
+           STRING 'sendpasv 0 '   DELIMITED SIZE
+                              INTO STR-SQL
+
+           EXEC SQL
+                INSERT INTO ARCFTP VALUES(:STR-SQL)
+           END-EXEC
+
+           MOVE SPACES         TO STR-SQL
+           STRING 'ascii '        DELIMITED SIZE
+                              INTO STR-SQL
+
+           EXEC SQL
+                INSERT INTO ARCFTP VALUES(:STR-SQL)
+           END-EXEC
+
+           MOVE SPACES         TO STR-SQL
+           STRING 'CD /  '        DELIMITED SIZE
+                              INTO STR-SQL
+
+           EXEC SQL
+                INSERT INTO ARCFTP VALUES(:STR-SQL)
+           END-EXEC
+
+           MOVE SPACES         TO STR-SQL
+           STRING 'CD /var/www/html/wrkselmul/'  DELIMITED SIZE
+                              INTO STR-SQL
+
+           EXEC SQL
+                INSERT INTO ARCFTP VALUES(:STR-SQL)
+           END-EXEC
+
+           MOVE SPACES         TO STR-SQL
+           STRING 'delete '        DELIMITED SIZE
+                  ARCHIVO-LNK      DELIMITED SIZE
+                              INTO STR-SQL
+
+           EXEC SQL
+                INSERT INTO ARCFTP VALUES(:STR-SQL)
+           END-EXEC
+
+           MOVE SPACES         TO STR-SQL
+           STRING 'quit '         DELIMITED SIZE
+                              INTO STR-SQL
+
+           EXEC SQL
+                INSERT INTO ARCFTP VALUES(:STR-SQL)
+           END-EXEC
+           .
+

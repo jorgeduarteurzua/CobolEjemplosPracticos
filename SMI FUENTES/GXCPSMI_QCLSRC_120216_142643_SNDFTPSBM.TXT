@@ -1,0 +1,189 @@
+    PGM PARM(&ARCHIVO &CONS &FPRO &HPRO &SECE &USR)
+         DCL VAR(&CONS)    TYPE(*CHAR) LEN(10)
+         DCL VAR(&FPRO)    TYPE(*CHAR) LEN(08)
+         DCL VAR(&HPRO)    TYPE(*CHAR) LEN(06)
+         DCL VAR(&SECE)    TYPE(*CHAR) LEN(05)
+         DCL VAR(&USR)     TYPE(*CHAR) LEN(10)
+         DCL VAR(&ARCHIVO)  TYPE(*CHAR) LEN(10)
+         DCL VAR(&ARCHIVON) TYPE(*CHAR) LEN(10)
+         DCL VAR(&BIB)      TYPE(*CHAR) LEN(10) VALUE('GXDBSMI   ')
+         DCL VAR(&BIB1)     TYPE(*CHAR) LEN(10) VALUE('QGPL      ')
+         DCL VAR(&IDFTP)    TYPE(*CHAR) LEN(10) VALUE('SELMUL    ')
+         DCL VAR(&IPFTP)    TYPE(*CHAR) LEN(20)
+         DCL VAR(&SEC)      TYPE(*DEC)  LEN(3 0)
+         DCL VAR(&SECX)     TYPE(*CHAR) LEN(03)
+         DCL VAR(&NSEC)     TYPE(*DEC)  LEN(3 0)
+         DCL VAR(&NREG)     TYPE(*DEC)  LEN(10 0)
+         DCL VAR(&NREG1)    TYPE(*DEC)  LEN(10 0)
+         DCL VAR(&NREGX)    TYPE(*CHAR) LEN(10)
+         DCL VAR(&DIF)      TYPE(*DEC)  LEN(10 0)
+         DCL VAR(&TOT)      TYPE(*DEC)  LEN(10 0)
+         DCL VAR(&REGI)     TYPE(*DEC)  LEN(10 0)
+         DCL VAR(&REGF)     TYPE(*DEC)  LEN(10 0)
+
+
+       /* SE RESCATA LA CANTIDAD DE ARCHIVOS A GENERAR */
+         RTVMBRD    FILE(GXDBSMI/&ARCHIVO) NBRCURRCD(&NREG)
+         CHGVAR VAR(&NSEC) VALUE(&NREG / 60000)
+         CHGVAR VAR(&TOT)  VALUE(&NSEC * 60000)
+         CHGVAR VAR(&DIF)  VALUE(&NREG - &TOT)
+         IF COND(&DIF *NE 0) THEN(DO)
+            CHGVAR VAR(&NSEC) VALUE(&NSEC + 1)
+         ENDDO
+       /* FIN SE RESCATA LA CANTIDAD DE ARCHIVOS A GENERAR */
+
+         DLTF       FILE(QGPL/&ARCHIVO)
+         MONMSG     MSGID(CPF0000)
+
+         DLTF       FILE(QTEMP/ARCFTP)
+         MONMSG     MSGID(CPF0000)
+
+         DLTF       FILE(QTEMP/LOGFTP)
+         MONMSG     MSGID(CPF0000)
+
+         DLTF       FILE(QTEMP/ARCHEAD)
+         MONMSG     MSGID(CPF0000)
+
+         CHGVAR VAR(&SEC)  VALUE(1)
+         CHGVAR VAR(&REGI) VALUE(0)
+         CHGVAR VAR(&REGF) VALUE(0)
+         IF COND(&NREG *EQ 0) THEN(DO)
+            CHGVAR VAR(&SEC)                VALUE(1)
+            CHGVAR VAR(&ARCHIVON)           VALUE('          ')
+            CHGVAR VAR(%SST(&ARCHIVON 1 5)) VALUE(%SST(&ARCHIVO 1 5))
+            CHGVAR VAR(%SST(&ARCHIVON 6 1)) VALUE('_')
+            CHGVAR VAR(%SST(&ARCHIVON 7 3)) VALUE('001')
+
+            DLTF       FILE(QGPL/&ARCHIVO)
+            MONMSG     MSGID(CPF0000)
+
+            CRTPF      FILE(QGPL/&ARCHIVO) RCDLEN(2000) SIZE(60100 +
+                       10000 1)
+
+            DLTF       FILE(QTEMP/ARCHEAD)
+            MONMSG     MSGID(CPF0000)
+
+            CRTDUPOBJ  OBJ(ARCHEAD) FROMLIB(GXDBSMI) OBJTYPE(*FILE) +
+                       TOLIB(QTEMP) DATA(*NO)
+
+       /* SE AGREGA ENCABEZADO DE ARCHIVO */
+            OVRDBF     FILE(ARCHEAD) TOFILE(QTEMP/ARCHEAD)
+            CALL PGM(INSHEAD) PARM(&ARCHIVO &CONS)
+            CPYF       FROMFILE(QTEMP/ARCHEAD) +
+                       TOFILE(QGPL/&ARCHIVO) MBROPT(*ADD) +
+                       FMTOPT(*NOCHK)
+
+            CRTDUPOBJ  OBJ(ARCFTP) FROMLIB(*LIBL) OBJTYPE(*FILE) +
+                      TOLIB(QTEMP) DATA(*NO)
+            MONMSG     MSGID(CPF0000)
+
+            CRTDUPOBJ  OBJ(ARCFTP) FROMLIB(LOGFTP) OBJTYPE(*FILE) +
+                            TOLIB(QTEMP) DATA(*NO)
+            MONMSG     MSGID(CPF0000)
+
+            OVRDBF     FILE(ARCFTP) TOFILE(QTEMP/ARCFTP)
+
+            CHGVAR VAR(&SECX) VALUE(&SEC)
+            CALL PGM(EJEFTP) PARM(&IDFTP &ARCHIVO &BIB1 &IPFTP &SECX)
+
+            OVRDBF FILE(INPUT) TOFILE(QTEMP/ARCFTP)
+            OVRDBF FILE(OUTPUT) TOFILE(QTEMP/LOGFTP)
+
+            FTP RMTSYS(&IPFTP)
+
+            CHGVAR VAR(&NREG1) VALUE(0)
+            CHGVAR VAR(&NREGX) VALUE(&NREG1)
+            CALL   PGM(ASQRY47) PARM(&CONS &FPRO &HPRO &SECE +
+                   &SECX &ARCHIVO &NREGX &USR)
+
+            DLTF       FILE(QTEMP/&ARCHIVON)
+            MONMSG     MSGID(CPF0000)
+
+            DLTF       FILE(QGPL/&ARCHIVO)
+            MONMSG     MSGID(CPF0000)
+
+            GOTO CMDLBL(FIN)
+         ENDDO
+
+ REPITE: IF COND(&SEC *GT &NSEC) THEN(DO)
+            GOTO CMDLBL(FIN)
+         ENDDO
+
+         CHGVAR VAR(&REGI) VALUE(&REGF + 1)
+         CHGVAR VAR(&REGF) VALUE(&REGF + 60000)
+
+         IF COND(&SEC *EQ &NSEC) THEN(DO)
+            CHGVAR VAR(&REGF) VALUE(&NREG)
+         ENDDO
+
+         CHGVAR VAR(&ARCHIVON)           VALUE('          ')
+         CHGVAR VAR(%SST(&ARCHIVON 1 5)) VALUE(%SST(&ARCHIVO 1 5))
+         CHGVAR VAR(%SST(&ARCHIVON 6 1)) VALUE('_')
+         CHGVAR VAR(%SST(&ARCHIVON 7 3)) VALUE(&SEC)
+
+         DLTF       FILE(QGPL/&ARCHIVO)
+         MONMSG     MSGID(CPF0000)
+
+         CRTPF      FILE(QGPL/&ARCHIVO) RCDLEN(2000) SIZE(60100 +
+                    10000 1)
+
+         DLTF       FILE(QTEMP/ARCHEAD)
+         MONMSG     MSGID(CPF0000)
+
+         CRTDUPOBJ  OBJ(ARCHEAD) FROMLIB(GXDBSMI) OBJTYPE(*FILE) +
+                    TOLIB(QTEMP) DATA(*NO)
+
+    /* SE AGREGA ENCABEZADO DE ARCHIVO */
+         OVRDBF     FILE(ARCHEAD) TOFILE(QTEMP/ARCHEAD)
+         CALL PGM(INSHEAD) PARM(&ARCHIVO &CONS)
+         CPYF       FROMFILE(QTEMP/ARCHEAD) +
+                    TOFILE(QGPL/&ARCHIVO) MBROPT(*ADD) +
+                    FMTOPT(*NOCHK)
+
+         DLTF       FILE(QTEMP/&ARCHIVON)
+         MONMSG     MSGID(CPF0000)
+
+         CRTDUPOBJ  OBJ(&ARCHIVO) FROMLIB(&BIB) OBJTYPE(*FILE) +
+                    TOLIB(QTEMP) NEWOBJ(&ARCHIVON) DATA(*NO)
+
+         CPYF       FROMFILE(&BIB/&ARCHIVO) +
+                    TOFILE(QTEMP/&ARCHIVON) MBROPT(*ADD) +
+                    FROMRCD(&REGI) TORCD(&REGF)
+
+    /* SE AGREGA ARCHIVO SEPARADO POR ; */
+         CPYTOIMPF  FROMFILE(QTEMP/&ARCHIVON) +
+                    TOFILE(QGPL/&ARCHIVO) FLDDLM(';')
+
+         CRTDUPOBJ  OBJ(ARCFTP) FROMLIB(*LIBL) OBJTYPE(*FILE) +
+                   TOLIB(QTEMP) DATA(*NO)
+         MONMSG     MSGID(CPF0000)
+
+         CRTDUPOBJ  OBJ(ARCFTP) FROMLIB(LOGFTP) OBJTYPE(*FILE) +
+                         TOLIB(QTEMP) DATA(*NO)
+         MONMSG     MSGID(CPF0000)
+
+         OVRDBF     FILE(ARCFTP) TOFILE(QTEMP/ARCFTP)
+
+         CHGVAR VAR(&SECX) VALUE(&SEC)
+         CALL PGM(EJEFTP) PARM(&IDFTP &ARCHIVO &BIB1 &IPFTP &SECX)
+
+         OVRDBF FILE(INPUT) TOFILE(QTEMP/ARCFTP)
+         OVRDBF FILE(OUTPUT) TOFILE(QTEMP/LOGFTP)
+
+         FTP RMTSYS(&IPFTP)
+
+         RTVMBRD    FILE(&ARCHIVON) NBRCURRCD(&NREG1)
+         CHGVAR VAR(&NREGX) VALUE(&NREG1)
+         CALL   PGM(ASQRY47) PARM(&CONS &FPRO &HPRO &SECE +
+                &SECX &ARCHIVO &NREGX &USR)
+
+         DLTF       FILE(QTEMP/&ARCHIVON)
+
+         DLTF       FILE(QGPL/&ARCHIVO)
+         MONMSG     MSGID(CPF0000)
+
+         CHGVAR VAR(&SEC) VALUE(&SEC + 1)
+         GOTO CMDLBL(REPITE)
+
+    FIN: DLTOVR *ALL
+         ENDPGM

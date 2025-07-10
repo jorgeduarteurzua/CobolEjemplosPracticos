@@ -1,0 +1,34 @@
+     A                                      UNIQUE
+     A          R RASQRY27F
+     A*
+     A            NOMCONS       10A         TEXT('CONSULTA      ')
+     A            USRPRO        10A         TEXT('USUARIO PROCESO     ')
+     A            FECPRO1        8S 0       TEXT('FECHA PROCESO INICIO')
+     A            HORPRO1        6S 0       TEXT('HORA  PROCESO INICIO')
+     A            FECPRO2        8S 0       TEXT('FECHA PROCESO FIN   ')
+     A            HORPRO2        6S 0       TEXT('HORA  PROCESO FIN   ')
+     A            CANREG         8S 0       TEXT('CANTIDAD REGISTROS  ')
+     A            ARCBAS        10A         TEXT('ARCHIVO BASE        ')
+     A            BIBBAS        10A         TEXT('BIBLIOTECA BASE     ')
+     A            ARCGEN        10A         TEXT('ARCHIVO GENERADO    ')
+     A            BIBGEN        10A         TEXT('BIBLIOTECA GENERADO ')
+     A            ESTPRO         1A         TEXT('ESTADO PROCESO      ')
+     A            SECEJE         5S 0       TEXT('SECUENCIA EJECUCION')
+     A            LARSEL         5S 0       TEXT('Largo Seleccion    ')
+     A            REEARC         1A         TEXT('Reemplazar Archivo')
+     A            RETJOB         1A         TEXT('Retener Trabajo   ')
+     A            ADDREG         1A         TEXT('A±adir Registros  ')
+     A            REGUNI         1A         TEXT('SelecciÍn Distinct')
+     A            SELEJE     12000A         TEXT('SELECCION A EJECUTAR')
+     A            SELCON     10000A         TEXT('SELECCION CONVERTIDA')
+     A            MIEMBR      4000A         TEXT('ARC/ARC USAR/BIB/MBR')
+     A            CONUNI      1920A         TEXT('CONDICION UNION     ')
+     A*
+     A* ESTPRO P=EN PROCESO
+     A*        T=TERMINADO
+     A*        D=DEPURADO
+     A*
+     A          K NOMCONS
+     A          K FECPRO1
+     A          K HORPRO1
+     A          K SECEJE

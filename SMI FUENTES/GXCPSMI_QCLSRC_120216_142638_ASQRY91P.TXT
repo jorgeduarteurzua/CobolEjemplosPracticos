@@ -1,0 +1,22 @@
+    PGM  PARM(&USR &CONS &TXT &REGUNI &CONC &CAMPOS &COND &DRET)
+         DCL VAR(&USR)     TYPE(*CHAR) LEN(10)
+         DCL VAR(&CONS)    TYPE(*CHAR) LEN(10)
+         DCL VAR(&TXT)     TYPE(*CHAR) LEN(50)
+         DCL VAR(&REGUNI)  TYPE(*CHAR) LEN(01)
+         DCL VAR(&CONC)    TYPE(*CHAR) LEN(250)
+         DCL VAR(&CAMPOS)  TYPE(*CHAR) LEN(2000)
+         DCL VAR(&COND)    TYPE(*CHAR) LEN(2000)
+         DCL VAR(&DRET)    TYPE(*CHAR) LEN(100)
+
+         ADDLIBLE   LIB(GXCPSMI)
+         MONMSG     MSGID(CPF0000)
+         ADDLIBLE   LIB(GXDBSMI)
+         MONMSG     MSGID(CPF0000)
+
+         SBMJOB     CMD(CALL PGM(ASQRY31) PARM(&USR &CONS &TXT +
+                    &REGUNI &CONC &CAMPOS &COND &DRET)) +
+                    JOB(CREACONS) LOG(4 0 *MSG) +
+                    LOGCLPGM(*YES) JOBMSGQFL(*WRAP)
+
+
+    FIN: ENDPGM

@@ -1,0 +1,49 @@
+     A*%%TS  SD  20070725  112400  NBKDY9U     REL-V5R3M0  5722-WDS
+     A*%%EC
+     A                                      DSPSIZ(24 80 *DS3)
+     A                                      INDARA
+     A                                      CF03(03 'Salir')
+     A                                      CF09(09 'Procesar')
+     A          R W01
+     A*%%TS  SD  20070725  112400  NBKDY9U     REL-V5R3M0  5722-WDS
+     A                                      WINDOW(8 10 10 60)
+     A                                      WDWBORDER((*COLOR BLU) (*DSPATR RI)-
+     A                                       (*CHAR '        '))
+     A                                      WDWTITLE((*TEXT 'INTRO-ACEPTAR F3-C-
+     A                                      ANCELAR PROCESO') (*COLOR WHT) *BOT-
+     A                                      TOM)
+     A                                      USRRSTDSP
+     A            NOMCONS       10A  H
+     A                                  2  1'Consulta    :'
+     A                                      DSPATR(HI)
+     A            DCONSULTA     45A  B  2 15
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                  4  1'Archivo Base:'
+     A                                      DSPATR(RI)
+     A            ARCBASE       10A  B  4 15DSPATR(PR)
+     A                                      DSPATR(HI)
+     A                                  5  1'Archivo Ref.:'
+     A                                      DSPATR(RI)
+     A            ARCHIVO       10A  B  5 15
+     A  50                                  DSPATR(PR)
+     A                                      DSPATR(HI)
+     A                                  6  1'Biblioteca  :'
+     A                                      DSPATR(RI)
+     A            BIBLIOTECA    10A  B  6 15DSPATR(HI)
+     A  51                              7  1'Miembro Ref.:'
+     A                                      DSPATR(RI)
+     A  51        MIEMBRO       10A  B  7 15DSPATR(HI)
+     A                                  8  1'                                  -
+     A                                                                '
+     A                                      DSPATR(UL)
+     A            MENSAJE       60A  B  9  1
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                      DSPATR(HI)
+     A          R XX
+     A*%%TS  SD  20010320  143711  DUARTEJ     REL-V4R4M0  5769-PW1
+     A                                      KEEP
+     A                                      ASSUME
+     A                                      OVERLAY
+     A                                  1  3' '

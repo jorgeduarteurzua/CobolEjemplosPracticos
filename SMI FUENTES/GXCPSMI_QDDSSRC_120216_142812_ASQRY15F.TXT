@@ -1,0 +1,17 @@
+     A                                      UNIQUE
+     A          R RASQRY15F
+     A*
+     A            CODEVE        10A         TEXT('CODIGO EVENTO ')
+     A            FECPRO1        8S 0       TEXT('FECHA PROCESO INICIO')
+     A            HORPRO1        6S 0       TEXT('HORA  PROCESO INICIO')
+     A            SECEJE         5S 0       TEXT('SECUENCIA EJECUCION')
+     A            FECRES         8S 0       TEXT('FECHA RESUMEN')
+     A            SECRES         7S 0       TEXT('SECUENCIA RESUMEN')
+     A            SELRES     10000A         TEXT('SELECCION RESUMEN')
+     A*
+     A          K CODEVE
+     A          K FECPRO1
+     A          K HORPRO1
+     A          K SECEJE
+     A          K FECRES
+     A          K SECRES

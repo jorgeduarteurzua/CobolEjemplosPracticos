@@ -1,0 +1,71 @@
+     A*%%TS  SD  20070731  171255  NBKDY9U     REL-V5R3M0  5722-WDS
+     A*%%EC
+     A                                      DSPSIZ(24 80 *DS3)
+     A                                      INDARA
+     A                                      CF03(03 'Salir')
+     A                                      CF09(09 'Procesar')
+     A                                      CF04(04 'Ayuda Campo')
+     A          R WS01                      SFL
+     A*%%TS  SD  20010904  154335  DUARTEJ     REL-V4R4M0  5769-PW1
+     A            LONGITUD       5S 0H
+     A            DIGITOS        5S 0H
+     A            TIPO           1A  H
+     A            NOMFILE       10A  H
+     A            NOMCAMPO      10A  H
+     A            CAMPO         21A  B 13  1
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A            VALPAR        48A  B 13 23
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PC)
+     A          R WC01                      SFLCTL(WS01)
+     A*%%TS  SD  20070731  171255  NBKDY9U     REL-V5R3M0  5722-WDS
+     A                                      OVERLAY
+     A N30                                  ERASE(WS01)
+     A                                      SFLCSRRRN(&REGREL)
+     A  30                                  SFLDSP
+     A  31                                  SFLDSPCTL
+     A  32                                  SFLCLR
+     A  30                                  SFLEND(*SCRBAR *SCRBAR)
+     A                                      SFLSIZ(0100)
+     A                                      SFLPAG(0005)
+     A                                      WINDOW(2 2 20 74)
+     A                                      WDWBORDER((*COLOR BLU) (*DSPATR RI)-
+     A                                       (*CHAR '        '))
+     A                                      USRRSTDSP
+     A                                      WDWTITLE((*TEXT 'Ingreso de Parámet-
+     A                                      ros del Evento') (*COLOR WHT))
+     A                                      WDWTITLE((*TEXT 'F4-AYUDA')        -
+     A                                      (*COLOR WHT) *BOTTOM)
+     A            REGREL         5S 0H
+     A            NUMREG         4S 0H      SFLRCDNBR(CURSOR)
+     A            DATECUR        8Y 0B  1 65
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                      CHECK(RB)
+     A                                      EDTWRD('  /  /    ')
+     A                                  2 67TIME
+     A                                  3 67'ASQRY26 '
+     A                                      DSPATR(HI)
+     A                                  4  1'Consulta   :'
+     A                                      DSPATR(HI)
+     A            TCONSULTA     50A  B  4 14
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A            BOTON          2Y 0B  8  1PSHBTNFLD
+     A                                      PSHBTNCHC(1 'F9-Continuar' CF09)
+     A                                 10  1'Archivo/Campo         Valor       -
+     A                                                                         -
+     A                                           '
+     A                                      DSPATR(HI)
+     A                                 11  1'                      Parámetro   -
+     A                                                                         -
+     A                                           '
+     A                                      DSPATR(HI)
+     A                                      DSPATR(UL)
+     A          R XX
+     A*%%TS  SD  20010817  175335  DUARTEJ     REL-V4R4M0  5769-PW1
+     A                                      KEEP
+     A                                      ASSUME
+     A                                      OVERLAY
+     A                                  1  3' '

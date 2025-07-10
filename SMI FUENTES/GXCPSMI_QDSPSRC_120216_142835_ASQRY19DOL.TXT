@@ -1,0 +1,161 @@
+     A*%%TS  SD  20070725  084710  NBKDY9U     REL-V5R3M0  5722-WDS
+     A*%%EC
+     A                                      DSPSIZ(24 80 *DS3)
+     A                                      INDARA
+     A                                      CF03(03 'Salir')
+     A                                      CF07(07 'Modifica')
+     A                                      CF09(09 'Grabar')
+     A                                      CF12(12 'Anterior')
+     A                                      CF23(23 'Eliminar')
+     A                                      CF04(04 'Ayuda')
+     A                                      CF06(06 'Ayuda-CAMPOS')
+     A                                      CF13(13 'Secuenciar')
+     A                                      CF15(15 'Crear Pepas')
+     A                                      CF05(05 'ACTUALIZAR')
+     A                                      CF08(08 'AUTORIZAR ')
+     A                                      CF11(11 'CAMPOS X DEFECTO')
+     A          R WS00                      SFL
+     A*%%TS  SD  20070723  151004  NBKDY9U     REL-V5R3M0  5722-WDS
+     A            NOMCON        10A  H
+     A            DESCON        50A  H
+     A            CTL001         1Y 0H      SFLCHCCTL
+     A            DETSFL        69A  O  8  1
+     A          R WC00                      SFLCTL(WS00)
+     A*%%TS  SD  20070723  151004  NBKDY9U     REL-V5R3M0  5722-WDS
+     A                                      SFLSIZ(0200)
+     A                                      SFLPAG(0012)
+     A                                      WINDOW(2 2 20 74)
+     A                                      OVERLAY
+     A N30                                  ERASE(WS00)
+     A  30                                  SFLDSP
+     A  31                                  SFLDSPCTL
+     A  32                                  SFLCLR
+     A  30                                  SFLEND(*SCRBAR *SCRBAR)
+     A                                      WDWBORDER((*DSPATR RI) (*CHAR '    -
+     A                                          '))
+     A                                      USRRSTDSP
+     A                                      WDWTITLE((*TEXT 'C O N C E P T O S'-
+     A                                      ) (*COLOR WHT))
+     A                                      SFLRTNSEL
+     A                                      SFLMLTCHC
+     A            EMPRE1        15A  B  1  1
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A            DATECUR        8Y 0B  1 65
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                      CHECK(RB)
+     A                                      EDTWRD('  /  /    ')
+     A            EMPRE2        15A  B  2  1
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                  2 67TIME
+     A                                  3 67'ASQRY23'
+     A                                      DSPATR(HI)
+     A            BOTON          2Y 0B  4  2PSHBTNFLD
+     A                                      PSHBTNCHC(1 'F9-N-CONCEPTO' CF09)
+     A                                      PSHBTNCHC(2 'F7-Modifica' CF07)
+     A                                      PSHBTNCHC(3 'F23-Elimina' CF23)
+     A                                      PSHBTNCHC(4 'F8-Aut.Gr.Usr' CF08)
+     A                                      PSHBTNCHC(5 'F3-Salir' CF03)
+     A                                      PSHBTNCHC(6 'F11-Campos x Def.' CF1-
+     a                                      1)
+     A                                  6  1'Concepto    Descripción de Concept-
+     A                                      o                                  -
+     A                                         '
+     A                                      DSPATR(HI)
+     A                                      DSPATR(UL)
+     A          R W01
+     A*%%TS  SD  20070724  090712  NBKDY9U     REL-V5R3M0  5722-WDS
+     A                                      WINDOW(3 10 10 60)
+     A                                      WDWBORDER((*COLOR BLU) (*DSPATR RI)-
+     A                                       (*CHAR '        '))
+     A                                      USRRSTDSP
+     A            EMPRE1        15A  B  1  1
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A            DATECUR        8Y 0B  1 50
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                      CHECK(RB)
+     A                                      EDTWRD('  /  /    ')
+     A            EMPRE2        15A  B  2  1
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                  2 52TIME
+     A                                  3 52'ASQRY23 '
+     A                                      DSPATR(HI)
+     A                                  4  1'CONCEPTO   :'
+     A                                      DSPATR(HI)
+     A            CONCEPTO      10A  B  4 14DSPATR(HI)
+     A  50                                  DSPATR(PR)
+     A                                  5  1'DESCRIPCION:'
+     A                                      DSPATR(HI)
+     A            DCONCEPTO     45A  B  5 14DSPATR(HI)
+     A                                      DSPATR(UL)
+     A            BOTON          2Y 0B  8 14PSHBTNFLD
+     A                                      PSHBTNCHC(1 'F9-GRABAR' CF09)
+     A                                      PSHBTNCHC(2 'F12-ANTERIOR' CF12)
+     A          R W02
+     A*%%TS  SD  20070717  144420  NBKDY9U     REL-V5R3M0  5722-WDS
+     A                                      WINDOW(2 2 20 74)
+     A                                      RTNCSRLOC(*RECNAME &REGCURSOR &CAMC-
+     A                                      URSOR &POSCURSOR)
+     A                                      CSRLOC(FILA       COLU)
+     A                                      WDWBORDER((*COLOR BLU) (*DSPATR RI)-
+     A                                       (*CHAR '        '))
+     A                                      USRRSTDSP
+     A                                      WDWTITLE((*TEXT 'CONDICION DE FILTR-
+     A                                      O PROCESO') (*COLOR WHT))
+     A                                      WDWTITLE((*TEXT 'F4-AYUDA SQL F6-CA-
+     A                                      MPOS F9-GRABAR F12-VOLVER  F5-CONDI-
+     A                                      CION UNION') (*COLOR WHT) *BOTTOM)
+     A            FILA           3S 0H
+     A            COLU           3S 0H
+     A            REGCURSOR     10A  H
+     A            CAMCURSOR     10A  H
+     A            POSCURSOR      4S 0H
+     A            SENSQL01     980A  B  2  1CNTFLD(070)
+     A                                 17  1'Nota : Recuerde que si posee más d-
+     A                                      e un archivo los debe unir por sus -
+     A                                       '
+     A                                      DSPATR(HI)
+     A                                 18  1'       claves para que su selecció-
+     A                                      n sea más óptima, los campos deben -
+     A                                       '
+     A                                      DSPATR(HI)
+     A                                 19  1'       estar calificados con el no-
+     A                                      mbre del archivo ( ARCHIVO.CAMPO  )-
+     A                                       '
+     A                                      DSPATR(HI)
+     A          R W03
+     A*%%TS  SD  20070725  084710  NBKDY9U     REL-V5R3M0  5722-WDS
+     A                                      WINDOW(2 2 20 74)
+     A                                      WDWBORDER((*COLOR BLU) (*DSPATR RI)-
+     A                                       (*CHAR '        '))
+     A                                      USRRSTDSP
+     A                                      WDWTITLE((*TEXT 'CONDICION DE UNION-
+     A                                      ') (*COLOR WHT))
+     A                                      WDWTITLE((*TEXT 'F12-ANTERIOR') (*C-
+     A                                      OLOR WHT) *BOTTOM)
+     A            CONUNION     980A  B  2  1CNTFLD(070)
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                 17  1'Nota : Recuerde que si posee más d-
+     A                                      e un archivo los debe unir por sus -
+     A                                       '
+     A                                      DSPATR(HI)
+     A                                 18  1'       claves para que su selecció-
+     A                                      n sea más óptima, los campos deben -
+     A                                       '
+     A                                      DSPATR(HI)
+     A                                 19  1'       estar calificados con el no-
+     A                                      mbre del archivo ( ARCHIVO.CAMPO  )-
+     A                                       '
+     A                                      DSPATR(HI)
+     A          R XX
+     A*%%TS  SD  19990318  161752  DUARTEJ     REL-V4R2M0  5769-PW1
+     A                                      KEEP
+     A                                      ASSUME
+     A                                      OVERLAY
+     A                                  1  3' '

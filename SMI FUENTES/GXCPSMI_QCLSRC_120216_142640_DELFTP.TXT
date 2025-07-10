@@ -1,0 +1,9 @@
+    PGM PARM(&ARCHIVO)
+          DCL VAR(&ARCHIVO) TYPE(*CHAR) LEN(50)
+
+          SBMJOB  CMD(CALL PGM(GXCPSMI/DELFTPSBM) +
+                  PARM(&ARCHIVO)) JOB(DELFTPSMU) +
+                  USER(SMIACC) LOG(4 0 *MSG) LOGCLPGM(*YES) +
+                  JOBMSGQFL(*WRAP)
+
+     FIN: ENDPGM

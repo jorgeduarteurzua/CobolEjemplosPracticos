@@ -1,0 +1,208 @@
+     A*%%TS  SD  20011116  181321  DUARTEJ     REL-V4R4M0  5769-PW1
+     A*%%EC
+     A                                      DSPSIZ(24 80 *DS3)
+     A                                      INDARA
+     A                                      CF03(03 'Salir')
+     A                                      CF12(12 'ANTERIOR')
+     A                                      CF06(06 'Marcar Posicion')
+     A                                      CF09(09 'Procesar')
+     A                                      CF23(23 'Depurar')
+     A                                      CF05(05 'Visualizar')
+     A                                      CF15(15 'Resumenes')
+     A                                      CF21(21 'Imprimir')
+     A          R WS01                      SFL
+     A*%%TS  SD  20010713  161759  DUARTEJ     REL-V4R4M0  5769-PW1
+     A            CODEVE        10A  H
+     A            FECPRO         8S 0H
+     A            HORPRO         6S 0H
+     A            SECPRO         5S 0H
+     A            CTL001         1Y 0H      SFLCHCCTL
+     A            DETSFL        69A  O  9  1
+     A          R WC01                      SFLCTL(WS01)
+     A*%%TS  SD  20011116  180811  DUARTEJ     REL-V4R4M0  5769-PW1
+     A                                      SFLSIZ(0100)
+     A                                      SFLPAG(0010)
+     A                                      WINDOW(2 2 20 74)
+     A  30                                  SFLDSP
+     A  31                                  SFLDSPCTL
+     A  32                                  SFLCLR
+     A  30                                  SFLEND(*SCRBAR *SCRBAR)
+     A                                      WDWBORDER((*COLOR BLU) (*DSPATR RI)-
+     A                                       (*CHAR '        '))
+     A                                      USRRSTDSP
+     A                                      WDWTITLE((*TEXT 'MENU DE OPCIONES')-
+     A                                       (*COLOR WHT))
+     A                                      SFLRTNSEL
+     A                                      SFLSNGCHC
+     A            DATECUR        8Y 0B  1 64
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                      CHECK(RB)
+     A                                      EDTWRD('  /  /    ')
+     A                                  2 66TIME
+     A                                  3 66'ASQRY14 '
+     A                                      DSPATR(HI)
+     A                                  4  2'Fecha de Proceso :'
+     A            FECPRO         8Y 0B  4 22CHECK(RB)
+     A                                      EDTWRD('  /  /    ')
+     A            BOTON          2Y 0B  4 38PSHBTNFLD
+     A                                      PSHBTNCHC(1 'F9-Procesar' CF09)
+     A                                      PSHBTNCHC(2 'F3-Salir' CF03)
+     A                                      PSHBTNCHC(3 'F5-Visualizar' CF05)
+     A                                      PSHBTNCHC(4 'F23-Depurar' CF23)
+     A                                  5  2'Usuario          :'
+     A            USUARIO       10A  B  5 22
+     A                                  6  1'Evento    /Proc./SProc    Fecha   -
+     A                                      Cantidad   Biblioteca/Archivo      -
+     A                                           '
+     A                                      DSPATR(HI)
+     A                                  7  1'                       de Proceso -
+     A                                      Registros                          -
+     A                                           '
+     A                                      DSPATR(HI)
+     A                                      DSPATR(UL)
+     A          R WS02                      SFL
+     A*%%TS  SD  20010730  145643  DUARTEJ     REL-V4R4M0  5769-PW1
+     A            DETALLE       70A  B  6  1
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A          R WC02                      SFLCTL(WS02)
+     A*%%TS  SD  20010716  121736  DUARTEJ     REL-V4R4M0  5769-PW1
+     A                                      SFLSIZ(0260)
+     A                                      SFLPAG(0013)
+     A                                      WINDOW(2 2 20 74)
+     A                                      SFLCSRRRN(&REGREL)
+     A  30                                  SFLDSP
+     A  31                                  SFLDSPCTL
+     A  32                                  SFLCLR
+     A  30                                  SFLEND(*SCRBAR *SCRBAR)
+     A                                      WDWTITLE((*TEXT 'F3-RETORNAR F6-MAR-
+     A                                      CAR POSICION F21-IMPRIMIR F15-RESUM-
+     A                                      ENES INTRO-PROCESAR') +
+     A                                       (*COLOR WHT) *BOTTOM)
+     A                                      WDWBORDER((*COLOR BLU) (*DSPATR RI)-
+     A                                       (*CHAR '        '))
+     A                                      USRRSTDSP
+     A            POSCUR         4S 0H      SFLRCDNBR(*TOP)
+     A            REGREL         5S 0H
+     A                                  2  1'Archivo :'
+     A                                      DSPATR(HI)
+     A            ARCHIVO       10A  B  2 11
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                  2 23'Biblioteca :'
+     A                                      DSPATR(HI)
+     A            BIBLIOTECA    10A  B  2 36
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                  3  1'Avanza n Col:'
+     A                                      DSPATR(HI)
+     A            AVACOL         5Y 0B  3 15CHECK(RB)
+     A                                      EDTCDE(Z)
+     A                                  3 23'Retro. n Col:'
+     A                                      DSPATR(HI)
+     A            RETCOL         5Y 0B  3 37CHECK(RB)
+     A                                      EDTCDE(Z)
+     A                                  5  1'                      INFORMACION -
+     A                                      SELECCIONADA                       -
+     A                                           '
+     A                                      DSPATR(HI)
+     A                                      DSPATR(UL)
+     A          R WS03                      SFL
+     A*%%TS  SD  20011018  093157  DUARTEJ     REL-V4R4M0  5769-PW1
+     A            TCAMPO         1   H
+     A            CAMPO         10A  B  6  1
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A            TEXTO         40A  B  6 12
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A            ORDENINF       3Y 0B  6 54CHECK(RB)
+     A                                      EDTCDE(Z)
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A            ORDENRUP       3Y 0B  6 60CHECK(RB)
+     A                                      EDTCDE(Z)
+     A          R WC03                      SFLCTL(WS03)
+     A*%%TS  SD  20011018  093157  DUARTEJ     REL-V4R4M0  5769-PW1
+     A                                      SFLSIZ(0260)
+     A                                      SFLPAG(0013)
+     A                                      WINDOW(2 2 20 74)
+     A  30                                  SFLDSP
+     A  31                                  SFLDSPCTL
+     A  32                                  SFLCLR
+     A  30                                  SFLEND(*SCRBAR *SCRBAR)
+     A                                      WDWBORDER((*COLOR BLU) (*DSPATR RI)-
+     A                                       (*CHAR '        '))
+     A                                      USRRSTDSP
+     A                                      WDWTITLE((*TEXT 'F9-Generar Informe-
+     A                                      ') (*COLOR WHT) *BOTTOM)
+     A                                  2  1'Archivo :'
+     A                                      DSPATR(HI)
+     A            ARCHIVO       10A  B  2 11
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                  2 23'Biblioteca :'
+     A                                      DSPATR(HI)
+     A            BIBLIOTECA    10A  B  2 36
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                  4  1'                                  -
+     A                                                         Ord   Ord       -
+     A                                           '
+     A                                      DSPATR(HI)
+     A                                  5  1'Campo      Descripción            -
+     A                                                         Inf   Rup       -
+     A                                           '
+     A                                      DSPATR(UL)
+     A                                      DSPATR(HI)
+     A          R W01
+     A*%%TS  SD  20011116  181321  DUARTEJ     REL-V4R4M0  5769-PW1
+     A                                      WINDOW(7 10 12 60)
+     A                                      WDWTITLE((*TEXT 'PARAMETROS INFORME-
+     A                                      ') (*COLOR WHT))
+     A                                      WDWTITLE((*TEXT 'INTRO-PROCESAR F12-
+     A                                      -ANTERIOR') (*COLOR WHT) *BOTTOM)
+     A                                      WDWBORDER((*COLOR BLU) (*DSPATR RI)-
+     A                                       (*CHAR '        '))
+     A                                      USRRSTDSP
+     A                                  2  1'Longitud Página...:'
+     A            LONPAG         3Y 0B  2 21CHECK(RB)
+     A                                      EDTCDE(Z)
+     A                                      RANGE(1 255)
+     A                                  2 26'(1-255)'
+     A                                  3  1'Anchura Informe...:'
+     A            ANCPAG         5Y 0B  3 21CHECK(RB)
+     A                                      DSPATR(PR)
+     A                                  4  1'Lõneas Por Pulgada'
+     A                                      DSPATR(HI)
+     A            LINPUL         2Y 0B  5  3SNGCHCFLD(*NORSTCSR *AUTOSLT *SLTIN-
+     A                                      D *NOAUTOENT (*NUMCOL 5))
+     A                                      CHOICE(1 '3')
+     A                                      CHOICE(2 '4')
+     A                                      CHOICE(3 '6')
+     A                                      CHOICE(4 '7.5')
+     A                                      CHOICE(5 '7,5')
+     A                                      CHOICE(6 '8')
+     A                                      CHOICE(7 '9')
+     A                                      CHOICE(8 '12')
+     A                                  7  1'Carßcteres por Pulgada'
+     A                                      DSPATR(HI)
+     A            CARPUL         2Y 0B  8  3SNGCHCFLD(*NORSTCSR *AUTOSLT *SLTIN-
+     A                                      D *NOAUTOENT (*NUMCOL 4))
+     A                                      CHOICE(1 '5')
+     A                                      CHOICE(2 '10')
+     A                                      CHOICE(3 '12')
+     A                                      CHOICE(4 '13.3')
+     A                                      CHOICE(5 '13,3')
+     A                                      CHOICE(6 '15')
+     A                                      CHOICE(7 '16.7')
+     A                                      CHOICE(8 '16,7')
+     A                                      CHOICE(9 '18')
+     A                                      CHOICE(10 '20')
+     A          R XX
+     A*%%TS  SD  20010719  173556  DUARTEJ     REL-V4R4M0  5769-PW1
+     A                                      KEEP
+     A                                      ASSUME
+     A                                      OVERLAY
+     A                                  1  3' '

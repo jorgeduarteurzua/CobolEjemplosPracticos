@@ -1,0 +1,193 @@
+     A*%%TS  SD  20110606  111226  SMIABD      REL-V6R1M0  5761-WDS
+     A*%%EC
+     A                                      DSPSIZ(24 80 *DS3)
+     A                                      INDARA
+     A                                      CF03(03 'Salir')
+     A                                      CF05(05 'Actualizar')
+     A                                      CF07(07 'Regenerar Campos')
+     A                                      CF08(08 'VIS.CAMPOS')
+     A                                      CF09(09 'Ingresar')
+     A                                      CF23(23 'Eliminar')
+     A                                      CF15(15 'CAMBIA TEXTO')
+     A                                      CF12(12 'Anterior')
+     A                                      CF11(11 'EXCEPCION')
+     A          R WS01                      SFL
+     A*%%TS  SD  20010709  104557  DUARTEJ     REL-V4R4M0  5769-PW1
+     A            NOMARC        10   H
+     A            BIBARC        10   H
+     A            CTL001         1Y 0H      SFLCHCCTL
+     A            DETSFL        69A  O  9  1
+     A          R WC01                      SFLCTL(WS01)
+     A*%%TS  SD  20070730  163634  NBKDY9U     REL-V5R3M0  5722-WDS
+     A                                      SFLSIZ(0100)
+     A                                      SFLPAG(0010)
+     A                                      WINDOW(2 2 20 74)
+     A  30                                  SFLDSP
+     A  31                                  SFLDSPCTL
+     A  32                                  SFLCLR
+     A  30                                  SFLEND(*SCRBAR *SCRBAR)
+     A                                      WDWTITLE((*TEXT 'INGRESO DE ARCHIVO-
+     A                                      S') (*COLOR WHT))
+     A                                      WDWBORDER((*COLOR BLU) (*DSPATR RI)-
+     A                                       (*CHAR '        '))
+     A                                      USRRSTDSP
+     A                                      SFLRTNSEL
+     A                                      SFLSNGCHC
+     A            DATECUR        8Y 0B  1 65
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                      CHECK(RB)
+     A                                      EDTWRD('  /  /    ')
+     A                                  2 67TIME
+     A                                  3 67'ASQRY01 '
+     A                                      DSPATR(HI)
+     A                                  4  1'Archivo     :'
+     A                                      DSPATR(HI)
+     A            NOMARC        10A  B  4 15
+     A                                  4 27'Biblioteca :'
+     A                                      DSPATR(HI)
+     A            BIBLIO        10A  B  4 40
+     A                                  5  1'Usa Miembro :'
+     A                                      DSPATR(HI)
+     A            MIEMBRO        1A  B  5 15VALUES('S' 'N')
+     A                                      DFTVAL('N')
+     A                                  5 17'(S/N)'
+     A                                  5 23'Utiliza Otro Archivo :'
+     A                                      DSPATR(HI)
+     A            OTROARC        1A  B  5 46VALUES('S' 'N')
+     A                                      DFTVAL('N')
+     A                                  5 48'(S/N)'
+     A            BOTON          2Y 0B  6  1PSHBTNFLD
+     A                                      PSHBTNCHC(1 'F3-Salir' CF03)
+     A                                      PSHBTNCHC(2 'F9-Grabar' CF09)
+     A                                      PSHBTNCHC(3 'F7-Gen.Campos' CF07)
+     A                                      PSHBTNCHC(4 'F5-Actualizar' CF05)
+     A                                      PSHBTNCHC(5 'F23-Eliminar' CF23)
+     A                                      PSHBTNCHC(6 'F15-Mod.Texto' CF15)
+     A                                      PSHBTNCHC(7 'F8-Vis.Campos' CF08)
+     A                                  8  1' Archivo   Descripción            -
+     A                                                      N°Campos Mbr O.Arc -
+     A                                          '
+     A                                      DSPATR(HI)
+     A                                      DSPATR(UL)
+     A          R WS02                      SFL
+     A*%%TS  SD  20110606  111226  SMIABD      REL-V6R1M0  5761-WDS
+     A            NOMCAMPO      10A  H
+     A            DESCAMPO      60   H
+     A            CTL002         1Y 0H      SFLCHCCTL
+     A            DETSFL2       69A  O  9  1
+     A          R WC02                      SFLCTL(WS02)
+     A*%%TS  SD  20071204  182716  NBKDY9U     REL-V5R3M0  5722-WDS
+     A                                      SFLSIZ(0100)
+     A                                      SFLPAG(0010)
+     A                                      WINDOW(2 2 20 74)
+     A  30                                  SFLDSP
+     A  31                                  SFLDSPCTL
+     A  32                                  SFLCLR
+     A  30                                  SFLEND(*SCRBAR *SCRBAR)
+     A                                      WDWTITLE((*TEXT 'INGRESO DE ARCHIVO-
+     A                                      S') (*COLOR WHT))
+     A                                      WDWBORDER((*COLOR BLU) (*DSPATR RI)-
+     A                                       (*CHAR '        '))
+     A                                      USRRSTDSP
+     A                                      SFLRTNSEL
+     A                                      SFLSNGCHC
+     A            DATECUR        8Y 0B  1 65
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                      CHECK(RB)
+     A                                      EDTWRD('  /  /    ')
+     A                                  2 67TIME
+     A                                  3 67'ASQRY01 '
+     A                                      DSPATR(HI)
+     A                                  4  1'Archivo     :'
+     A                                      DSPATR(HI)
+     A            NOMARC        10A  B  4 15
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                  4 27'Biblioteca :'
+     A                                      DSPATR(HI)
+     A            BIBLIO        10A  B  4 40
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A            BOTON2         2Y 0B  6  1PSHBTNFLD
+     A                                      PSHBTNCHC(1 'F12-Anterior' CF12)
+     A                                      PSHBTNCHC(2 'F7-Gen.Regional' CF07)
+     A                                      PSHBTNCHC(3 'F5-Gen.Agencia' CF05)
+     A                                      PSHBTNCHC(4 'F11-Gen.Excepc.' CF11)
+     A                                      PSHBTNCHC(5 'F15-Mod.Texto' CF15)
+     A                                  8  1' Campo     Descripción            -
+     A                                                         REG  AGE  EXC   -
+     A                                          '
+     A                                      DSPATR(HI)
+     A                                      DSPATR(UL)
+     A          R W01
+     A*%%TS  SD  20070730  163941  NBKDY9U     REL-V5R3M0  5722-WDS
+     A                                      WINDOW(8 5 6 65)
+     A                                      USRRSTDSP
+     A                                  1  2'Archivo..:'
+     A                                      DSPATR(HI)
+     A            NOMARC        10   B  1 14
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                  1 27'Biblioteca..:'
+     A                                      DSPATR(HI)
+     A            BIBARC        10   B  1 42
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                  2  2'Texto....:'
+     A                                      DSPATR(HI)
+     A            DESFILE       50   B  2 14
+     A            BOTONW01       2Y 0B  4 18PSHBTNFLD
+     A                                      PSHBTNCHC(1 'F9-GRABAR' CF09)
+     A                                      PSHBTNCHC(2 'F12-VOLVER' CF12)
+     A          R W02
+     A*%%TS  SD  20071129  133547  NBKDY9U     REL-V5R3M0  5722-WDS
+     A                                      WINDOW(8 5 6 65)
+     A                                      USRRSTDSP
+     A                                  1  2'Archivo..:'
+     A                                      DSPATR(HI)
+     A            NOMARC        10A  B  1 14
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                  1 27'Campo.......:'
+     A                                      DSPATR(HI)
+     A            NOMFLD        10A  B  1 42
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                  2  2'Texto....:'
+     A                                      DSPATR(HI)
+     A            DESFIELD      50A  B  2 14
+     A            BOTONW02       2Y 0B  4 18PSHBTNFLD
+     A                                      PSHBTNCHC(1 'F9-GRABAR' CF09)
+     A                                      PSHBTNCHC(2 'F12-VOLVER' CF12)
+     A          R W03
+     A*%%TS  SD  20071203  190210  NBKDY9U     REL-V5R3M0  5722-WDS
+     A                                      WINDOW(6 5 9 65)
+     A                                      USRRSTDSP
+     A            TITULO        10   B  1 29
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                      DSPATR(HI)
+     A                                  3  2'Archivo..:'
+     A                                      DSPATR(HI)
+     A            NOMARC        10A  B  3 14
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                  3 27'Campo.......:'
+     A                                      DSPATR(HI)
+     A            NOMFLD        10A  B  3 42
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                  4 25'Definición  Campo'
+     A                                      DSPATR(HI)
+     A            DEFFIELD     180A  B  5  2CNTFLD(060)
+     A            BOTONW03       2Y 0B  8 18PSHBTNFLD
+     A                                      PSHBTNCHC(1 'F9-GRABAR' CF09)
+     A                                      PSHBTNCHC(2 'F12-VOLVER' CF12)
+     A          R XX
+     A*%%TS  SD  20070730  163941  NBKDY9U     REL-V5R3M0  5722-WDS
+     A                                      KEEP
+     A                                      ASSUME
+     A                                      OVERLAY
+     A                                  1  3' '

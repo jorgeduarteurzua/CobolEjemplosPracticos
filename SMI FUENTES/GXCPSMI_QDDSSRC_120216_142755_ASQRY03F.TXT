@@ -1,0 +1,13 @@
+     A                                      UNIQUE
+     A          R RASQRY03F
+     A*
+     A            CODEVE        10A         COLHDG('CODIGO DE EVENTO')
+     A            DESEVE        50A         COLHDG('DESCRIPCION EVENTO')
+     A            FECCRE         8S 0       COLHDG('FECHA CREACION')
+     A            HORCRE         6S 0       COLHDG('HORA  CREACION')
+     A            USRCRE        10A         COLHDG('USUARIO CREACION')
+     A            FECMOD         8S 0       COLHDG('FECHA MODIFIC.')
+     A            HORMOD         6S 0       COLHDG('HORA  MODIFIC.')
+     A            USRMOD        10A         COLHDG('USUARIO MODIFIC.')
+     A          K CODEVE
+     A*

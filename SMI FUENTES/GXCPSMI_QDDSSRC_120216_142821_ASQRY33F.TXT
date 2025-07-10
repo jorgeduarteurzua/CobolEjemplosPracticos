@@ -1,0 +1,6 @@
+     A                                      UNIQUE
+     A          R RASQRY33F
+     A*
+     A            CODGRP        10A         TEXT('GRUPO USUARIOS')
+     A            DESGRP        50A         TEXT('DESCRIPCION')
+     A          K CODGRP

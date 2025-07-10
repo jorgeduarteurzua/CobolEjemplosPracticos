@@ -1,0 +1,126 @@
+             PGM        PARM(&CONS &FPRO &HPRO &SEC  +
+                          &ABAS &BBAS &AGEN &USR &STOPE &REFABAS +
+                          &REFAGEN &REFBGEN &REEARC &RETJOB &ADDREG +
+                          &REGUNI)
+  /*------------------------------------------------------------ +
+     CONS   -> CODIGO DE EVENTO                                   +
+     FPRO   -> FECHA PROCESO                                      +
+     HPRO   -> HORA  PROCESO                                      +
+     SEC    -> SECUENCIA DEL PROCESO QUE SE EJECUTARA             +
+     ABAS   -> ARCHIVO BASE QUE SE UTILIZARA PARA CREAR NUEVO     +
+     BBAS   -> BIBLIOTECA DONDE SE ENCUENTRA EL ARCHIVO BASE      +
+     AGEN   -> NOMBRE DEL ARCHIVO A GENERAR                       +
+     USR    -> USUARIO DEL PROCESO                                +
+     STOPE  -> SECUENCIA TOPE PARA EL EVENTO                      +
+     REFABAS-> ARCHIVO DE RERERENCIA BASE                         +
+     REFAGEN-> ARCHIVO GENERADO                                   +
+     REFBGEN-> BIBLIOTECA GENERADO                                +
+     REEARC -> REEMPLAZAR ARCHIVO                                 +
+     RETJOB -> RETENER TRABAJO                                    +
+     ADDREG -> AGREGAR REGISTROS A ARCHIVO                        +
+     REGUNI -> NO REPETIR REGISTROS IGUALES                       +
+    ------------------------------------------------------------ */
+         DCL VAR(&CONSX)   TYPE(*CHAR) LEN(10)
+         DCL VAR(&CONS)    TYPE(*CHAR) LEN(10)
+         DCL VAR(&FPRO)    TYPE(*CHAR) LEN(08)
+         DCL VAR(&HPRO)    TYPE(*CHAR) LEN(06)
+         DCL VAR(&SEC)     TYPE(*CHAR) LEN(05)
+         DCL VAR(&ABAS)    TYPE(*CHAR) LEN(10)
+         DCL VAR(&BBAS)    TYPE(*CHAR) LEN(10)
+         DCL VAR(&AGEN)    TYPE(*CHAR) LEN(10)
+         DCL VAR(&USR)     TYPE(*CHAR) LEN(10)
+         DCL VAR(&STOPE)   TYPE(*CHAR) LEN(05)
+         DCL VAR(&REFABAS) TYPE(*CHAR) LEN(10)
+         DCL VAR(&REFAGEN) TYPE(*CHAR) LEN(10)
+         DCL VAR(&REFBGEN) TYPE(*CHAR) LEN(10)
+         DCL VAR(&REEARC)  TYPE(*CHAR) LEN(01)
+         DCL VAR(&RETJOB)  TYPE(*CHAR) LEN(01)
+         DCL VAR(&ADDREG)  TYPE(*CHAR) LEN(01)
+         DCL VAR(&REGUNI)  TYPE(*CHAR) LEN(01)
+         DCL VAR(&PB)      TYPE(*DEC)  LEN(3 0)
+         DCL VAR(&LISBIB)  TYPE(*CHAR) LEN(250)
+         DCL VAR(&BIB)     TYPE(*CHAR) LEN(10)
+         DCL VAR(&IN)      TYPE(*DEC)  LEN(2 0)
+         DCL VAR(&CARX)    TYPE(*CHAR) LEN(1)
+
+         CALL       PGM(GXCPSMI/CARLIB) PARM(&CONS &LISBIB)
+         CHGVAR VAR(&PB) VALUE(1)
+         CHGVAR VAR(&IN) VALUE(1)
+   LOADBIB:
+          CHGVAR VAR(&BIB) VALUE(%SST(&LISBIB &PB 10))
+          ADDLIBLE   LIB(&BIB) POSITION(*LAST)
+          MONMSG     MSGID(CPF0000)
+          CHGVAR VAR(&PB) VALUE(&PB + 10)
+          IF COND(&PB *GT 250) THEN(DO)
+             GOTO CMDLBL(NOMBREJ)
+          ENDDO
+          GOTO CMDLBL(LOADBIB)
+
+   NOMBREJ: CHGVAR VAR(&CARX) VALUE(%SST(&CONS &IN 1))
+            CHGVAR VAR(%SST(&CONSX &IN 1)) VALUE(%SST(&CONS &IN 1))
+            IF COND((&CARX *EQ 'µ') *OR +
+                    (&CARX *EQ 'µ') *OR +
+                    (&CARX *EQ 'ê') *OR +
+                    (&CARX *EQ 'ê') *OR +
+                    (&CARX *EQ '÷') *OR +
+                    (&CARX *EQ '÷') *OR +
+                    (&CARX *EQ '‡') *OR +
+                    (&CARX *EQ '‡') *OR +
+                    (&CARX *EQ 'È') *OR +
+                    (&CARX *EQ 'È') *OR +
+                    (&CARX *EQ '|') *OR +
+                    (&CARX *EQ '!') *OR +
+                    (&CARX *EQ 'ß') *OR +
+                    (&CARX *EQ '¶') *OR +
+                    (&CARX *EQ '\') *OR +
+                    (&CARX *EQ '@') *OR +
+                    (&CARX *EQ '$') *OR +
+                    (&CARX *EQ '%') *OR +
+                    (&CARX *EQ '&') *OR +
+                    (&CARX *EQ '/') *OR +
+                    (&CARX *EQ '(') *OR +
+                    (&CARX *EQ ')') *OR +
+                    (&CARX *EQ '?') *OR +
+                    (&CARX *EQ '®') *OR +
+                    (&CARX *EQ '≠') *OR +
+                    (&CARX *EQ '.') *OR +
+                    (&CARX *EQ ',') *OR +
+                    (&CARX *EQ ';') *OR +
+                    (&CARX *EQ ':') *OR +
+                    (&CARX *EQ '{') *OR +
+                    (&CARX *EQ '}') *OR +
+                    (&CARX *EQ '-') *OR +
+                    (&CARX *EQ '+') *OR +
+                    (&CARX *EQ '<') *OR +
+                    (&CARX *EQ '>') *OR +
+                    (&CARX *EQ '*')) THEN(DO)
+                    CHGVAR VAR(%SST(&CONSX &IN 1)) VALUE('_')
+            ENDDO
+            CHGVAR VAR(&IN) VALUE(&IN + 1)
+            IF COND(&IN *GT 10) THEN(DO)
+               GOTO CMDLBL(PROCESA)
+            ENDDO
+            GOTO CMDLBL(NOMBREJ)
+
+   PROCESA:
+
+         IF COND(&RETJOB *EQ 'S') THEN(DO)
+             SBMJOB     CMD(CALL PGM(ASQRY17P) PARM(&CONS &FPRO +
+                          &HPRO &SEC &ABAS &BBAS &AGEN &USR &STOPE +
+                          &REFABAS &REFAGEN &REFBGEN &REEARC +
+                          &RETJOB &ADDREG &REGUNI)) JOB(&CONS) +
+                          LOG(4 0 *MSG) LOGCLPGM(*YES) +
+                          HOLD(*YES) JOBMSGQFL(*WRAP)
+         ENDDO
+         IF COND(&RETJOB *NE 'S') THEN(DO)
+             SBMJOB     CMD(CALL PGM(ASQRY17P) PARM(&CONS &FPRO +
+                          &HPRO &SEC &ABAS &BBAS &AGEN &USR &STOPE +
+                          &REFABAS &REFAGEN &REFBGEN &REEARC +
+                          &RETJOB &ADDREG &REGUNI)) JOB(&CONS) +
+                          LOG(4 0 *MSG) LOGCLPGM(*YES) +
+                          JOBMSGQFL(*WRAP)
+         ENDDO
+
+
+    ENDPGM
+

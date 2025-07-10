@@ -1,0 +1,122 @@
+       IDENTIFICATION DIVISION.
+      *-----------------------*
+       PROGRAM-ID. EJEFTP.
+       AUTHOR. JORGE DUARTE.
+       ENVIRONMENT DIVISION.
+      *--------------------*
+       CONFIGURATION SECTION.
+       SOURCE-COMPUTER.      IBM-AS400.
+       OBJECT-COMPUTER.      IBM-AS400.
+       SPECIAL-NAMES.        LOCAL-DATA IS LOCAL-DATA-AREA .
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+
+       DATA DIVISION.
+      *--------------*
+       FILE SECTION.
+      *-------------*
+
+       WORKING-STORAGE SECTION.
+      *------------------------*
+       77 P-ARR                PIC 9(4).
+       77 SEL-C1               PIC X(5000).
+
+           EXEC SQL
+              INCLUDE SQLCA
+           END-EXEC.
+
+       01 VARIABLES-DE-TRABAJO.
+           05 N-FLD       PIC 9(04).
+           05 L-FLD       PIC 9(02).
+           05 POS-I       PIC 9(02).
+           05 SALIR-WS    PIC X(01).
+           05 CAMPOS-INS  PIC X(5000).
+           05 WS-CAMPOS   PIC X(40).
+           05 ARC-BASE    PIC X(10).
+           05 WS-CAMPO    PIC X(10).
+
+       01 DATOS-SQL.
+          05 CAMPO-SQL          PIC X(10).
+          05 NREG-SQL           PIC S9(9).
+          05 ENCABEZADO-SQL     PIC X(40).
+      *
+       LINKAGE SECTION.
+      *----------------
+       01 ARCHIVO-LNK    PIC X(10).
+       01 CONSULTA-LNK   PIC X(10).
+
+       PROCEDURE DIVISION USING ARCHIVO-LNK, CONSULTA-LNK.
+      *----------------------------------------------------
+           MOVE SPACES        TO CAMPOS-INS
+
+           STRING 'B'              DELIMITED SIZE
+                  ARCHIVO-LNK(1:5) DELIMITED SIZE
+                  'BASE'           DELIMITED SIZE
+                              INTO ARC-BASE
+
+           EXEC SQL
+           DECLARE C1 CURSOR FOR SELECT A.WHFLDI, CAST(RRN(A) AS
+           NUMERIC(9, 0)) AS REG, C.NOMENC FROM GXDBSMI/ASQRY01F A,
+           GXDBSMI/ASQRY28F B, GXDBSMI/ASQRY41F C WHERE WHFILE =
+           :ARC-BASE AND B.NOMCONS = :CONSULTA-LNK AND B.NOMCON =
+           C.NOMCON AND A.WHFLDI = C.NOMFLD ORDER BY REG
+           END-EXEC.
+
+           MOVE 1      TO N-FLD
+           EXEC SQL  OPEN    C1    END-EXEC
+           MOVE SPACES     TO WS-CAMPO
+           PERFORM LEER-FETCH-C1
+           PERFORM UNTIL SQLCODE NOT = 0
+               IF CAMPO-SQL NOT = WS-CAMPO
+                  PERFORM DETERMINA-LARGO-ENC
+                  IF (L-FLD + N-FLD + 2) < 5000
+                    STRING '"'        DELIMITED SIZE
+                      ENCABEZADO-SQL  DELIMITED BY '  '
+                           '"'        DELIMITED SIZE
+                                INTO  WS-CAMPOS
+                    ADD  2          TO L-FLD
+                    MOVE WS-CAMPOS  TO CAMPOS-INS(N-FLD:L-FLD)
+                    ADD  L-FLD      TO N-FLD
+                    MOVE CAMPO-SQL  TO WS-CAMPO
+                  ELSE
+                    MOVE 100 TO SQLCODE
+                  END-IF
+                  IF SQLCODE = 0
+                     PERFORM LEER-FETCH-C1
+                     IF SQLCODE = 0
+                        MOVE ';'     TO CAMPOS-INS(N-FLD:1)
+                        ADD  1       TO N-FLD
+                     END-IF
+                  END-IF
+               ELSE
+                  PERFORM LEER-FETCH-C1
+               END-IF
+           END-PERFORM
+           EXEC SQL  CLOSE   C1    END-EXEC
+
+           EXEC SQL
+           INSERT INTO QTEMP/ARCHEAD VALUES(:CAMPOS-INS)
+           END-EXEC
+
+           GOBACK
+           .
+      *
+       DETERMINA-LARGO-ENC.
+      *-------------------
+           MOVE "N"      TO SALIR-WS
+           MOVE 40       TO POS-I
+           PERFORM UNTIL SALIR-WS = "S"
+                   OR POS-I = 0
+               IF ENCABEZADO-SQL(POS-I:1) NOT = " "
+                  MOVE POS-I  TO L-FLD
+                  MOVE "S"    TO SALIR-WS
+               END-IF
+               SUBTRACT 1 FROM POS-I
+           END-PERFORM
+           .
+      *
+       LEER-FETCH-C1.
+      *--------------
+           EXEC SQL
+           FETCH NEXT FROM C1 INTO :DATOS-SQL
+           END-EXEC.

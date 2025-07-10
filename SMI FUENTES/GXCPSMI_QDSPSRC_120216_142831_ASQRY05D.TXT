@@ -1,0 +1,66 @@
+     A*%%TS  SD  20011116  180431  DUARTEJ     REL-V4R4M0  5769-PW1
+     A*%%EC
+     A                                      DSPSIZ(24 80 *DS3)
+     A                                      INDARA
+     A                                      CF03(03 'Salir')
+     A                                      CF04(04 'Seleccion')
+     A                                      CF05(05 'Selecciona Todos')
+     A                                      CF23(23 'Eliminar')
+     A          R WS01                      SFL
+     A*%%TS  SD  20010712  150147  DUARTEJ     REL-V4R4M0  5769-PW1
+     A            CTL001         1Y 0H      SFLCHCCTL
+     A            USUARIO1      10A  O 11 25
+     A          R WC01                      SFLCTL(WS01)
+     A*%%TS  SD  20011116  180431  DUARTEJ     REL-V4R4M0  5769-PW1
+     A                                      SFLSIZ(0100)
+     A                                      SFLPAG(0008)
+     A                                      WINDOW(2 12 20 58)
+     A                                      RTNCSRLOC(*RECNAME &REGCURSOR &CAMC-
+     A                                      URSOR)
+     A                                      SFLCSRRRN(&REGREL)
+     A  30                                  SFLDSP
+     A  31                                  SFLDSPCTL
+     A  32                                  SFLCLR
+     A  30                                  SFLEND(*SCRBAR *SCRBAR)
+     A  80                                  SFLMSG('Evento tiene todas la autor-
+     A                                      izaciones')
+     A                                      WDWBORDER((*COLOR BLU) (*DSPATR RI)-
+     A                                       (*CHAR '        '))
+     A                                      USRRSTDSP
+     A                                      WDWTITLE((*TEXT 'AUTORIZACIONES USU-
+     A                                      ARIOS') (*COLOR WHT))
+     A                                      SFLSNGCHC
+     A                                      SFLRTNSEL
+     A            REGCURSOR     10A  H
+     A            CAMCURSOR     10A  H
+     A            POSCUR         4S 0H      SFLRCDNBR(CURSOR)
+     A            REGREL         5S 0H
+     A            DATECUR        8Y 0B  1 48
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                      CHECK(RB)
+     A                                      EDTWRD('  /  /    ')
+     A                                  2 48TIME
+     A                                  3 48'ASQRY06 '
+     A                                      DSPATR(HI)
+     A                                  4  4'Evento :'
+     A                                      DSPATR(HI)
+     A            CODEVE        10A  B  4 13DSPATR(PR)
+     A  99                                  DSPATR(UL)
+     A            DESEVE        30A  B  4 24
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A            BOTON          2Y 0B  6  4PSHBTNFLD
+     A                                      PSHBTNCHC(1 'F3-Salir' CF03)
+     A                                      PSHBTNCHC(2 'F4-Seleccion' CF04)
+     A                                      PSHBTNCHC(3 'F5-Todos' CF05)
+     A                                      PSHBTNCHC(23 'F23-Eliminar' CF23)
+     A                                  9 23'Autorizaciones'
+     A                                      DSPATR(UL)
+     A                                      DSPATR(HI)
+     A          R XX
+     A*%%TS  SD  20010710  164507  ZAVALAC     REL-V4R4M0  5769-PW1
+     A                                      KEEP
+     A                                      ASSUME
+     A                                      OVERLAY
+     A                                  1  3' '

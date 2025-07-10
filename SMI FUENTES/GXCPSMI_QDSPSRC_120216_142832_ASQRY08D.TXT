@@ -1,0 +1,203 @@
+     A*%%TS  SD  20011116  180522  DUARTEJ     REL-V4R4M0  5769-PW1
+     A*%%EC
+     A                                      DSPSIZ(24 80 *DS3)
+     A                                      PRINT
+     A                                      INDARA
+     A                                      CF12(12 'Anterior')
+     A                                      PAGEUP(90 'Arriba')
+     A                                      PAGEDOWN(91 'Abajo')
+     A          R W01
+     A*%%TS  SD  20011116  180522  DUARTEJ     REL-V4R4M0  5769-PW1
+     A                                      WINDOW(2 2 20 74)
+     A                                      INVITE
+     A                                      WDWBORDER((*COLOR BLU) (*DSPATR RI)-
+     A                                       (*CHAR '        '))
+     A                                      USRRSTDSP
+     A            FECSYS         8Y 0B  1 63
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                      CHECK(RB)
+     A                                      EDTWRD('  /  /    ')
+     A                                  2 28'CONSULTA DE PROCESOS'
+     A                                      DSPATR(HI)
+     A                                      DSPATR(UL)
+     A            HORSYS         6Y 0B  2 65
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                      CHECK(RB)
+     A                                      EDTWRD('  :  :  ')
+     A                                  3 65'ASQRY10 '
+     A                                      DSPATR(HI)
+     A                                  5  1'Fecha de Proceso :'
+     A            FECPRO         8Y 0B  5 20CHECK(RB)
+     A                                      EDTWRD('  /  /    ')
+     A                                  5 32'(dd/mm/aaaa)'
+     A                                      DSPATR(HI)
+     A                                  6  1'Usuario          :'
+     A            USUARIO       10A  B  6 20
+     A                                  6 32'(Blanco = Todos)'
+     A                                      DSPATR(HI)
+     A                                  7  1'Evento     Proc. SProc.      Fecha-
+     A                                       ---- Resultado -----  Regist.  Est-
+     A                                      ado  '
+     A                                      DSPATR(HI)
+     A                                  8  1'                           Proceso-
+     A                                       Biblioteca/Archivo    Grabados Pro-
+     A                                      ceso '
+     A                                      DSPATR(HI)
+     A                                      DSPATR(UL)
+     A            TIPPRO01      22A  B 10  1
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A            FECPRO01       8Y 0B 10 25CHECK(RB)
+     A                                      EDTWRD('  /  /    ')
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A            ARCGEN01      21A  B 10 36
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A            REGGRA01       8Y 0B 10 58
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                      CHECK(RB)
+     A                                      EDTCDE(Z)
+     A            ESTADO01       8A  B 10 67
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A            TIPPRO02      22A  B 11  1
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A            FECPRO02       8Y 0B 11 25CHECK(RB)
+     A                                      EDTWRD('  /  /    ')
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A            ARCGEN02      21A  B 11 36
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A            REGGRA02       8Y 0B 11 58
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                      CHECK(RB)
+     A                                      EDTCDE(Z)
+     A            ESTADO02       8A  B 11 67
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A            TIPPRO03      22A  B 12  1
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A            FECPRO03       8Y 0B 12 25CHECK(RB)
+     A                                      EDTWRD('  /  /    ')
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A            ARCGEN03      21A  B 12 36
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A            REGGRA03       8Y 0B 12 58
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                      CHECK(RB)
+     A                                      EDTCDE(Z)
+     A            ESTADO03       8A  B 12 67
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A            TIPPRO04      22A  B 13  1
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A            FECPRO04       8Y 0B 13 25CHECK(RB)
+     A                                      EDTWRD('  /  /    ')
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A            ARCGEN04      21A  B 13 36
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A            REGGRA04       8Y 0B 13 58
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                      CHECK(RB)
+     A                                      EDTCDE(Z)
+     A            ESTADO04       8A  B 13 67
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A            TIPPRO05      22A  B 14  1
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A            FECPRO05       8Y 0B 14 25CHECK(RB)
+     A                                      EDTWRD('  /  /    ')
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A            ARCGEN05      21A  B 14 36
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A            REGGRA05       8Y 0B 14 58
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                      CHECK(RB)
+     A                                      EDTCDE(Z)
+     A            ESTADO05       8A  B 14 67
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A            TIPPRO06      22A  B 15  1
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A            FECPRO06       8Y 0B 15 25CHECK(RB)
+     A                                      EDTWRD('  /  /    ')
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A            ARCGEN06      21A  B 15 36
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A            REGGRA06       8Y 0B 15 58
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                      CHECK(RB)
+     A                                      EDTCDE(Z)
+     A            ESTADO06       8A  B 15 67
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A            TIPPRO07      22A  B 16  1
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A            FECPRO07       8Y 0B 16 25CHECK(RB)
+     A                                      EDTWRD('  /  /    ')
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A            ARCGEN07      21A  B 16 36
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A            REGGRA07       8Y 0B 16 58
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                      CHECK(RB)
+     A                                      EDTCDE(Z)
+     A            ESTADO07       8A  B 16 67
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A            TIPPRO08      22A  B 17  1
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A            FECPRO08       8Y 0B 17 25CHECK(RB)
+     A                                      EDTWRD('  /  /    ')
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A            ARCGEN08      21A  B 17 36
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A            REGGRA08       8Y 0B 17 58
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                      CHECK(RB)
+     A                                      EDTCDE(Z)
+     A            ESTADO08       8A  B 17 67
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                 19  1'Intro-Procesar  F12-Anterior'
+     A                                      DSPATR(HI)
+     A            MASFIN         8A  B 19 65DSPATR(HI)
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A          R XX
+     A*%%TS  SD  20010703  174228  DUARTEJ     REL-V4R4M0  5769-PW1
+     A                                      KEEP
+     A                                      ASSUME
+     A                                      OVERLAY
+     A                                  1  3' '

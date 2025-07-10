@@ -1,0 +1,13 @@
+    PGM
+         DCL VAR(&USR)     TYPE(*CHAR) LEN(10)
+
+             ADDLIBLE   LIB(GXDBSMI)
+             MONMSG     MSGID(CPF0000)
+             ADDLIBLE   LIB(GXCPSMI)
+             MONMSG     MSGID(CPF0000)
+
+         RTVJOBA    USER(&USR)
+
+         CALL       PGM(GXCPSMI/ASQRY45) PARM(&USR)
+
+    FIN: ENDPGM

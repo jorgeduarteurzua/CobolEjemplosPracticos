@@ -1,0 +1,8 @@
+     A                                      UNIQUE
+     A          R RASQRY34F
+     A*
+     A            CODGRP        10A         TEXT('GRUPO USUARIOS')
+     A            PERFIL        10A         TEXT('PERFIL USUARIO')
+     A            NOMUSR        50A         TEXT('NOMBRE USUARIO')
+     A          K CODGRP
+     A          K PERFIL

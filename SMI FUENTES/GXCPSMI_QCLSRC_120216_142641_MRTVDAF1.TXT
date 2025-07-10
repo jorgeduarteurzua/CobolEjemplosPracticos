@@ -1,0 +1,9 @@
+             PGM        PARM(&FECHA)
+             DCL VAR(&FECHA)  TYPE(*CHAR) LEN(08)
+             DCL VAR(&FECSYS) TYPE(*CHAR) LEN(06)
+
+             RTVSYSVAL  SYSVAL(QDATE) RTNVAR(&FECSYS)
+             CVTDAT     DATE(&FECSYS) TOVAR(&FECHA) FROMFMT(*SYSVAL) +
+                          TOFMT(*DMYY) TOSEP(*NONE)
+
+             ENDPGM

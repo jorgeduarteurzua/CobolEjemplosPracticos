@@ -1,0 +1,272 @@
+       IDENTIFICATION DIVISION.
+      *------------------------
+       PROGRAM-ID.  ASQRY06.
+       AUTHOR. JORGE DUARTE U.
+       ENVIRONMENT DIVISION.
+       CONFIGURATION SECTION.
+       SOURCE-COMPUTER.  IBM-AS400.
+       OBJECT-COMPUTER.  IBM-AS400.
+       SPECIAL-NAMES. LOCAL-DATA IS LOCAL.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+      *-------------
+
+           SELECT ASQRY08F    ASSIGN       TO DATABASE-ASQRY08F
+                             ORGANIZATION IS INDEXED
+                             ACCESS MODE  IS DYNAMIC
+                             RECORD KEY   IS EXTERNALLY-DESCRIBED-KEY
+                             FILE STATUS  IS FS-ASQRY08F.
+
+           SELECT PANTALLA1  ASSIGN        TO WORKSTATION-ASQRY05D-SI
+                             ORGANIZATION  IS TRANSACTION
+                             ACCESS MODE   IS DYNAMIC
+                             RELATIVE KEY  IS NREL1
+                             CONTROL-AREA  IS AREA-CONTROL
+                             FILE STATUS   IS FS-PANTALLA1.
+
+       DATA DIVISION.
+       FILE SECTION.
+      *-------------
+       FD  ASQRY08F  LABEL RECORD STANDARD.
+       01  REG-ASQRY08F.
+           COPY  DDS-ALL-FORMAT OF ASQRY08F.
+
+       FD  PANTALLA1 LABEL RECORD STANDARD.
+       01  R-PANTALLA1           PIC X(1920).
+
+      *
+       WORKING-STORAGE SECTION.
+      *------------------------
+       77 USUARIO-WS            PIC X(10).
+       77 I                     PIC S9(3).
+       77 NREL1                 PIC 9(4).
+       77 WS-DATECUR            PIC 9(08).
+       77 I-ON                  PIC 1 VALUE B"1".
+       77 I-OFF                 PIC 1 VALUE B"0".
+
+           EXEC SQL
+              INCLUDE SQLCA
+           END-EXEC.
+
+       01 WS-ESTADOS.
+          05 FS-ASQRY08F         PIC X(02) VALUE "00".
+          05 FS-PANTALLA1       PIC X(02) VALUE "00".
+          05 FS-PANTALLA2       PIC X(02) VALUE "00".
+
+       01 VARIABLES-DE-TRABAJO.
+          05 WS-HHMMSSSS.
+             10 WS-HORA         PIC S9(6).
+             10 FILLER          PIC S9(2).
+
+          05 AAAAMMDD           PIC X(8).
+          05 AAAAMMDD-9 REDEFINES AAAAMMDD PIC S9(8).
+          05 DDMMAAAA           PIC X(8).
+
+       01 AREA-CONTROL.
+          05 MDTO               PIC 9(02).
+             88 INTRO           VALUE 00.
+             88 F3              VALUE 03.
+             88 F4              VALUE 04.
+             88 F5              VALUE 05.
+             88 F12             VALUE 12.
+             88 F23             VALUE 23.
+
+       01 DATOS-SQL.
+          05 USUARIO-SQL       PIC X(10).
+
+       01 ARREGLOS-DE-TRABAJO.
+          05 CTA-MSG              PIC 9(3).
+          05 VARIABLE-3250        PIC X(6500).
+          05 VAR-ARR-3250 REDEFINES VARIABLE-3250 OCCURS 100 TIMES
+                          ASCENDING KEY IS TEXTO-ARR.
+             10 TEXTO-ARR         PIC X(65).
+
+       01 ARREGLO-SELECCION.
+          05 ARR-SEL-X          PIC X(30000).
+          05 ARR-SEL REDEFINES ARR-SEL-X OCCURS 240 TIMES.
+             15 CODIGO-X        PIC X(125).
+
+      *
+       01 WC01-II.
+          COPY DDS-WC01-I       OF ASQRY05D.
+
+       01 WC01-IND.
+          COPY DDS-WC01-INDIC   OF ASQRY05D.
+
+       01 WS01-OO.
+          COPY DDS-WS01-O       OF ASQRY05D.
+
+      *
+       01 PARA-ASQRY07.
+          05 NOMAYU-18C          PIC X(10).
+          05 SELECC-18C          PIC X(500).
+          05 LARGOKEY-18C        PIC 9(03).
+          05 LARGODES-18C        PIC 9(03).
+          05 RETORNO-18C         PIC X(30000).
+
+       LINKAGE SECTION.
+       01 PARA-LNK.
+          05 OPCION-LNK      PIC S9(05).
+          05 CODEVE-LNK      PIC X(10).
+          05 DESEVE-LNK      PIC X(50).
+          05 USUARIO-LNK     PIC X(10).
+
+
+       PROCEDURE DIVISION USING PARA-LNK.
+      *---------------------------------
+           PERFORM INICIO
+           PERFORM PROCESO UNTIL F3
+           PERFORM TERMINO
+           GOBACK.
+
+      *
+       INICIO.
+      *-------
+           OPEN INPUT ASQRY08F
+                I-O PANTALLA1.
+           INITIALIZE WC01-I REPLACING
+                      ALPHANUMERIC DATA BY SPACES
+                      NUMERIC      DATA BY ZEROES.
+           CALL   "MRTVDAF1" USING WS-DATECUR
+           CALL   "MRTVDAF2" USING AAAAMMDD DDMMAAAA
+           CANCEL "MRTVDAF2"
+
+           MOVE WS-DATECUR       TO DATECUR OF WC01-II.
+           MOVE CODEVE-LNK       TO CODEVE  OF WC01-II.
+           MOVE DESEVE-LNK       TO DESEVE  OF WC01-II.
+           MOVE ZEROES           TO MDTO
+           MOVE 1                TO POSCUR OF WC01-II
+                                    REGREL OF WC01-II
+           MOVE I-OFF            TO IN80 OF WC01-O-INDIC
+           PERFORM CARGAR-WS01.
+      *
+       PROCESO.
+      *--------
+           WRITE R-PANTALLA1 FROM WC01-II FORMAT "WC01"
+                             INDICATORS ARE WC01-O-INDIC END-WRITE
+           READ  PANTALLA1   INTO WC01-II FORMAT "WC01"
+                             INDICATORS ARE WC01-I-INDIC END-READ.
+
+           IF F4
+              MOVE OPCION-LNK TO OPCION  OF ASQRY08F
+              MOVE "*ALL"     TO USUARIO OF ASQRY08F
+              READ ASQRY08F INVALID KEY CONTINUE END-READ
+              IF FS-ASQRY08F = "00"
+                 MOVE I-ON    TO IN80 OF WC01-O-INDIC
+              ELSE
+                 MOVE I-OFF   TO IN80 OF WC01-O-INDIC
+                 PERFORM SELECCION-USUARIO
+                 PERFORM CARGAR-WS01.
+           IF F5
+              PERFORM ASIGNA-TODOS
+              PERFORM CARGAR-WS01.
+           IF F23
+              PERFORM ELIMINAR-USUARIO
+              PERFORM CARGAR-WS01.
+
+      *
+       TERMINO.
+      *-------
+           CLOSE    ASQRY08F PANTALLA1.
+      *
+       SELECCION-USUARIO.
+      *-----------------
+           MOVE "USUARIOS"                   TO NOMAYU-18C
+           MOVE "COAPLI = 2 AND COMODU = 80" TO SELECC-18C
+           MOVE ZEROS                        TO LARGOKEY-18C
+           MOVE ZEROS                        TO LARGODES-18C
+           MOVE SPACES                       TO RETORNO-18C
+           CALL   "ASQRY07" USING NOMAYU-18C
+                                   SELECC-18C
+                                   LARGOKEY-18C
+                                   LARGODES-18C
+                                   RETORNO-18C.
+           IF RETORNO-18C NOT = SPACES
+              MOVE RETORNO-18C TO ARR-SEL-X
+              MOVE 1 TO I
+              PERFORM GRABA-USUARIOS VARYING I FROM 1 BY 1 UNTIL
+                      I > 240.
+
+
+       GRABA-USUARIOS.
+      *---------------
+           IF CODIGO-X(I) NOT = SPACES
+              MOVE CODIGO-X(I) TO USUARIO-WS
+              EXEC SQL
+              INSERT INTO  ASQRY08F (OPCION, USUARIO, FECCRE,
+              USRCRE) VALUES(:OPCION-LNK, :USUARIO-WS, :AAAAMMDD-9,
+              :USUARIO-LNK)
+              END-EXEC.
+
+       ASIGNA-TODOS.
+      *-------------
+           EXEC SQL
+             DELETE FROM  ASQRY08F WHERE OPCION = :OPCION-LNK
+           END-EXEC
+           MOVE "*ALL"    TO USUARIO-WS
+           EXEC SQL
+            INSERT INTO  ASQRY08F (OPCION, USUARIO, FECCRE,
+            USRCRE) VALUES(:OPCION-LNK, :USUARIO-WS, :AAAAMMDD-9,
+            :USUARIO-LNK)
+           END-EXEC.
+
+
+       ELIMINAR-USUARIO.
+      *-----------------
+           READ SUBFILE PANTALLA1 NEXT MODIFIED INTO WS01-OO
+                        FORMAT "WS01" END-READ.
+           IF FS-PANTALLA1 = "00"
+              MOVE USUARIO1 OF WS01-OO   TO USUARIO-WS
+              EXEC SQL
+           DELETE FROM  ASQRY08F WHERE USUARIO = :USUARIO-WS AND
+           OPCION = :OPCION-LNK
+              END-EXEC.
+      *
+       CARGAR-WS01.
+      *------------
+           PERFORM LIMPIA-WS01
+
+           EXEC SQL
+           DECLARE C1 CURSOR FOR SELECT USUARIO FROM
+            ASQRY08F WHERE OPCION = :OPCION-LNK ORDER BY USUARIO
+           END-EXEC
+
+           EXEC SQL
+                OPEN C1
+           END-EXEC
+           PERFORM LEER-FETCH-C1
+           PERFORM UNTIL SQLCODE NOT = 0
+                   ADD   1                     TO NREL1
+                   MOVE USUARIO-SQL            TO USUARIO1 OF WS01-OO
+               WRITE SUBFILE R-PANTALLA1 FROM WS01-OO FORMAT 'WS01'
+               END-WRITE
+
+               PERFORM LEER-FETCH-C1
+           END-PERFORM
+           EXEC SQL
+                CLOSE C1
+           END-EXEC.
+           IF NREL1 > 0
+              MOVE I-ON           TO IN30 OF WC01-O-INDIC
+                                     IN31 OF WC01-O-INDIC
+              MOVE I-OFF          TO IN32 OF WC01-O-INDIC
+           ELSE
+              MOVE I-ON           TO IN31 OF WC01-O-INDIC
+              MOVE I-OFF          TO IN30 OF WC01-O-INDIC
+                                     IN32 OF WC01-O-INDIC.
+      *
+       LEER-FETCH-C1.
+      *--------------
+           EXEC SQL
+                FETCH NEXT FROM C1 INTO :DATOS-SQL
+           END-EXEC.
+      *
+       LIMPIA-WS01.
+      *------------
+           MOVE I-ON            TO IN32 OF WC01-O-INDIC
+           MOVE I-OFF           TO IN30 OF WC01-O-INDIC
+                                   IN31 OF WC01-O-INDIC
+           MOVE ZEROES          TO NREL1
+           WRITE R-PANTALLA1 FROM WC01-II FORMAT "WC01"
+                                 INDICATORS ARE WC01-O-INDIC.
+      *

@@ -1,0 +1,9 @@
+     A                                      UNIQUE
+     A          R RASQRY13F
+     A*
+     A            CAMPO         10A         COLHDG('CAMPO')
+     A            CABEC1        10A         COLHDG('CABECERA 1')
+     A            CABEC2        10A         COLHDG('CABECERA 2')
+     A            CABEC3        10A         COLHDG('CABECERA 3')
+     A          K CAMPO
+     A*

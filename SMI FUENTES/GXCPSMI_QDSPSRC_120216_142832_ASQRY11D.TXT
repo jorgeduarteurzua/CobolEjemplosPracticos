@@ -1,0 +1,202 @@
+     A*%%TS  SD  20101029  160720  SMIABD      REL-V6R1M0  5761-WDS
+     A*%%EC
+     A                                      DSPSIZ(24 80 *DS3)
+     A                                      INDARA
+     A                                      CF03(03 'Salir')
+     A                                      CF09(09 'Procesar')
+     A          R M01
+     A*%%TS  SD  20080415  183612  SMAABD      REL-V5R3M0  5722-WDS
+     A                                      OVERLAY
+     A                                      MNUBAR
+     A                                      MNUBARDSP
+     A            MNB001         2Y 0B  1  2CHCAVAIL((*COLOR YLW) (*DSPATR RI))
+     A                                      CHCSLT((*COLOR RED) (*DSPATR HI))
+     A                                      MNUBARCHC(1 P01 '>Parámetros')
+     A  85                                  MNUBARCHC(2 P02 'P>rocesos')
+     A                                      MNUBARCHC(3 P03 '>Conceptos')
+     A                                      MNUBARCHC(4 P04 '>Otros')
+     A          R P01
+     A*%%TS  SD  20080218  085109  NBKDY9U     REL-V5R3M0  5722-WDS
+     A                                      PULLDOWN
+     A            OPCIONP01      2Y 0B  1  2SNGCHCFLD(*RSTCSR *AUTOSLT *SLTIND -
+     A                                      *AUTOENT (*NUMCOL 1))
+     A                                      CHOICE(1 '>Archivos a Utilizar')
+     A                                      CHOICE(2 '>Integridad Archivos')
+     A                                      CHOICE(3 '>Diccionario de Encabezad-
+     A                                      os de Campos')
+     A                                      CHOICE(4 '>Funciones')
+     A                                      CHOICE(5 'A>yudas')
+     A                                      CHOICE(6 '>Grupos de Usuarios')
+     A          R P02
+     A*%%TS  SD  20011123  143003  DUARTEJ     REL-V4R4M0  5769-PW1
+     A                                      PULLDOWN(*RSTCSR)
+     A            OPCIONP02      2Y 0B  1  2SNGCHCFLD(*RSTCSR *AUTOSLT *SLTIND -
+     A                                      *AUTOENT (*NUMCOL 1))
+     A                                      CHOICE(1 'Creación de >Procesos')
+     A                                      CHOICE(2 'Creación de >Eventos')
+     A                                      CHOICE(3 'E>jecución de Proceso')
+     A          R P03
+     A*%%TS  SD  20080415  184823  SMAABD      REL-V5R3M0  5722-WDS
+     A                                      PULLDOWN(*RSTCSR)
+     A            OPCIONP03      2Y 0B  1  2SNGCHCFLD(*RSTCSR *AUTOSLT *SLTIND -
+     A                                      *AUTOENT (*NUMCOL 1))
+     A                                      CHOICE(1 'Creación de >Concepto')
+     A                                      CHOICE(2 'Creación de Co>nsulta')
+     A                                      CHOICE(3 'Mo>difica    Consulta (Us-
+     A                                      uario)')
+     A                                      CHOICE(4 'E>jecución de Consulta')
+     A                                      CHOICE(5 'Modificación Consulta (AD-
+     A                                      MINISTRADOR)')
+     A                                      CHOICE(6 'Ejecución de Consulta (AD-
+     A                                      MINISTRADOR)')
+     A          R P04
+     A*%%TS  SD  20080515  182457  SMAABD      REL-V5R3M0  5722-WDS
+     A                                      PULLDOWN(*RSTCSR)
+     A            OPCIONP04      2Y 0B  1  2SNGCHCFLD(*RSTCSR *AUTOSLT *SLTIND -
+     A                                      *AUTOENT (*NUMCOL 1))
+     A  86                                  CHOICE(1 '>Consulta de EVENTOS')
+     A  86                                  CHOICE(2 '>Visualizar/Depurar EVENT-
+     A                                      OS')
+     A                                      CHOICE(3 '>Visualizar/Depurar CONSU-
+     A                                      LTAS')
+     A          R R01
+     A*%%TS  SD  20101028  174103  SMIABD      REL-V6R1M0  5761-WDS
+     A                                 10 12'         '
+     A                                      DSPATR(RI)
+     A                                 10 28'         '
+     A                                      DSPATR(RI)
+     A                                 10 41'    '
+     A                                      DSPATR(RI)
+     A                                 10 50'    '
+     A                                      DSPATR(RI)
+     A                                 10 59'        '
+     A                                      DSPATR(RI)
+     A                                 11 11'           '
+     A                                      DSPATR(RI)
+     A                                 11 27'           '
+     A                                      DSPATR(RI)
+     A                                 11 41'    '
+     A                                      DSPATR(RI)
+     A                                 11 50'    '
+     A                                      DSPATR(RI)
+     A                                 11 58'          '
+     A                                      DSPATR(RI)
+     A                                 12 10'   '
+     A                                      DSPATR(RI)
+     A                                 12 20'   '
+     A                                      DSPATR(RI)
+     A                                 12 26'   '
+     A                                      DSPATR(RI)
+     A                                 12 41'    '
+     A                                      DSPATR(RI)
+     A                                 12 50'    '
+     A                                      DSPATR(RI)
+     A                                 12 57'    '
+     A                                      DSPATR(RI)
+     A                                 13 10'   '
+     A                                      DSPATR(RI)
+     A                                 13 20'   '
+     A                                      DSPATR(RI)
+     A                                 13 26'   '
+     A                                      DSPATR(RI)
+     A                                 13 41'    '
+     A                                      DSPATR(RI)
+     A                                 13 50'    '
+     A                                      DSPATR(RI)
+     A                                 13 57'    '
+     A                                      DSPATR(RI)
+     A                                 14 10'   '
+     A                                      DSPATR(RI)
+     A                                 14 20'   '
+     A                                      DSPATR(RI)
+     A                                 14 26'   '
+     A                                      DSPATR(RI)
+     A                                 14 41'             '
+     A                                      DSPATR(RI)
+     A                                 14 58'          '
+     A                                      DSPATR(RI)
+     A                                 15 10'             '
+     A                                      DSPATR(RI)
+     A                                 15 26'   '
+     A                                      DSPATR(RI)
+     A                                 15 41'             '
+     A                                      DSPATR(RI)
+     A                                 15 65'    '
+     A                                      DSPATR(RI)
+     A                                 16 10'   '
+     A                                      DSPATR(RI)
+     A                                 16 20'   '
+     A                                      DSPATR(RI)
+     A                                 16 26'   '
+     A                                      DSPATR(RI)
+     A                                 16 41'    '
+     A                                      DSPATR(RI)
+     A                                 16 50'    '
+     A                                      DSPATR(RI)
+     A                                 16 65'    '
+     A                                      DSPATR(RI)
+     A                                 17 10'   '
+     A                                      DSPATR(RI)
+     A                                 17 20'   '
+     A                                      DSPATR(RI)
+     A                                 17 26'   '
+     A                                      DSPATR(RI)
+     A                                 17 41'    '
+     A                                      DSPATR(RI)
+     A                                 17 50'    '
+     A                                      DSPATR(RI)
+     A                                 17 65'    '
+     A                                      DSPATR(RI)
+     A                                 18 10'   '
+     A                                      DSPATR(RI)
+     A                                 18 20'   '
+     A                                      DSPATR(RI)
+     A                                 18 27'           '
+     A                                      DSPATR(RI)
+     A                                 18 41'    '
+     A                                      DSPATR(RI)
+     A                                 18 50'    '
+     A                                      DSPATR(RI)
+     A                                 18 58'          '
+     A                                      DSPATR(RI)
+     A                                 19 10'   '
+     A                                      DSPATR(RI)
+     A                                 19 20'   '
+     A                                      DSPATR(RI)
+     A                                 19 28'         '
+     A                                      DSPATR(RI)
+     A                                 19 41'    '
+     A                                      DSPATR(RI)
+     A                                 19 50'    '
+     A                                      DSPATR(RI)
+     A                                 19 59'        '
+     A                                      DSPATR(RI)
+     A                                 21  2'                                  -
+     A                                                                         -
+     A                                               '
+     A                                      DSPATR(UL)
+     A                                 22  2'F3-Salir'
+     A                                      DSPATR(HI)
+     A                                 22 13'Intro-Seleccionar'
+     A                                      DSPATR(HI)
+     A                                 22 58USER
+     A                                      DSPATR(HI)
+     A                                      DSPATR(RI)
+     A            FECSYS         8Y 0B 22 69
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                      EDTWRD('  /  /    ')
+     A                                 23  2'ASOCIACION CHILENA DE SEGURIDAD'
+     A                                      DSPATR(HI)
+     A                                      DSPATR(RI)
+     A                                 23 71TIME
+     A                                      DSPATR(RI)
+     A                                      DSPATR(HI)
+     A                                      COLOR(YLW)
+     A                                  7 19'SISTEMA DE SELECCIONES MÚLTIPLES I-
+     A                                      NFORMATICA'
+     A                                      DSPATR(HI)
+     A                                      COLOR(YLW)
+     A                                      DSPATR(BL)
+     A                                  8 37'(S.M.I)'
+     A                                      COLOR(YLW)

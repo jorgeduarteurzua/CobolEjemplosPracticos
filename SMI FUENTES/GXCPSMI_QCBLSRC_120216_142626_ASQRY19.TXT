@@ -1,0 +1,46 @@
+       IDENTIFICATION DIVISION.
+      *------------------------
+       PROGRAM-ID.  ASQRY19.
+       AUTHOR. JORGE DUARTE U.
+       ENVIRONMENT DIVISION.
+       CONFIGURATION SECTION.
+       SOURCE-COMPUTER.  IBM-AS400.
+       OBJECT-COMPUTER.  IBM-AS400.
+       SPECIAL-NAMES. LOCAL-DATA IS LOCAL.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+      *-------------
+       DATA DIVISION.
+       FILE SECTION.
+      *-------------
+      *
+       WORKING-STORAGE SECTION.
+      *------------------------
+
+           EXEC SQL
+              INCLUDE SQLCA
+           END-EXEC.
+
+       01 DATOS-SQL.
+          05 BIBLIO-SQL         PIC X(10).
+
+       PROCEDURE DIVISION.
+      *-------------------
+           EXEC SQL
+           DECLARE C1 CURSOR FOR SELECT DISTINCT WHLIBL FROM ASQRY02F
+           END-EXEC
+           EXEC SQL OPEN  C1 END-EXEC
+           PERFORM LEER-FETCH-C1
+           PERFORM UNTIL SQLCODE NOT = 0
+               CALL  "ASQRY13P" USING BIBLIO-SQL
+               PERFORM LEER-FETCH-C1
+           END-PERFORM
+           EXEC SQL CLOSE C1 END-EXEC
+           GOBACK.
+
+      *
+       LEER-FETCH-C1.
+      *--------------
+           EXEC SQL
+           FETCH NEXT FROM C1 INTO :DATOS-SQL
+           END-EXEC.

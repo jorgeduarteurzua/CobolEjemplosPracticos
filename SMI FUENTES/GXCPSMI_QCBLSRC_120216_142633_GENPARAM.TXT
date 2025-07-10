@@ -1,0 +1,403 @@
+       IDENTIFICATION DIVISION.
+      *------------------------
+       PROGRAM-ID.  GENPARAM.
+       AUTHOR. JORGE DUARTE.
+       ENVIRONMENT DIVISION.
+       CONFIGURATION SECTION.
+       SOURCE-COMPUTER.  IBM-AS400.
+       OBJECT-COMPUTER.  IBM-AS400.
+       SPECIAL-NAMES. LOCAL-DATA IS LOCAL.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+      *-------------
+           SELECT ASQRY01L   ASSIGN        TO DATABASE-ASQRY01L
+                             ORGANIZATION  IS INDEXED
+                             ACCESS MODE   IS DYNAMIC
+                             RECORD KEY    IS EXTERNALLY-DESCRIBED-KEY
+                             FILE STATUS   IS FS-ASQRY01L.
+
+           SELECT ASQRY25F   ASSIGN        TO DATABASE-ASQRY25F
+                             ORGANIZATION  IS INDEXED
+                             ACCESS MODE   IS DYNAMIC
+                             RECORD KEY    IS EXTERNALLY-DESCRIBED-KEY
+                             FILE STATUS   IS FS-ASQRY25F.
+
+           SELECT ASQRY27F   ASSIGN        TO DATABASE-ASQRY27F
+                             ORGANIZATION  IS INDEXED
+                             ACCESS MODE   IS DYNAMIC
+                             RECORD KEY    IS EXTERNALLY-DESCRIBED-KEY
+                             FILE STATUS   IS FS-ASQRY27F.
+
+           SELECT ASQRY39F   ASSIGN        TO DATABASE-ASQRY39F
+                             ORGANIZATION  IS INDEXED
+                             ACCESS MODE   IS DYNAMIC
+                             RECORD KEY    IS EXTERNALLY-DESCRIBED-KEY
+                             FILE STATUS   IS FS-ASQRY39F.
+
+       DATA DIVISION.
+       FILE SECTION.
+      *-------------
+       FD  ASQRY01L    LABEL RECORD STANDARD.
+       01  R-ASQRY01L.
+           COPY  DDS-ALL-FORMAT OF ASQRY01L.
+
+       FD  ASQRY25F    LABEL RECORD STANDARD.
+       01  R-ASQRY25F.
+           COPY  DDS-ALL-FORMAT OF ASQRY25F.
+
+       FD  ASQRY27F    LABEL RECORD STANDARD.
+       01  R-ASQRY27F.
+           COPY  DDS-ALL-FORMAT OF ASQRY27F.
+
+       FD  ASQRY39F    LABEL RECORD STANDARD.
+       01  R-ASQRY39F.
+           COPY  DDS-ALL-FORMAT OF ASQRY39F.
+
+      *
+       WORKING-STORAGE SECTION.
+      *------------------------
+       77 FECSYS-AMD            PIC S9(8).
+
+       77 WS-DATECUR            PIC 9(08).
+       77 I-ON                  PIC 1 VALUE B"1".
+       77 I-OFF                 PIC 1 VALUE B"0".
+       77 SALIR-CICLO           PIC X.
+
+      *----- VARIABLES DE TRABAJO
+       77 FILE-FIELD            PIC X(21).
+       77 WS-TNOMCONS            PIC X(50).
+       77 WS-TPROCESO           PIC X(50).
+       77 WS-TSPROCESO          PIC X(50).
+       77 WS-LONGITUD           PIC S9(5).
+       77 WS-DIGITOS            PIC S9(5).
+       77 WS-DECIMALES          PIC S9(2).
+       77 WS-TIPO               PIC X.
+       77 VARIABLE-48           PIC X(48).
+
+       77 P-CAMPO               PIC 9(5).
+       77 P-ARR                 PIC 9(5).
+       77 POS-ARR               PIC S9(5).
+       77 P-CHG                 PIC 9(5).
+       77 TOPE                  PIC 9(5).
+       77 P-TOPE                PIC 9(5).
+       77 P-VALOR               PIC 9(5).
+
+       77 WS-ARCSEL             PIC X(10).
+       77 WS-CAMSEL             PIC X(10).
+       77 WS-ARCGEN             PIC X(10).
+
+       77 WS-NOMCONS             PIC X(10).
+       77 WS-NROPRO             PIC S9(5).
+       77 WS-CORPRO             PIC S9(5).
+       77 WS-CONUNI             PIC X(1920).
+       77 WS-SELEJE             PIC X(12000).
+       77 SEN-CAMBIAR           PIC X(12000).
+       77 MBR-OTROS-WS          PIC X(4000).
+       77 P-MBR                 PIC 9(4).
+
+           EXEC SQL
+              INCLUDE SQLCA
+           END-EXEC.
+
+
+       01 VARIABLES-DE-STATUS.
+          05 FS-ASQRY01L      PIC XX VALUE "00".
+          05 FS-ASQRY25F      PIC XX VALUE "00".
+          05 FS-ASQRY27F      PIC XX VALUE "00".
+          05 FS-ASQRY39F      PIC XX VALUE "00".
+
+       01 DATOS-SQL.
+          05 NOMCONS-SQL      PIC X(10).
+          05 DESCONS-SQL      PIC X(50).
+          05 SELECC-SQL       PIC X(12000).
+          05 ARCBAS-SQL       PIC X(10).
+          05 BIBBAS-SQL       PIC X(10).
+          05 ARCGEN-SQL       PIC X(05).
+          05 CORGEN-SQL       PIC S9(4).
+          05 SELCON-SQL       PIC X(10000).
+          05 LARSEL-SQL       PIC S9(5).
+          05 REEARC-SQL       PIC X(1) .
+          05 RETJOB-SQL       PIC X(1) .
+          05 ADDREG-SQL       PIC X(1) .
+          05 REGUNI-SQL       PIC X(1) .
+          05 CONUNI-SQL       PIC X(1920).
+
+       01 WS-VARIABLES-DE-TRABAJO.
+          05 SEC-PARAM        PIC S9(5).
+          05 AAAAMMDD         PIC X(8).
+          05 AAAAMMDD-9 REDEFINES AAAAMMDD PIC S9(8).
+          05 DDMMAAAA         PIC X(8).
+
+          05 HORA-SISTEMA.
+             10 HORA-SYS      PIC S9(6).
+             10 FILLER        PIC S9(2).
+
+          05 PI-CAMPO           PIC S9(5).
+          05 LARGO-CAMPO        PIC S9(5).
+          05 WS-FECPRO          PIC S9(8).
+          05 WS-HORPRO          PIC S9(6).
+          05 WS-SECEJE          PIC S9(5).
+          05 INSREG             PIC X(500).
+
+       01 ARREGLOS-DE-TRABAJO.
+          05 CTA-MSG              PIC 9(3).
+          05 VARIABLE-3250        PIC X(6500).
+          05 VAR-ARR-3250 REDEFINES VARIABLE-3250 OCCURS 100 TIMES
+                          ASCENDING KEY IS TEXTO-ARR.
+             10 TEXTO-ARR         PIC X(65).
+
+       01 ARREGLO-SENTENCIA-PAR.
+          05 SEN-PARAMETROS OCCURS 200 TIMES.
+             10 CAMPO-ARR       PIC X(21).
+             10 LONGITUD-ARR    PIC S9(5).
+             10 DIGITOS-ARR     PIC S9(5).
+             10 DECIMALES-ARR   PIC S9(2).
+             10 TIPO-ARR        PIC X.
+             10 P-INICIAL       PIC S9(5).
+             10 N-CARACTERES    PIC S9(5).
+             10 VALPAR-ARR      PIC X(48).
+
+       01 PARA-ASQRY05.
+          05 NOMAYU-16C          PIC X(10).
+          05 SELECC-16C          PIC X(500).
+          05 RETORNO-16C.
+             10 CODIGO-16C          PIC X(500).
+             10 LARGOKEY-16C        PIC 9(03).
+             10 LARGODES-16C        PIC 9(03).
+
+       LINKAGE SECTION.
+      *----------------
+      *  PARAMETROS DE INPUT
+      *
+        01 CONS-USUARIO-LNK.
+           05 NOMCONS-LNK           PIC X(10).
+           05 USUARIO-LNK           PIC X(10).
+      *
+      *  PARAMETROS DE OUTPUT
+      *
+        01 FECPRO-LNK            PIC 9(8).
+        01 HORPRO-LNK            PIC 9(6).
+        01 SECEJE-LNK            PIC 9(5).
+        01 CODRET-LNK            PIC X(100).
+
+       PROCEDURE DIVISION USING CONS-USUARIO-LNK,
+                                FECPRO-LNK,
+                                HORPRO-LNK,
+                                SECEJE-LNK,
+                                CODRET-LNK.
+      *----------------------------------
+           OPEN INPUT ASQRY01L
+                I-O ASQRY25F ASQRY27F  ASQRY39F.
+
+           MOVE "N"        TO CODRET-LNK
+
+           MOVE SPACES     TO MBR-OTROS-WS
+           INSPECT USUARIO-LNK CONVERTING "." TO " "
+           INSPECT NOMCONS-LNK CONVERTING "." TO " "
+
+           CALL    "MRTVDAF2" USING AAAAMMDD DDMMAAAA
+           CANCEL  "MRTVDAF2"
+           ACCEPT HORA-SISTEMA FROM TIME
+
+           MOVE FECPRO-LNK      TO WS-FECPRO
+           MOVE HORPRO-LNK      TO WS-HORPRO
+
+           EXEC SQL
+           DECLARE C1 CURSOR FOR SELECT A.NOMCONS, A.DESCONS, D.SELECC
+           , D.ARCBAS, D.BIBGEN, D.ARCGEN, D.CORGEN,
+           D.SELCON, D.LARSEL, D.REEARC, D.RETJOB, D.ADDREG,
+           D.REGUNI, D.CONUNI FROM ASQRY23F A, ASQRY25F D WHERE
+           A.NOMCONS = :NOMCONS-LNK AND A.NOMCONS = D.NOMCONS
+           END-EXEC
+
+           MOVE ZEROES   TO WS-SECEJE
+           PERFORM ABRIR-CURSOR-C1
+           PERFORM LEER-CURSOR-C1
+           IF SQLCODE = 0
+               PERFORM INSERTAR-EN-CONTROL
+               PERFORM RESCATA-CONSULTA
+               PERFORM CHEQUEA-SENTENCIA-EJECUTAR
+           ELSE
+               MOVE SQLCODE     TO CODRET-LNK
+           END-IF
+           MOVE WS-SECEJE       TO SECEJE-LNK
+
+           PERFORM CERRAR-CURSOR-C1
+           CLOSE ASQRY25F ASQRY27F ASQRY39F ASQRY01L.
+           GOBACK.
+      *
+       INSERTAR-EN-CONTROL.
+      *--------------------
+           ADD  1              TO WS-SECEJE
+           MOVE SPACES         TO WS-ARCGEN
+           STRING ARCGEN-SQL   DELIMITED BY " "
+                  CORGEN-SQL   DELIMITED BY SIZE
+                          INTO WS-ARCGEN
+
+      *    EXEC SQL
+      *    INSERT INTO GXDBSMA/ASQRY27F (NOMCONS, USRPRO, FECPRO1,
+      *    HORPRO1, FECPRO2, HORPRO2, SELEJE, CANREG, SELCON, ARCBAS,
+      *    MIEMBR, BIBBAS, ARCGEN, BIBGEN, ESTPRO, SECEJE, LARSEL,
+      *    REEARC, RETJOB, ADDREG, REGUNI, CONUNI) VALUES(:NOMCONS-SQL,
+      *    :USUARIO-LNK, :WS-FECPRO, :WS-HORPRO, 0, 0, :SELECC-SQL, 0,
+      *    :SELCON-SQL, :ARCBAS-SQL, :MBR-OTROS-WS, :BIBBAS-SQL,
+      *    :WS-ARCGEN, :BIBBAS-SQL, " ", :WS-SECEJE, :LARSEL-SQL,
+      *    :REEARC-SQL, :RETJOB-SQL, :ADDREG-SQL, :REGUNI-SQL,
+      *    :CONUNI-SQL)
+      *    END-EXEC.
+
+           MOVE NOMCONS-SQL           TO NOMCONS OF ASQRY27F
+           MOVE USUARIO-LNK           TO USRPRO  OF ASQRY27F
+           MOVE WS-FECPRO             TO FECPRO1 OF ASQRY27F
+           MOVE WS-HORPRO             TO HORPRO1 OF ASQRY27F
+           MOVE 0                     TO FECPRO2 OF ASQRY27F
+           MOVE 0                     TO HORPRO2 OF ASQRY27F
+           MOVE 0                     TO CANREG  OF ASQRY27F
+           MOVE ARCBAS-SQL            TO ARCBAS  OF ASQRY27F
+           MOVE BIBBAS-SQL            TO BIBBAS  OF ASQRY27F
+           MOVE WS-ARCGEN             TO ARCGEN  OF ASQRY27F
+           MOVE BIBBAS-SQL            TO BIBGEN  OF ASQRY27F
+           MOVE " "                   TO ESTPRO  OF ASQRY27F
+           MOVE WS-SECEJE             TO SECEJE  OF ASQRY27F
+           MOVE LARSEL-SQL            TO LARSEL  OF ASQRY27F
+           MOVE REEARC-SQL            TO REEARC  OF ASQRY27F
+           MOVE RETJOB-SQL            TO RETJOB  OF ASQRY27F
+           MOVE ADDREG-SQL            TO ADDREG  OF ASQRY27F
+           MOVE REGUNI-SQL            TO REGUNI  OF ASQRY27F
+           MOVE SELECC-SQL            TO SELEJE  OF ASQRY27F
+           MOVE SELCON-SQL            TO SELCON  OF ASQRY27F
+           MOVE MBR-OTROS-WS          TO MIEMBR  OF ASQRY27F
+           MOVE CONUNI-SQL            TO CONUNI  OF ASQRY27F
+           WRITE R-ASQRY27F END-WRITE
+      *
+
+      * ACTUALIZA CORRELATIVO DE ARCHIVO A GENERAR
+      *
+           IF REEARC-SQL = "N" AND ADDREG-SQL = "N"
+              MOVE NOMCONS-SQL   TO NOMCONS OF ASQRY25F
+              READ ASQRY25F END-READ
+              IF FS-ASQRY25F = "00"
+                 ADD 1       TO CORGEN OF ASQRY25F
+                 REWRITE R-ASQRY25F END-REWRITE
+              END-IF.
+      *       EXEC SQL
+      *       UPDATE  ASQRY25F SET CORGEN = (CORGEN + 1) WHERE
+      *       NOMCONS = :NOMCONS-SQL
+      *       END-EXEC.
+      *
+       RESCATA-CONSULTA.
+      *------------------
+           EXEC SQL
+           SELECT NOMCONS, SELEJE, CONUNI INTO :WS-NOMCONS, :WS-SELEJE,
+           :WS-CONUNI FROM ASQRY27F WHERE NOMCONS = :NOMCONS-LNK AND
+           FECPRO1 = :WS-FECPRO  AND HORPRO1 = :WS-HORPRO  AND SECEJE =
+           :WS-SECEJE
+           END-EXEC.
+
+      *
+       CHEQUEA-SENTENCIA-EJECUTAR.
+      *---------------------------
+           MOVE ZEROES     TO POS-ARR
+           PERFORM VARYING P-ARR FROM 1 BY 1 UNTIL P-ARR > 12000
+               IF WS-SELEJE(P-ARR:1) = "?"
+                  MOVE "S"      TO CODRET-LNK
+                  PERFORM BUSCA-BLANCO-ARCHIVO-CAMPO
+               END-IF
+           END-PERFORM.
+
+      *
+       BUSCA-BLANCO-ARCHIVO-CAMPO.
+      *---------------------------
+           MOVE P-ARR         TO P-CAMPO
+           ADD  1             TO P-CAMPO
+           MOVE ZEROES        TO LARGO-CAMPO PI-CAMPO
+           PERFORM UNTIL (WS-SELEJE(P-CAMPO:1) = ' ' OR '"' OR ')' OR
+                                                 ',' OR '%')
+                AND      LARGO-CAMPO > 0
+                   IF WS-SELEJE(P-CAMPO:1) NOT = ' '
+                      IF LARGO-CAMPO = 0
+                         MOVE P-CAMPO  TO PI-CAMPO
+                      END-IF
+                   END-IF
+                   ADD  1       TO LARGO-CAMPO
+                   ADD 1        TO P-CAMPO
+           END-PERFORM
+
+      *
+      *  SE AÑADE CAMPO
+      *
+           MOVE P-CAMPO         TO P-ARR
+           ADD  1               TO POS-ARR
+           MOVE PI-CAMPO        TO P-INICIAL    (POS-ARR)
+           MOVE LARGO-CAMPO     TO N-CARACTERES (POS-ARR)
+           MOVE WS-SELEJE(PI-CAMPO:LARGO-CAMPO) TO CAMPO-ARR(POS-ARR)
+                                                   FILE-FIELD
+           UNSTRING CAMPO-ARR(POS-ARR) DELIMITED BY '.'
+                          INTO WS-ARCSEL
+                               WS-CAMSEL
+
+           EXEC SQL
+           SELECT WHFLDB, WHFLDD, WHFLDP, WHFLDT INTO :WS-LONGITUD,
+           :WS-DIGITOS, :WS-DECIMALES, :WS-TIPO FROM ASQRY01F WHERE
+           WHFILE = :WS-ARCSEL AND WHFLDI = :WS-CAMSEL
+           END-EXEC
+
+           MOVE WS-LONGITUD    TO LONGITUD-ARR (POS-ARR)
+           MOVE WS-DIGITOS     TO DIGITOS-ARR  (POS-ARR)
+           MOVE WS-DECIMALES   TO DECIMALES-ARR(POS-ARR)
+           MOVE WS-TIPO        TO TIPO-ARR     (POS-ARR)
+           MOVE POS-ARR        TO SEC-PARAM
+
+      *    EXEC SQL
+      *    INSERT INTO ASQRY39F VALUES(:WS-NOMCONS, :WS-FECPRO,
+      *    :WS-HORPRO, :WS-SECEJE, :SEC-PARAM, :FILE-FIELD, :WS-ARCSEL,
+      *    :WS-CAMSEL, :WS-LONGITUD, :WS-DIGITOS, :WS-DECIMALES,
+      *    :WS-TIPO, :PI-CAMPO, :LARGO-CAMPO, " ")
+      *    END-EXEC.
+
+           MOVE WS-ARCSEL            TO WHFILE  OF ASQRY01L
+           MOVE WS-CAMSEL            TO WHFLDI  OF ASQRY01L
+           READ ASQRY01L END-READ
+           IF FS-ASQRY01L = '00'
+              MOVE WHFTXT OF ASQRY01L TO DSCFLD OF ASQRY39F
+           ELSE
+              MOVE SPACES             TO DSCFLD OF ASQRY39F
+           END-IF
+
+           MOVE WS-NOMCONS           TO NOMCONS OF ASQRY39F
+           MOVE WS-FECPRO            TO FECPRO  OF ASQRY39F
+           MOVE WS-HORPRO            TO HORPRO  OF ASQRY39F
+           MOVE WS-SECEJE            TO SECEJE  OF ASQRY39F
+           MOVE SEC-PARAM            TO CORREL  OF ASQRY39F
+           MOVE FILE-FIELD           TO FILFLD  OF ASQRY39F
+           MOVE WS-ARCSEL            TO ARCHIVO OF ASQRY39F
+           MOVE WS-CAMSEL            TO CAMPO   OF ASQRY39F
+           MOVE WS-LONGITUD          TO LONGIT  OF ASQRY39F
+           MOVE WS-DIGITOS           TO DIGITO  OF ASQRY39F
+           MOVE WS-DECIMALES         TO DECIMA  OF ASQRY39F
+           MOVE WS-TIPO              TO TIPO    OF ASQRY39F
+           MOVE PI-CAMPO             TO PINI    OF ASQRY39F
+           MOVE LARGO-CAMPO          TO NCAR    OF ASQRY39F
+           MOVE SPACES               TO VALPAR  OF ASQRY39F
+           WRITE R-ASQRY39F END-WRITE.
+
+      *
+       ABRIR-CURSOR-C1.
+      *----------------
+           EXEC SQL
+               OPEN C1
+           END-EXEC.
+
+      *
+       LEER-CURSOR-C1.
+      *----------------
+           EXEC SQL
+                FETCH NEXT FROM C1 INTO :DATOS-SQL
+           END-EXEC.
+
+      *
+       CERRAR-CURSOR-C1.
+      *-----------------
+           EXEC SQL
+               CLOSE C1
+           END-EXEC.

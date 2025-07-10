@@ -1,0 +1,21 @@
+     A                                      UNIQUE
+     A          R RASQRY4F
+     A*
+     A            NOMC4F        10A         TEXT('CONSULTA      ')
+     A            FECP4F         8S 0       TEXT('FECHA PROCESO INICIO')
+     A            HORP4F         6S 0       TEXT('HORA  PROCESO INICIO')
+     A            SECE4F         5S 0       TEXT('SECUENCIA EJECUCION')
+     A            ARCH4F        20A         TEXT('ARCHIVO            ')
+     A            STAA4F         1A         TEXT('STATUS ARCHIVOS')
+     A            NREG4F        10S 0       TEXT('CANTIDAD DE REG')
+     A            USPR4F        10A         TEXT('USUARIO        ')
+     A*
+     A* STAARC T=TRANSMITIDO
+     A*        B=BAJADO
+     A*        E=ELIMINADO
+     A*
+     A          K NOMC4F
+     A          K FECP4F
+     A          K HORP4F
+     A          K SECE4F
+     A          K ARCH4F

@@ -1,0 +1,9 @@
+     A                                      UNIQUE
+     A          R RASQRY32F
+     A*
+     A            WHFILE        10A         TEXT('ARCHIVO')
+     A            WHFLDI        10A         TEXT('CAMPO  ')
+     A            CODGRP        10A         TEXT('GRUPO EXCEPCION')
+     A          K WHFILE
+     A          K WHFLDI
+     A          K CODGRP

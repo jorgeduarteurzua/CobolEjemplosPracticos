@@ -1,0 +1,64 @@
+    PGM  PARM(&CONS &DCONS  &ARC &ARCR &BIB +
+              &MIEMBRO &CAN &MBR &OTR)
+         DCLF       FILE(ASQRY21D)
+         DCL VAR(&CONS)  TYPE(*CHAR) LEN(10)
+         DCL VAR(&DCONS) TYPE(*CHAR) LEN(50)
+         DCL VAR(&ARCR)  TYPE(*CHAR) LEN(10)
+         DCL VAR(&ARC)   TYPE(*CHAR) LEN(10)
+         DCL VAR(&BIB)   TYPE(*CHAR) LEN(10)
+         DCL VAR(&CAN)   TYPE(*CHAR) LEN(01)
+         DCL VAR(&MBR)   TYPE(*CHAR) LEN(01)
+         DCL VAR(&OTR)   TYPE(*CHAR) LEN(01)
+
+         CHGVAR VAR(&NOMCONS)   VALUE(&CONS)
+         CHGVAR VAR(&DCONSULTA) VALUE(&DCONS)
+
+         CHGVAR VAR(&ARCBASE)  VALUE(&ARC)
+         CHGVAR VAR(&ARCHIVO)  VALUE(&ARC)
+         CHGVAR VAR(&MIEMBRO)  VALUE('*FIRST')
+
+         CHGVAR VAR(&IN50)     VALUE('1')
+         CHGVAR VAR(&IN51)     VALUE('0')
+         IF COND(&MBR *EQ 'S') THEN(DO)
+            CHGVAR VAR(&IN51) VALUE('1')
+         ENDDO
+         IF COND(&OTR *EQ 'S') THEN(DO)
+            CHGVAR VAR(&IN50) VALUE('0')
+         ENDDO
+
+    INICIO:
+             SNDRCVF    RCDFMT(W01)
+             IF COND(&IN03 *EQ '1') THEN(DO)
+                CHGVAR VAR(&CAN) VALUE('S')
+                GOTO CMDLBL(FIN)
+             ENDDO
+             IF COND(&ARCHIVO *EQ ' ') THEN(DO)
+                CHGVAR VAR(&MENSAJE) VALUE('Debe Ingresar Nombre en +
+                          Archivo')
+                GOTO CMDLBL(INICIO)
+             ENDDO
+             IF COND(&BIBLIOTECA *EQ ' ') THEN(DO)
+                CHGVAR VAR(&MENSAJE) VALUE('Debe Ingresar Nombre en +
+                       Biblioteca')
+                GOTO CMDLBL(INICIO)
+             ENDDO
+             IF COND(&MIEMBRO    *EQ ' ') THEN(DO)
+                CHGVAR VAR(&MENSAJE) VALUE('Debe Ingresar Miembro +
+                       para el Archivo')
+                GOTO CMDLBL(INICIO)
+             ENDDO
+             CHKOBJ     OBJ(&BIBLIOTECA/&ARCHIVO) OBJTYPE(*FILE) +
+                          MBR(&MIEMBRO)
+             MONMSG     MSGID(CPF0000) EXEC(GOTO CMDLBL(NOEXISTE))
+
+             GOTO CMDLBL(FIN)
+
+    NOEXISTE:
+             CHGVAR     VAR(&MENSAJE) VALUE('Archivo no Existe en +
+                          Bilioteca se±alada')
+             GOTO CMDLBL(INICIO)
+
+    FIN: CHGVAR VAR(&ARCR)    VALUE(&ARCHIVO)
+         CHGVAR VAR(&BIB )    VALUE(&BIBLIOTECA)
+         CHGVAR VAR(&MIEMBRO) VALUE(&MIEMBRO)
+         ENDPGM

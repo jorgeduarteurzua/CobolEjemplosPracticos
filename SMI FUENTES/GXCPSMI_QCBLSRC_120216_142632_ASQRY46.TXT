@@ -1,0 +1,209 @@
+       IDENTIFICATION DIVISION.
+      *------------------------*
+       PROGRAM-ID. ASQRY46.
+       AUTHOR.     JORGE DUARTE U.
+      *
+       ENVIRONMENT DIVISION.
+      *---------------------*
+       CONFIGURATION SECTION.
+       SOURCE-COMPUTER.      IBM-AS400.
+       OBJECT-COMPUTER.      IBM-AS400.
+       INPUT-OUTPUT SECTION.
+      *--------------------*
+       FILE-CONTROL.
+      *------------*
+
+       DATA DIVISION.
+      *-------------*
+       FILE SECTION.
+      *-------------*
+
+       WORKING-STORAGE SECTION.
+      *------------------------
+       77 WS-DEFFLD           PIC X(180).
+       77 WS-LARGO            PIC 9(03).
+       77 WS-ARCGEN           PIC X(10).
+       77 WS-BIBGEN           PIC X(10).
+       77 WS-SECEJE           PIC S9(5).
+       77 WS-NROPRO           PIC S9(5).
+       77 WS-CORPRO           PIC S9(5).
+       77 WS-MIEMBRO          PIC X(4000).
+
+       77 WS-CANREG           PIC S9(8).
+       77 CTA-REGISTROS       PIC X(1000).
+       77 WS-SELECC           PIC X(12000).
+       77 SEN-INSERT          PIC X(20000).
+           EXEC SQL
+               INCLUDE SQLCA
+           END-EXEC.
+
+       01 VARIABLES-DE-TRABAJO.
+           05 REG-AGE-ARR-X  PIC X(9200).
+           05 REG-AGE-ARR REDEFINES REG-AGE-ARR-X OCCURS 50 TIMES.
+              15 REGAGE-X        PIC X(1).
+              15 DEFFLD-X        PIC X(180).
+              15 LARGO-9         PIC 9(3).
+
+          05 AAAAMMDD         PIC X(8).
+          05 AAAAMMDD-9 REDEFINES AAAAMMDD PIC S9(8).
+          05 DDMMAAAA         PIC X(8).
+
+          05 HORA-SISTEMA.
+             10 HORA-SYS      PIC S9(6).
+             10 FILLER        PIC S9(2).
+
+       01 PARAMETROS-20A.
+          05 NOMCONS-20A       PIC X(10).
+          05 FECPRO-20A       PIC S9(8).
+          05 FECPRO-20A-R REDEFINES FECPRO-20A PIC X(8).
+          05 HORPRO-20A       PIC S9(6).
+          05 HORPRO-20A-R REDEFINES HORPRO-20A PIC X(6).
+          05 ARCBAS-20A       PIC X(10).
+          05 BIBBAS-20A       PIC X(10).
+          05 ARCGEN-20A       PIC X(10).
+          05 SECEJE-20A       PIC X(05).
+          05 SECTOP-20A       PIC X(05).
+          05 REFABAS-20A      PIC X(10).
+          05 REFAGEN-20A      PIC X(10).
+          05 REFBGEN-20A      PIC X(10).
+          05 PROREF-20A       PIC S9(5).
+          05 CPRREF-20A       PIC S9(5).
+          05 REEARC-20A       PIC X(01).
+          05 RETJOB-20A       PIC X(01).
+          05 ADDREG-20A       PIC X(01).
+          05 REGUNI-20A       PIC X(01).
+
+       01 DATOS-C200.
+          05 REGAGE-C200     PIC X(1).
+          05 DEFFLD-C200     PIC X(180).
+          05 LARGO-C200      PIC S9(3).
+
+       01 ARREGLO-OVRDBF.
+          05 P-OVR            PIC 9(3).
+          05 MIEMBRO-OVR-X    PIC X(4000).
+          05 MIEMBRO-OVR-R REDEFINES MIEMBRO-OVR-X OCCURS 100 TIMES.
+             10 ARCHIVO-OVR   PIC X(10).
+             10 MASCARA-OVR   PIC X(10).
+             10 BIBLIOT-OVR   PIC X(10).
+             10 MIEMBRO-OVR   PIC X(10).
+
+       01 MANDATO-OVR.
+          05 MANDATO-200      PIC X(200).
+          05 LARGO-200        PIC S9(10)V9(5) COMP-3 VALUE 200.
+
+       01 WK-VARIABLES-EMAIL.
+          05 NOMBRE-USR       PIC X(15).
+          05 APEPAT-USR       PIC X(15).
+          05 APEMAT-USR       PIC X(15).
+          05 EMAIL-USR        PIC X(60).
+
+
+          05 EMISOR-EMAIL         PIC X(0060).
+          05 DESTINATARIO-EMAIL   PIC X(0700).
+          05 COPIA-EMAIL          PIC X(0700).
+          05 ASUNTO-EMAIL         PIC X(0300).
+          05 TEXTO-EMAIL          PIC X(2000).
+          05 PLANTILLA-EMAIL      PIC X(0060).
+          05 VARIABLES-EMAIL      PIC X(1000).
+          05 RESPUESTA-EMAIL      PIC X(0006).
+          05 GLOSA-EMAIL          PIC X(0060).
+
+       01 VARIABLES-RUTINA-DE-ACCESO.
+          05 RUT-USUARIO      PIC S9(09).
+          05 RUT-USUARIO1     PIC 9(09).
+          05 DV-RUT-USUARIO   PIC X.
+          05 P-REG-AGE        PIC 9(3).
+          05 P-AUT-USR        PIC 9(3).
+          05 P-STR-REG        PIC 9(5).
+          05 STR-RANGO-REG-AGE PIC X(2000).
+          05 PGM              PIC X(10).
+          05 NRODAT           PIC 9(02).
+          05 MRINI            PIC X(198).
+          05 R-MRINI REDEFINES MRINI OCCURS 99 TIMES.
+             10 REG-INI       PIC 9(2).
+          05 MCINI            PIC X(594).
+          05 R-MCINI REDEFINES MCINI OCCURS 99 TIMES.
+             10 AGE-INI       PIC 9(6).
+          05 MRFIN            PIC X(198).
+          05 R-MRFIN REDEFINES MRFIN OCCURS 99 TIMES.
+             10 REG-FIN       PIC 9(2).
+          05 MCFIN            PIC X(594).
+          05 R-MCFIN REDEFINES MCFIN OCCURS 99 TIMES.
+             10 AGE-FIN       PIC 9(6).
+          05 CODRET           PIC S9(2).
+
+
+       LINKAGE SECTION.
+       01 CONSULTA-LNK        PIC X(10).
+       01 FECPRO-LNK          PIC S9(8).
+       01 HORPRO-LNK          PIC S9(6).
+       01 SECEJE-LNK          PIC S9(5).
+       01 SECTOP-LNK          PIC S9(5).
+       01 USUARIO-LNK         PIC X(10).
+       01 ADDREG-LNK          PIC X(01).
+       01 REGUNI-LNK          PIC X(01).
+
+       PROCEDURE DIVISION USING CONSULTA-LNK
+                                FECPRO-LNK
+                                HORPRO-LNK
+                                SECEJE-LNK
+                                SECTOP-LNK
+                                USUARIO-LNK
+                                ADDREG-LNK
+                                REGUNI-LNK.
+
+           MOVE SPACES    TO WS-SELECC WS-ARCGEN WS-BIBGEN
+                             WS-MIEMBRO
+           EXEC SQL
+           SELECT SELEJE, ARCGEN, BIBGEN, MIEMBR INTO
+           :WS-SELECC, :WS-ARCGEN, :WS-BIBGEN,
+           :WS-MIEMBRO FROM ASQRY27F WHERE NOMCONS = :CONSULTA-LNK AND
+           FECPRO1 = :FECPRO-LNK AND HORPRO1 = :HORPRO-LNK AND SECEJE =
+           :SECEJE-LNK
+           END-EXEC
+
+      *
+      * CUENTA LA CANTIDAD DE REGISTROS INSERTADOS
+      *
+            MOVE SPACES    TO CTA-REGISTROS
+            STRING "SELECT CAST(COUNT(*)" DELIMITED SIZE
+                   " AS NUMERIC (8, 0)) " DELIMITED SIZE
+                   " FROM "               DELIMITED SIZE
+                   WS-BIBGEN              DELIMITED BY SPACES
+                   "/"                    DELIMITED SIZE
+                   WS-ARCGEN              DELIMITED BY SPACES
+                                     INTO CTA-REGISTROS
+
+            EXEC SQL
+               DECLARE CTAREGISTROS STATEMENT
+            END-EXEC
+            EXEC SQL
+               PREPARE CTAREGISTROS FROM :CTA-REGISTROS
+            END-EXEC
+            EXEC SQL
+               DECLARE CREGISTROS CURSOR FOR CTAREGISTROS
+            END-EXEC
+            EXEC SQL
+               OPEN CREGISTROS
+            END-EXEC
+            EXEC SQL
+               FETCH NEXT FROM CREGISTROS INTO :WS-CANREG
+            END-EXEC
+            EXEC SQL
+               CLOSE CREGISTROS
+            END-EXEC.
+      *
+      * MODIFICA ARCHIVO DE CONTROL INDICANDO EN PROCESO
+      *
+           CALL    "MRTVDAF2" USING AAAAMMDD DDMMAAAA
+           CANCEL  "MRTVDAF2"
+           ACCEPT HORA-SISTEMA FROM TIME
+
+           EXEC SQL
+           UPDATE  ASQRY27F SET FECPRO2 = :AAAAMMDD-9, HORPRO2 =
+           :HORA-SYS, ARCGEN = :WS-ARCGEN, BIBGEN = :WS-BIBGEN, ESTPRO
+           = "T", CANREG = :WS-CANREG WHERE NOMCONS = :CONSULTA-LNK AND
+           FECPRO1 = :FECPRO-LNK AND HORPRO1 = :HORPRO-LNK AND SECEJE =
+           :SECEJE-LNK
+           END-EXEC.
+           GOBACK.

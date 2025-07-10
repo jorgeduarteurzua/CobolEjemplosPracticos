@@ -1,0 +1,104 @@
+     A*%%TS  SD  20011116  180945  DUARTEJ     REL-V4R4M0  5769-PW1
+     A*%%EC
+     A                                      DSPSIZ(24 80 *DS3)
+     A                                      INDARA
+     A                                      CF03(03 'Salir')
+     A                                      CF05(05 'Actualizar')
+     A                                      CF07(07 'Modificar Cabecera')
+     A                                      CF09(09 'Ingresar')
+     A                                      CF23(23 'Eliminar')
+     A          R WS01                      SFL
+     A*%%TS  SD  20010802  140320  DUARTEJ     REL-V4R4M0  5769-PW1
+     A            CAMPO         10A  H
+     A            CABEC1        10A  H
+     A            CABEC2        10A  H
+     A            CABEC3        10A  H
+     A            CTL001         1Y 0H      SFLCHCCTL
+     A            DETSFL        69A  O  9  1
+     A          R WC01                      SFLCTL(WS01)
+     A*%%TS  SD  20011116  180945  DUARTEJ     REL-V4R4M0  5769-PW1
+     A                                      SFLSIZ(0100)
+     A                                      SFLPAG(0010)
+     A                                      WINDOW(2 2 20 74)
+     A  30                                  SFLDSP
+     A  31                                  SFLDSPCTL
+     A  32                                  SFLCLR
+     A  30                                  SFLEND(*SCRBAR *SCRBAR)
+     A                                      WDWTITLE((*TEXT 'Ingreso de Encabez-
+     A                                      ados') (*COLOR WHT))
+     A                                      WDWBORDER((*COLOR BLU) (*DSPATR RI)-
+     A                                       (*CHAR '        '))
+     A                                      USRRSTDSP
+     A                                      SFLRTNSEL
+     A                                      SFLSNGCHC
+     A            DATECUR        8Y 0B  1 65
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                      CHECK(RB)
+     A                                      EDTWRD('  /  /    ')
+     A                                  2 67TIME
+     A                                  3 67'ASQRY15 '
+     A                                      DSPATR(HI)
+     A                                  4  1'Campo     :'
+     A                                      DSPATR(HI)
+     A            CAMPO         10A  B  4 13
+     A  50                                  DSPATR(PR)
+     A                                  5  1'Cabecera 1:'
+     A                                      DSPATR(HI)
+     A            CABEC1        10A  B  5 13
+     A                                  5 26'Cabecera 2:'
+     A                                      DSPATR(HI)
+     A            CABEC2        10A  B  5 38
+     A                                  5 51'Cabecera 3:'
+     A                                      DSPATR(HI)
+     A            CABEC3        10A  B  5 63
+     A            BOTON          2Y 0B  6  1PSHBTNFLD
+     A                                      PSHBTNCHC(1 'F3-Salir' CF03)
+     A                                      PSHBTNCHC(2 'F9-Grabar' CF09)
+     A                                      PSHBTNCHC(3 'F7-Modifica' CF07)
+     A                                      PSHBTNCHC(4 'F5-Actualizar' CF05)
+     A                                      PSHBTNCHC(5 'F23-Eliminar' CF23)
+     A                                  8  1' Campo     Cabecera 1  Cabecera 2 -
+     A                                       Cabecera 3                        -
+     A                                          '
+     A                                      DSPATR(HI)
+     A                                      DSPATR(UL)
+     A          R R01
+     A*%%TS  SD  20010709  091055  DUARTEJ     REL-V4R4M0  5769-PW1
+     A            EMPRES1       15A  O  1  2
+     A            EMPRES2       15A  O  2  2
+     A                                  3  5'COBRANZA'
+     A            DATECUR        8Y 0O  1 70EDTWRD('  /  /    ')
+     A                                  3 70USER
+     A                                  2 70TIME
+     A                                  4  2'                                  -
+     A                                                                        C-
+     A                                      CGEC10A  '
+     A                                 22  2'                                  -
+     A                                                                         -
+     A                                               '
+     A                                      DSPATR(UL)
+     A                                 23  5'F9'
+     A                                      DSPATR(HI)
+     A                                 23  8'Ingreso'
+     A                                 10 29'Archivo    :'
+     A                                 23 67'F3'
+     A                                      DSPATR(HI)
+     A                                 23 70'Salir'
+     A                                  5  2'                                  -
+     A                                                                         -
+     A                                               '
+     A                                      DSPATR(UL)
+     A            NOMARC        10A  B 10 42DSPATR(HI)
+     A  40                                  ERRMSG('Debe ingresar archivo')
+     A  41                                  ERRMSG('Archivo no existe')
+     A  42                                  ERRMSG('Archivo ya fue ingresado')
+     A  44                                  ERRMSG('Archivo no fue incorporado,-
+     A                                       existe error')
+     A                                  2 31'INGRESO DE ARCHIVOS'
+     A                                      DSPATR(HI)
+     A                                  3 33'SELECCION CAMPOS'
+     A                                      DSPATR(HI)
+     A                                 11 29'Biblioteca :'
+     A            BIBLIO        10A  B 11 42
+     A  43                                  ERRMSG('Debe ingresar biblioteca')

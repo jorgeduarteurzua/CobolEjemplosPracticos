@@ -1,0 +1,65 @@
+     A*%%TS  SD  20080618  222930  SMAABD      REL-V5R3M0  5722-WDS
+     A*%%EC
+     A                                      DSPSIZ(24 80 *DS3)
+     A                                      INDARA
+     A                                      CF03(03 'SALIR')
+     A                                      CF05(05 'RENOVAR')
+     A                                      CF08(08 'DESCARGAR')
+     A          R WS01                      SFL
+     A*%%TS  SD  20080618  221733  SMAABD      REL-V5R3M0  5722-WDS
+     A            BIB           10   H
+     A            ARC           10   H
+     A            CODEVE        10A  H
+     A            FECPRO         8S 0H
+     A            HORPRO         6S 0H
+     A            SECPRO         5S 0H
+     A            CTL001         1Y 0H      SFLCHCCTL
+     A            DETSFL        69A  O  9  1
+     A          R WC01                      SFLCTL(WS01)
+     A*%%TS  SD  20080618  222930  SMAABD      REL-V5R3M0  5722-WDS
+     A                                      SFLSIZ(0100)
+     A                                      SFLPAG(0010)
+     A                                      WINDOW(2 2 20 74)
+     A  30                                  SFLDSP
+     A  31                                  SFLDSPCTL
+     A  32                                  SFLCLR
+     A  30                                  SFLEND(*SCRBAR *SCRBAR)
+     A                                      WDWBORDER((*COLOR BLU) (*DSPATR RI)-
+     A                                       (*CHAR '        '))
+     A                                      USRRSTDSP
+     A                                      WDWTITLE((*TEXT 'VISUALIZAR/DEPURAR-
+     A                                      ') (*COLOR WHT))
+     A                                      SFLRTNSEL
+     A                                      SFLSNGCHC
+     A            DATECUR        8Y 0B  1 64
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                      CHECK(RB)
+     A                                      EDTWRD('  /  /    ')
+     A                                  2 66TIME
+     A                                  3 66'ASQRY45 '
+     A                                      DSPATR(HI)
+     A                                  4  2'Fecha de Proceso :'
+     A            FECPRO         8Y 0B  4 22CHECK(RB)
+     A                                      EDTWRD('  /  /    ')
+     A            BOTON          2Y 0B  4 38PSHBTNFLD
+     A                                      PSHBTNCHC(1 'F5-RENOVAR' CF05)
+     A                                      PSHBTNCHC(2 'F3-SALIR' CF03)
+     A                                      PSHBTNCHC(3 'F8-DESCARGAR' CF08)
+     A                                  5  2'Usuario          :'
+     A            USUARIO       10A  B  5 22DSPATR(PR)
+     A                                  6  1'CONSULTA                  Fecha   -
+     A                                      Cantidad   Biblioteca/Archivo      -
+     A                                           '
+     A                                      DSPATR(HI)
+     A                                  7  1'                       de Proceso -
+     A                                      Registros                          -
+     A                                           '
+     A                                      DSPATR(HI)
+     A                                      DSPATR(UL)
+     A          R XX
+     A*%%TS  SD  20010719  173556  DUARTEJ     REL-V4R4M0  5769-PW1
+     A                                      KEEP
+     A                                      ASSUME
+     A                                      OVERLAY
+     A                                  1  3' '

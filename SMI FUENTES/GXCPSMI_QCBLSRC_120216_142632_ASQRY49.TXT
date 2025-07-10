@@ -1,0 +1,151 @@
+       IDENTIFICATION DIVISION.
+      *------------------------*
+       PROGRAM-ID. ASQRY49.
+       AUTHOR.     JORGE DUARTE U.
+      *
+       ENVIRONMENT DIVISION.
+      *---------------------*
+       CONFIGURATION SECTION.
+       SOURCE-COMPUTER.      IBM-AS400.
+       OBJECT-COMPUTER.      IBM-AS400.
+       INPUT-OUTPUT SECTION.
+      *--------------------*
+       FILE-CONTROL.
+      *------------*
+
+       DATA DIVISION.
+      *-------------*
+       FILE SECTION.
+      *-------------*
+
+       WORKING-STORAGE SECTION.
+      *------------------------
+       77 ARR-COND-CONC      PIC X(2000).
+
+           EXEC SQL
+               INCLUDE SQLCA
+           END-EXEC.
+
+       01 VARIABLES-DE-TRABAJO.
+          05 BIBLIOTECA          PIC X(10).
+          05 TIPO-CAMPO          PIC X(01).
+          05 ARR-COND-X          PIC X(2000).
+          05 ARR-COND REDEFINES ARR-COND-X OCCURS 50 TIMES.
+             15 CODCOND-X       PIC X(40).
+
+       LINKAGE SECTION.
+       01 ARCHIVO-LNK         PIC X(10).
+       01 CAMPO-LNK           PIC X(10).
+       01 VALOR-FILTRO-LNK    PIC X(50).
+       01 ARR-VALORES         PIC X(2000).
+
+       PROCEDURE DIVISION USING ARCHIVO-LNK
+                                CAMPO-LNK
+                                VALOR-FILTRO-LNK
+                                ARR-VALORES.
+      *--------------------------------------
+           INSPECT ARCHIVO-LNK       CONVERTING '.' TO ' '
+           INSPECT CAMPO-LNK         CONVERTING '.' TO ' '
+           INSPECT VALOR-FILTRO-LNK  CONVERTING '.' TO ' '
+           INSPECT ARR-VALORES       CONVERTING '.' TO ' '
+
+           MOVE SPACES           TO BIBLIOTECA
+                                    TIPO-CAMPO
+           EXEC SQL
+           SELECT WHFLDT INTO :TIPO-CAMPO FROM ASQRY01F WHERE WHFILE =
+           :ARCHIVO-LNK AND WHFLDI = :CAMPO-LNK
+           END-EXEC
+
+           EXEC SQL
+           SELECT WHLIBL INTO :BIBLIOTECA FROM ASQRY02F WHERE WHFILE =
+           :ARCHIVO-LNK
+           END-EXEC
+           IF TIPO-CAMPO = 'P' OR 'S'
+              IF VALOR-FILTRO-LNK = ' '
+                 MOVE '0 '        TO VALOR-FILTRO-LNK
+              END-IF
+           END-IF
+
+           IF BIBLIOTECA = SPACES
+              IF TIPO-CAMPO = 'P' OR 'S'
+                 STRING
+                  'SELECT DISTINCT CAST('     DELIMITED SIZE
+                  'DIGITS('                   DELIMITED SIZE
+                   CAMPO-LNK                  DELIMITED SIZE
+                  ') AS CHAR(40)) '           DELIMITED SIZE
+                  ' FROM '                    DELIMITED SIZE
+                   ARCHIVO-LNK                DELIMITED SIZE
+                  ' WHERE '                   DELIMITED SIZE
+                   CAMPO-LNK                  DELIMITED SIZE
+                  ' >= '                      DELIMITED SIZE
+                   VALOR-FILTRO-LNK           DELIMITED BY '  '
+                  ' ORDER BY 1      '         DELIMITED SIZE
+                                   INTO  ARR-COND-CONC
+               ELSE
+                 STRING
+                  'SELECT DISTINCT CAST('     DELIMITED SIZE
+                   CAMPO-LNK                  DELIMITED SIZE
+                  '  AS CHAR(40)) '           DELIMITED SIZE
+                  ' FROM '                    DELIMITED SIZE
+                   ARCHIVO-LNK                DELIMITED SIZE
+                  ' WHERE '                   DELIMITED SIZE
+                   CAMPO-LNK                  DELIMITED SIZE
+                  ' >= "'                     DELIMITED SIZE
+                   VALOR-FILTRO-LNK           DELIMITED BY '  '
+                  '" ORDER BY 1      '        DELIMITED SIZE
+                                   INTO  ARR-COND-CONC
+               END-IF
+           ELSE
+              IF TIPO-CAMPO = 'P' OR 'S'
+                  STRING
+                  'SELECT DISTINCT CAST('     DELIMITED SIZE
+                  'DIGITS('                   DELIMITED SIZE
+                   CAMPO-LNK                  DELIMITED SIZE
+                  ') AS CHAR(40)) '           DELIMITED SIZE
+                  ' FROM '                    DELIMITED SIZE
+                  BIBLIOTECA                  DELIMITED BY ' '
+                  '/'                         DELIMITED SIZE
+                   ARCHIVO-LNK                DELIMITED SIZE
+                  ' WHERE '                   DELIMITED SIZE
+                   CAMPO-LNK                  DELIMITED SIZE
+                  ' >= '                      DELIMITED SIZE
+                   VALOR-FILTRO-LNK           DELIMITED BY '  '
+                  ' ORDER BY 1      '         DELIMITED SIZE
+                                   INTO  ARR-COND-CONC
+              ELSE
+                  STRING
+                  'SELECT DISTINCT CAST('     DELIMITED SIZE
+                   CAMPO-LNK                  DELIMITED SIZE
+                  '  AS CHAR(40)) '           DELIMITED SIZE
+                  ' FROM '                    DELIMITED SIZE
+                  BIBLIOTECA                  DELIMITED BY ' '
+                  '/'                         DELIMITED SIZE
+                   ARCHIVO-LNK                DELIMITED SIZE
+                  ' WHERE '                   DELIMITED SIZE
+                   CAMPO-LNK                  DELIMITED SIZE
+                  ' >= "'                     DELIMITED SIZE
+                   VALOR-FILTRO-LNK           DELIMITED BY '  '
+                  '" ORDER BY 1      '        DELIMITED SIZE
+                                   INTO  ARR-COND-CONC
+              END-IF
+           END-IF
+
+           EXEC SQL
+                DECLARE VALORESCAMPO  STATEMENT
+           END-EXEC
+           EXEC SQL
+                PREPARE VALORESCAMPO  FROM :ARR-COND-CONC
+           END-EXEC
+           EXEC SQL
+                DECLARE VALCAMPO  CURSOR FOR VALORESCAMPO
+           END-EXEC.
+
+           EXEC SQL OPEN VALCAMPO  END-EXEC
+           EXEC SQL
+           FETCH NEXT FROM VALCAMPO FOR 50 ROWS INTO :ARR-COND
+           END-EXEC
+
+           MOVE ARR-COND-X   TO ARR-VALORES
+
+           EXEC SQL CLOSE VALCAMPO  END-EXEC
+           GOBACK.

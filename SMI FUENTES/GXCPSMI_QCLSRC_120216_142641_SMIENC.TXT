@@ -1,0 +1,46 @@
+ /*---------------------------------------------------------------------*/
+ /*PROCEDIMIENTO QUE DEBE SER INVOCADO DESDE CL O CBL PARA ENVIAR A     */
+ /*SISTEMA SMI.                                                         */
+ /*REQUISITOS PREVIOS:                                                  */
+ /*  1.- EL ARCHIVO A PASAR DEBE ESTAR DENTRO DE CONSULTA EN SMI        */
+ /*---------------------------------------------------------------------*/
+      PGM PARM(&CONSULTA &USUARIO &ARCHIVO &BIBLIOT)
+
+         DCL VAR(&CONSULTA)   TYPE(*CHAR)   LEN(10)
+         DCL VAR(&USUARIO )   TYPE(*CHAR)   LEN(10)
+         DCL VAR(&ARCHIVO )   TYPE(*CHAR)   LEN(10)
+         DCL VAR(&BIBLIOT )   TYPE(*CHAR)   LEN(10)
+
+         DCL VAR(&FECPRO)     TYPE(*CHAR)   LEN(08) VALUE('00000000')
+         DCL VAR(&HORPRO)     TYPE(*CHAR)   LEN(06) VALUE('000000')
+         DCL VAR(&SECEJE)     TYPE(*CHAR)   LEN(05) VALUE('00000')
+         DCL VAR(&CODRET)     TYPE(*CHAR)   LEN(100)
+
+         DCL VAR(&CONUSR)     TYPE(*CHAR)   LEN(20)
+         DCL VAR(&AAAAMMDD)   TYPE(*CHAR)   LEN(08)
+         DCL VAR(&DDMMAAAA)   TYPE(*CHAR)   LEN(08)
+
+
+         CHGVAR VAR(&CONUSR) VALUE(&CONSULTA *CAT &USUARIO)
+
+         CALL PGM(MRTVDAF2) PARM(&AAAAMMDD &DDMMAAAA)
+         CHGVAR VAR(&FECPRO) VALUE(&AAAAMMDD)
+         RTVSYSVAL  SYSVAL(QTIME) RTNVAR(&HORPRO)
+
+         CALL PGM(GENPARAM) PARM(&CONUSR       +
+                                 &FECPRO       +
+                                 &HORPRO       +
+                                 &SECEJE       +
+                                 &CODRET       )
+
+
+           CALL PGM(SMICALLPGM) PARM(&CONSULTA     +
+                                     &USUARIO      +
+                                     &ARCHIVO      +
+                                     &BIBLIOT      +
+                                     &FECPRO       +
+                                     &HORPRO       +
+                                     &SECEJE       +
+                                     &CODRET       )
+
+      FIN: ENDPGM

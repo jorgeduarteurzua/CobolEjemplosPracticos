@@ -1,0 +1,27 @@
+     A*%%TS  SD  20000822  132928  DUARTEJ     REL-V4R4M0  5769-PW1
+     A*%%EC
+     A                                      DSPSIZ(24 80 *DS3)
+     A          R WS01                      SFL
+     A*%%TS  SD  19980409  090535  DUARTEJ     REL-V3R7M0  5716-PW1
+     A            MENSAJ        65A  O  3  1
+     A          R WC01                      SFLCTL(WS01)
+     A*%%TS  SD  19980721  095838  DUARTEJ     REL-V3R7M0  5716-PW1
+     A                                      CF12(12 'ANTERIOR')
+     A                                      OVERLAY
+     A  30                                  SFLDSP
+     A  31                                  SFLDSPCTL
+     A  32                                  SFLCLR
+     A  30                                  SFLEND(*SCRBAR *SCRBAR)
+     A                                      SFLSIZ(0100)
+     A                                      SFLPAG(0005)
+     A                                      WINDOW(8 3 8 70)
+     A                                      USRRSTDSP
+     A                                      WDWTITLE((*TEXT 'MENSAJE'))
+     A            BOTON          2Y 0B  1  2PSHBTNFLD
+     A                                      PSHBTNCHC(1 'ACEPTAR')
+     A          R R01
+     A*%%TS  SD  20000822  132928  DUARTEJ     REL-V4R4M0  5769-PW1
+     A                                      KEEP
+     A                                      ASSUME
+     A                                      OVERLAY
+     A                                  1  3' '

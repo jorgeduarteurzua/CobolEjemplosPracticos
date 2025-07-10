@@ -1,0 +1,8 @@
+     A                                      UNIQUE
+     A          R RASQRY21F
+     A*
+     A            NOMCON        10A         COLHDG('CONCEPTO      ')
+     A            NOMARC        10A         COLHDG('Arch.Seleccionados')
+     A          K NOMCON
+     A          K NOMARC
+     A*

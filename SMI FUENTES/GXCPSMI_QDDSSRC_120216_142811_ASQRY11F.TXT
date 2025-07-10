@@ -1,0 +1,8 @@
+     A                                      UNIQUE
+     A          R RASQRY11F
+     A*
+     A            CORSEN         5S 0       COLHDG('Correl. Sentencia')
+     A            NOMSEN        30A         COLHDG('Nombre Sentencia')
+     A            DESSEN       200A         COLHDG('DescripciÍn Sent.')
+     A          K CORSEN
+     A*

@@ -1,0 +1,190 @@
+       IDENTIFICATION DIVISION.
+      *-----------------------*
+       PROGRAM-ID. ASQRY34.
+       AUTHOR. JORGE DUARTE U.
+       ENVIRONMENT DIVISION.
+      *--------------------*
+       CONFIGURATION SECTION.
+       SOURCE-COMPUTER.      IBM-AS400.
+       OBJECT-COMPUTER.      IBM-AS400.
+       SPECIAL-NAMES.        LOCAL-DATA IS LOCAL-DATA-AREA .
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+
+           SELECT ASQRY37F   ASSIGN        TO DATABASE-ASQRY37F
+                             ORGANIZATION  IS INDEXED
+                             ACCESS MODE   IS DYNAMIC
+                             RECORD KEY    IS EXTERNALLY-DESCRIBED-KEY
+                             FILE STATUS   IS FS-ASQRY37F.
+
+       DATA DIVISION.
+      *--------------*
+       FILE SECTION.
+      *-------------*
+
+       FD  ASQRY37F  LABEL   RECORD STANDARD.
+       01  R-ASQRY37F.
+           COPY  DDS-ALL-FORMAT  OF ASQRY37F.
+
+       WORKING-STORAGE SECTION.
+      *------------------------*
+
+       77 FS-ASQRY37F         PIC XX VALUE "00".
+       77 WS-ARCGEN           PIC X(05).
+       77 WS-CORREL           PIC 9(04).
+       77 WS-ARCBAS           PIC X(10).
+       77 WS-BIBGEN           PIC X(10).
+       77 POS-ACT             PIC 9(2).
+
+           EXEC SQL
+              INCLUDE SQLCA
+           END-EXEC.
+      *
+       01 VARIABLES-DE-TRABAJO.
+          05 WS-ARCBAS-ORI    PIC X(10).
+
+       01 VAR-GEN-ARCHIVO.
+          05 L-S PIC X(36) VALUE "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".
+      *
+       LINKAGE SECTION.
+      *----------------
+       01 CONSULTA-COPIAR PIC X(10).
+       01 CONSULTA-NUEVA  PIC X(10).
+       01 TEXTO-NUEVA     PIC X(50).
+       01 USUARIO-LNK     PIC X(10).
+
+       PROCEDURE DIVISION USING CONSULTA-COPIAR,
+                                CONSULTA-NUEVA,
+                                TEXTO-NUEVA,
+                                USUARIO-LNK.
+      *--------------------------------------------------------
+           INSPECT CONSULTA-COPIAR CONVERTING "." TO " "
+           INSPECT CONSULTA-NUEVA  CONVERTING "." TO " "
+           INSPECT TEXTO-NUEVA     CONVERTING "." TO " "
+           INSPECT USUARIO-LNK     CONVERTING "." TO " "
+
+           EXEC SQL
+           INSERT INTO GXDBSMI/ASQRY23F SELECT :CONSULTA-NUEVA,
+           :TEXTO-NUEVA, :USUARIO-LNK, FECCRE, HORCRE,USRMOD, FECMOD,
+           HORMOD FROM ASQRY23F WHERE NOMCONS = :CONSULTA-COPIAR
+           END-EXEC
+
+           EXEC SQL
+           INSERT INTO ASQRY24F SELECT :CONSULTA-NUEVA, NOMARC
+           FROM ASQRY24F WHERE NOMCONS = :CONSULTA-COPIAR
+           END-EXEC
+
+           PERFORM GENERA-NUEVO-NOMBRE
+
+           EXEC SQL
+           INSERT INTO ASQRY25F SELECT :CONSULTA-NUEVA, :WS-ARCGEN,
+           1, :WS-BIBGEN, :WS-ARCBAS, FECCRE, HORCRE, USRCRE, FECMOD,
+           HORMOD, USRMOD, LARSEL, REEARC, RETJOB, ADDREG, REGUNI,
+           SELECC, CONSQL, SELCON, CONUNI FROM ASQRY25F WHERE NOMCONS =
+           :CONSULTA-COPIAR
+           END-EXEC
+
+           EXEC SQL
+           INSERT INTO ASQRY26F SELECT :CONSULTA-NUEVA, NROPEP,
+           WHFLDB, WHFLDD, WHFLDP, WHFTXT, WHFLDT, VALPEP FROM ASQRY26F
+           WHERE NOMCONS = :CONSULTA-COPIAR
+           END-EXEC
+
+           EXEC SQL
+           INSERT INTO ASQRY28F SELECT :CONSULTA-NUEVA, NOMCON
+           FROM ASQRY28F WHERE NOMCONS = :CONSULTA-COPIAR
+           END-EXEC
+
+           EXEC SQL
+           INSERT INTO GXDBSMI/ASQRY38F VALUES(:CONSULTA-NUEVA,
+           :USUARIO-LNK)
+           END-EXEC
+
+           PERFORM COPIAR-ARC-BASE
+           GOBACK
+           .
+      *
+       GENERA-NUEVO-NOMBRE.
+      *--------------------
+           OPEN I-O ASQRY37F.
+
+           MOVE 1       TO KEYUNO OF ASQRY37F
+           READ ASQRY37F END-READ
+           IF FS-ASQRY37F = "00"
+              MOVE LETRA  OF ASQRY37F TO WS-ARCGEN(1:1)
+              MOVE CORRIN OF ASQRY37F TO WS-CORREL
+              MOVE BIBGEN OF ASQRY37F TO WS-BIBGEN
+              ADD  1                  TO WS-CORREL
+              IF WS-CORREL = 0
+                 PERFORM REVISA-SIG-NOMBRE
+                 ADD  1                  TO WS-CORREL
+              END-IF
+              MOVE WS-CORREL          TO WS-ARCGEN(2:4)
+                                         CORRIN OF ASQRY37F
+
+              MOVE WS-ARCGEN(1:1)     TO LETRA  OF ASQRY37F
+              REWRITE R-ASQRY37F END-REWRITE
+           END-IF
+           MOVE SPACES                  TO WS-ARCBAS
+                 STRING "B"    DELIMITED SIZE
+                        WS-ARCGEN        DELIMITED BY " "
+                        "BASE"           DELIMITED SIZE
+                                       INTO WS-ARCBAS
+           CLOSE    ASQRY37F
+           .
+      *
+       REVISA-SIG-NOMBRE.
+      *------------------
+           EVALUATE LETRA OF ASQRY37F
+                WHEN "A"  MOVE 1   TO POS-ACT
+                WHEN "B"  MOVE 2   TO POS-ACT
+                WHEN "C"  MOVE 3   TO POS-ACT
+                WHEN "D"  MOVE 4   TO POS-ACT
+                WHEN "E"  MOVE 5   TO POS-ACT
+                WHEN "F"  MOVE 6   TO POS-ACT
+                WHEN "G"  MOVE 7   TO POS-ACT
+                WHEN "H"  MOVE 8   TO POS-ACT
+                WHEN "I"  MOVE 9   TO POS-ACT
+                WHEN "J"  MOVE 10  TO POS-ACT
+                WHEN "K"  MOVE 11  TO POS-ACT
+                WHEN "L"  MOVE 12  TO POS-ACT
+                WHEN "M"  MOVE 13  TO POS-ACT
+                WHEN "N"  MOVE 14  TO POS-ACT
+                WHEN "O"  MOVE 15  TO POS-ACT
+                WHEN "P"  MOVE 16  TO POS-ACT
+                WHEN "Q"  MOVE 17  TO POS-ACT
+                WHEN "R"  MOVE 18  TO POS-ACT
+                WHEN "S"  MOVE 19  TO POS-ACT
+                WHEN "T"  MOVE 20  TO POS-ACT
+                WHEN "U"  MOVE 21  TO POS-ACT
+                WHEN "V"  MOVE 22  TO POS-ACT
+                WHEN "W"  MOVE 23  TO POS-ACT
+                WHEN "X"  MOVE 24  TO POS-ACT
+                WHEN "Y"  MOVE 25  TO POS-ACT
+                WHEN "Z"  MOVE 26  TO POS-ACT
+                WHEN "0"  MOVE 27  TO POS-ACT
+                WHEN "1"  MOVE 28  TO POS-ACT
+                WHEN "2"  MOVE 29  TO POS-ACT
+                WHEN "3"  MOVE 30  TO POS-ACT
+                WHEN "4"  MOVE 31  TO POS-ACT
+                WHEN "5"  MOVE 32  TO POS-ACT
+                WHEN "6"  MOVE 33  TO POS-ACT
+                WHEN "7"  MOVE 34  TO POS-ACT
+                WHEN "8"  MOVE 35  TO POS-ACT
+                WHEN "9"  MOVE 36  TO POS-ACT
+           END-EVALUATE
+           ADD 1     TO POS-ACT
+           MOVE L-S(POS-ACT) TO LETRA OF ASQRY37F
+            .
+      *
+       COPIAR-ARC-BASE.
+      *----------------
+           EXEC SQL
+              SELECT ARCBAS INTO :WS-ARCBAS-ORI FROM ASQRY25F WHERE
+              NOMCONS = :CONSULTA-COPIAR
+           END-EXEC
+
+           CALL "CPYCONS" USING WS-ARCBAS-ORI,
+                                WS-ARCBAS,
+                                WS-BIBGEN
+            .

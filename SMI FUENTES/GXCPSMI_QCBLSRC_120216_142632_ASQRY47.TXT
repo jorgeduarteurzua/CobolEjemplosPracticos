@@ -1,0 +1,132 @@
+       IDENTIFICATION DIVISION.
+      *------------------------*
+       PROGRAM-ID. ASQRY47.
+       AUTHOR.     JORGE DUARTE U.
+      *
+       ENVIRONMENT DIVISION.
+      *---------------------*
+       CONFIGURATION SECTION.
+       SOURCE-COMPUTER.      IBM-AS400.
+       OBJECT-COMPUTER.      IBM-AS400.
+       INPUT-OUTPUT SECTION.
+      *--------------------*
+       FILE-CONTROL.
+      *------------*
+
+       DATA DIVISION.
+      *-------------*
+       FILE SECTION.
+      *-------------*
+
+       WORKING-STORAGE SECTION.
+      *------------------------
+           EXEC SQL
+               INCLUDE SQLCA
+           END-EXEC.
+
+       01 VARIABLES-DE-TRABAJO.
+          05 WS-ESTADO        PIC X(1).
+          05 WS-ARCHIVO       PIC X(20).
+          05 WX-SEC           PIC X(3).
+          05 WS-CANTREG       PIC S9(10).
+
+       LINKAGE SECTION.
+       01 CONSULTA-LNK        PIC X(10).
+       01 FECPRO-LNK          PIC S9(8).
+       01 HORPRO-LNK          PIC S9(6).
+       01 SECEJE-LNK          PIC S9(5).
+       01 SECARC-LNK          PIC  9(3).
+       01 ARCHIVO-LNK         PIC X(10).
+       01 CANTREG-LNK         PIC 9(10).
+       01 USUARIO-LNK         PIC X(10).
+
+       PROCEDURE DIVISION USING CONSULTA-LNK
+                                FECPRO-LNK
+                                HORPRO-LNK
+                                SECEJE-LNK
+                                SECARC-LNK
+                               ARCHIVO-LNK
+                               CANTREG-LNK
+                               USUARIO-LNK.
+      *--------------------------------------
+           MOVE CANTREG-LNK  TO WS-CANTREG
+           EVALUATE SECARC-LNK
+             WHEN 1 MOVE "1  "   TO WX-SEC
+             WHEN 2 MOVE "2  "   TO WX-SEC
+             WHEN 3 MOVE "3  "   TO WX-SEC
+             WHEN 4 MOVE "4  "   TO WX-SEC
+             WHEN 5 MOVE "5  "   TO WX-SEC
+             WHEN 6 MOVE "6  "   TO WX-SEC
+             WHEN 7 MOVE "7  "   TO WX-SEC
+             WHEN 8 MOVE "8  "   TO WX-SEC
+             WHEN 9 MOVE "9  "   TO WX-SEC
+             WHEN 10 MOVE "10 "   TO WX-SEC
+             WHEN 11 MOVE "11 "   TO WX-SEC
+             WHEN 12 MOVE "12 "   TO WX-SEC
+             WHEN 13 MOVE "13 "   TO WX-SEC
+             WHEN 14 MOVE "14 "   TO WX-SEC
+             WHEN 15 MOVE "15 "   TO WX-SEC
+             WHEN 16 MOVE "16 "   TO WX-SEC
+             WHEN 17 MOVE "17 "   TO WX-SEC
+             WHEN 18 MOVE "18 "   TO WX-SEC
+             WHEN 19 MOVE "19 "   TO WX-SEC
+             WHEN 20 MOVE "20 "   TO WX-SEC
+             WHEN 21 MOVE "21 "   TO WX-SEC
+             WHEN 22 MOVE "22 "   TO WX-SEC
+             WHEN 23 MOVE "23 "   TO WX-SEC
+             WHEN 24 MOVE "24 "   TO WX-SEC
+             WHEN 25 MOVE "25 "   TO WX-SEC
+             WHEN 26 MOVE "26 "   TO WX-SEC
+             WHEN 27 MOVE "27 "   TO WX-SEC
+             WHEN 28 MOVE "28 "   TO WX-SEC
+             WHEN 29 MOVE "29 "   TO WX-SEC
+             WHEN 30 MOVE "30 "   TO WX-SEC
+             WHEN 31 MOVE "31 "   TO WX-SEC
+             WHEN 32 MOVE "32 "   TO WX-SEC
+             WHEN 33 MOVE "33 "   TO WX-SEC
+             WHEN 34 MOVE "34 "   TO WX-SEC
+             WHEN 35 MOVE "35 "   TO WX-SEC
+             WHEN 36 MOVE "36 "   TO WX-SEC
+             WHEN 37 MOVE "37 "   TO WX-SEC
+             WHEN 38 MOVE "38 "   TO WX-SEC
+             WHEN 39 MOVE "39 "   TO WX-SEC
+             WHEN 40 MOVE "40 "   TO WX-SEC
+             WHEN 41 MOVE "41 "   TO WX-SEC
+             WHEN 42 MOVE "42 "   TO WX-SEC
+             WHEN 43 MOVE "43 "   TO WX-SEC
+             WHEN 44 MOVE "44 "   TO WX-SEC
+             WHEN 45 MOVE "45 "   TO WX-SEC
+             WHEN 46 MOVE "46 "   TO WX-SEC
+             WHEN 47 MOVE "47 "   TO WX-SEC
+             WHEN 48 MOVE "48 "   TO WX-SEC
+             WHEN 49 MOVE "49 "   TO WX-SEC
+             WHEN 50 MOVE "50 "   TO WX-SEC
+           END-EVALUATE
+           MOVE SPACES TO WS-ARCHIVO
+           STRING ARCHIVO-LNK DELIMITED BY " "
+                  "_"         DELIMITED BY SIZE
+                  WX-SEC      DELIMITED BY " "
+                  ".CSV "     DELIMITED BY SIZE
+                            INTO WS-ARCHIVO
+
+           MOVE SPACES TO WS-ESTADO
+
+           EXEC SQL
+           SELECT STAA4F INTO :WS-ESTADO FROM GXDBSMI/ASQRY4F WHERE
+           NOMC4F = :CONSULTA-LNK AND FECP4F = :FECPRO-LNK AND HORP4F =
+           :HORPRO-LNK AND SECE4F = :SECEJE-LNK AND ARCH4F = :WS-ARCHIVO
+           END-EXEC
+           MOVE "T" TO WS-ESTADO(SECARC-LNK)
+
+           EXEC SQL
+           DELETE FROM GXDBSMI/ASQRY4F WHERE NOMC4F = :CONSULTA-LNK AND
+           FECP4F = :FECPRO-LNK AND HORP4F = :HORPRO-LNK AND SECE4F =
+           :SECEJE-LNK AND ARCH4F = :WS-ARCHIVO
+           END-EXEC
+
+           EXEC SQL
+           INSERT INTO GXDBSMI/ASQRY4F VALUES(:CONSULTA-LNK,
+           :FECPRO-LNK, :HORPRO-LNK, :SECEJE-LNK, :WS-ARCHIVO,
+           :WS-ESTADO, :WS-CANTREG, :USUARIO-LNK)
+           END-EXEC
+           GOBACK.

@@ -1,0 +1,393 @@
+       IDENTIFICATION DIVISION.
+      *-----------------------*
+       PROGRAM-ID. ASQRY03.
+       AUTHOR.     JORGE DUARTE U.
+       ENVIRONMENT DIVISION.
+      *--------------------*
+       CONFIGURATION SECTION.
+       SOURCE-COMPUTER.      IBM-AS400.
+       OBJECT-COMPUTER.      IBM-AS400.
+       SPECIAL-NAMES.        LOCAL-DATA IS LOCAL-DATA-AREA .
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+
+       DATA DIVISION.
+      *--------------*
+       FILE SECTION.
+      *-------------*
+       WORKING-STORAGE SECTION.
+      *------------------------*
+       77 Y                   PIC 9(7).
+       77 RET-Y               PIC 9(7).
+       77 INI-STR             PIC 9(7).
+       77 PRA-PARTE-SQL       PIC X(36).
+       77 PRA-PARTE-SQL-LAB   PIC X(39).
+
+       77 CREA-CAMPO          PIC X(100).
+       77 CREA-CAMPO-LAB      PIC X(70).
+       77 CREA-CAMPO-TXT      PIC X(75).
+
+       77 TOTAL-CREA-CAMPO    PIC X(15000).
+       77 TOT-CAMPO-LAB       PIC X(15000).
+
+       77 PARTEFINAL          PIC X(19000).
+       77 PARTEFINAL1         PIC X(19000).
+       77 PARTELAB            PIC X(19000).
+
+
+
+           EXEC SQL
+              INCLUDE SQLCA
+           END-EXEC.
+
+       LINKAGE SECTION.
+      *----------------*
+       01 LK-PARAM.
+          05 ARREGLO-ORDEN  OCCURS 999 TIMES.
+             10 NRO-VECES          PIC 9(03).
+             10 DESCR-ARR          PIC X(40).
+             10 CAMPO-LARGO-ARR    PIC X(18).
+             10 CAMPO-CORTO-ARR    PIC X(12).
+             10 CAMPO-REFER-ARR    PIC X(22).
+             10 LARGO-ARR          PIC 9(05).
+             10 DIGIT-ARR          PIC 9(05).
+             10 DECIM-ARR          PIC 9(02).
+             10 TIPO-ARR           PIC X(17).
+          05 ARREGLO-ORDEN-SIN-ARCHIVO OCCURS 999 TIMES.
+             10 NRO-VECES-SA       PIC 9(03).
+             10 DESCR-ARR-SA       PIC X(40).
+             10 CAMPO-LARGO-ARR-SA PIC X(18).
+             10 CAMPO-CORTO-ARR-SA PIC X(12).
+             10 CAMPO-REFER-ARR-SA PIC X(22).
+             10 LARGO-ARR-SA       PIC 9(05).
+             10 DIGIT-ARR-SA       PIC 9(05).
+             10 DECIM-ARR-SA       PIC 9(02).
+             10 TIPO-ARR-SA        PIC X(17).
+          05 LK-ARCHIVO            PIC X(10).
+          05 LK-BIBLIOTECA         PIC X(10).
+
+       PROCEDURE DIVISION USING LK-PARAM.
+      *----------------------------------
+            PERFORM ARMA-CREATE-SQL
+            PERFORM ARMA-LABEL-CAB-SQL
+            PERFORM ARMA-LABEL-TXT-SQL
+            GOBACK.
+
+      *
+       ARMA-CREATE-SQL.
+      *----------------
+
+            MOVE SPACES     TO TOTAL-CREA-CAMPO
+            EXEC SQL
+               DECLARE CREA_TABLA  STATEMENT
+            END-EXEC
+            EXEC SQL
+               DECLARE CREA_TABLA1 STATEMENT
+            END-EXEC
+
+            PERFORM NULO VARYING Y FROM 1 BY 1 UNTIL
+                    Y             > 10
+            SUBTRACT 1 FROM Y
+            STRING 'CREATE TABLE '            DELIMITED SIZE
+                   LK-BIBLIOTECA              DELIMITED SIZE
+                   '/'                        DELIMITED SIZE
+                   LK-ARCHIVO                 DELIMITED SIZE
+                   ' ('                       DELIMITED SIZE
+                   INTO                       PRA-PARTE-SQL
+
+            MOVE    1         TO INI-STR
+            PERFORM VARYING Y FROM 1 BY 1 UNTIL Y > 999
+                 IF CAMPO-LARGO-ARR(Y) NOT = SPACES
+                    MOVE SPACES   TO CREA-CAMPO
+                    EVALUATE TIPO-ARR(Y)
+                      WHEN 'CHARACTER'
+                       STRING CAMPO-LARGO-ARR(Y) DELIMITED SIZE
+                              ' '                DELIMITED SIZE
+                              TIPO-ARR(Y)        DELIMITED SIZE
+                              ' ('               DELIMITED SIZE
+                              LARGO-ARR(Y)       DELIMITED SIZE
+                              ') NOT NULL '      DELIMITED SIZE
+                              'WITH DEFAULT,'    DELIMITED SIZE
+                              INTO               CREA-CAMPO
+                      WHEN 'DECIMAL'
+                       STRING CAMPO-LARGO-ARR(Y) DELIMITED SIZE
+                              ' '                DELIMITED SIZE
+                              TIPO-ARR(Y)        DELIMITED SIZE
+                              ' ('               DELIMITED SIZE
+                              DIGIT-ARR(Y)       DELIMITED SIZE
+                              ', '               DELIMITED SIZE
+                              DECIM-ARR(Y)       DELIMITED SIZE
+                              ') NOT NULL '      DELIMITED SIZE
+                              'WITH DEFAULT,'    DELIMITED SIZE
+                              INTO               CREA-CAMPO
+                      WHEN 'NUMERIC'
+                       STRING CAMPO-LARGO-ARR(Y) DELIMITED SIZE
+                              ' '                DELIMITED SIZE
+                              TIPO-ARR(Y)        DELIMITED SIZE
+                              ' ('               DELIMITED SIZE
+                              DIGIT-ARR(Y)       DELIMITED SIZE
+                              ', '               DELIMITED SIZE
+                              DECIM-ARR(Y)       DELIMITED SIZE
+                              ') NOT NULL '      DELIMITED SIZE
+                              'WITH DEFAULT,'    DELIMITED SIZE
+                              INTO               CREA-CAMPO
+                      WHEN 'DATE'
+                       STRING CAMPO-LARGO-ARR(Y) DELIMITED SIZE
+                              ' '                DELIMITED SIZE
+                              TIPO-ARR(Y)        DELIMITED SIZE
+                              ' NOT NULL '      DELIMITED SIZE
+                              'WITH DEFAULT,'    DELIMITED SIZE
+                              INTO               CREA-CAMPO
+                      WHEN 'TIME'
+                       STRING CAMPO-LARGO-ARR(Y) DELIMITED SIZE
+                              ' '                DELIMITED SIZE
+                              TIPO-ARR(Y)        DELIMITED SIZE
+                              ' NOT NULL '      DELIMITED SIZE
+                              'WITH DEFAULT,'    DELIMITED SIZE
+                              INTO               CREA-CAMPO
+                      WHEN 'GRAPHIC'
+                       STRING CAMPO-LARGO-ARR(Y) DELIMITED SIZE
+                              ' '                DELIMITED SIZE
+                              TIPO-ARR(Y)        DELIMITED SIZE
+                              ' ('               DELIMITED SIZE
+                              DIGIT-ARR(Y)       DELIMITED SIZE
+                              ') NOT NULL '      DELIMITED SIZE
+                              'WITH DEFAULT,'    DELIMITED SIZE
+                              INTO               CREA-CAMPO
+                      WHEN 'FLOAT'
+                       STRING CAMPO-LARGO-ARR(Y) DELIMITED SIZE
+                              ' '                DELIMITED SIZE
+                              TIPO-ARR(Y)        DELIMITED SIZE
+                              ' ('               DELIMITED SIZE
+                              DIGIT-ARR(Y)       DELIMITED SIZE
+                              ') NOT NULL '      DELIMITED SIZE
+                              'WITH DEFAULT,'    DELIMITED SIZE
+                              INTO               CREA-CAMPO
+                    END-EVALUATE
+                    MOVE CREA-CAMPO TO TOTAL-CREA-CAMPO(INI-STR: 100)
+                    ADD  100        TO INI-STR
+                END-IF
+
+            END-PERFORM
+            PERFORM VARYING Y FROM 1 BY 1 UNTIL Y > 999
+                IF  CAMPO-LARGO-ARR-SA(Y) NOT = SPACES
+                    MOVE SPACES   TO CREA-CAMPO
+                    EVALUATE TIPO-ARR-SA(Y)
+                      WHEN 'CHARACTER'
+                       STRING CAMPO-LARGO-ARR-SA(Y) DELIMITED SIZE
+                              ' '                   DELIMITED SIZE
+                              TIPO-ARR-SA(Y)        DELIMITED SIZE
+                              ' ('                  DELIMITED SIZE
+                              LARGO-ARR-SA(Y)       DELIMITED SIZE
+                              ') NOT NULL '         DELIMITED SIZE
+                              'WITH DEFAULT,'       DELIMITED SIZE
+                              INTO               CREA-CAMPO
+                      WHEN 'DECIMAL'
+                       STRING CAMPO-LARGO-ARR-SA(Y) DELIMITED SIZE
+                              ' '                   DELIMITED SIZE
+                              TIPO-ARR-SA(Y)        DELIMITED SIZE
+                              ' ('                  DELIMITED SIZE
+                              DIGIT-ARR-SA(Y)       DELIMITED SIZE
+                              ', '                  DELIMITED SIZE
+                              DECIM-ARR-SA(Y)       DELIMITED SIZE
+                              ') NOT NULL '         DELIMITED SIZE
+                              'WITH DEFAULT,'       DELIMITED SIZE
+                              INTO               CREA-CAMPO
+                      WHEN 'NUMERIC'
+                       STRING CAMPO-LARGO-ARR-SA(Y) DELIMITED SIZE
+                              ' '                   DELIMITED SIZE
+                              TIPO-ARR-SA(Y)        DELIMITED SIZE
+                              ' ('                  DELIMITED SIZE
+                              DIGIT-ARR-SA(Y)       DELIMITED SIZE
+                              ', '                  DELIMITED SIZE
+                              DECIM-ARR-SA(Y)       DELIMITED SIZE
+                              ') NOT NULL '         DELIMITED SIZE
+                              'WITH DEFAULT,'       DELIMITED SIZE
+                              INTO               CREA-CAMPO
+                      WHEN 'DATE'
+                       STRING CAMPO-LARGO-ARR-SA(Y) DELIMITED SIZE
+                              ' '                   DELIMITED SIZE
+                              TIPO-ARR-SA(Y)        DELIMITED SIZE
+                              ' NOT NULL '          DELIMITED SIZE
+                              'WITH DEFAULT,'       DELIMITED SIZE
+                              INTO               CREA-CAMPO
+                      WHEN 'TIME'
+                       STRING CAMPO-LARGO-ARR-SA(Y) DELIMITED SIZE
+                              ' '                   DELIMITED SIZE
+                              TIPO-ARR-SA(Y)        DELIMITED SIZE
+                              ' NOT NULL '          DELIMITED SIZE
+                              'WITH DEFAULT,'       DELIMITED SIZE
+                              INTO               CREA-CAMPO
+                      WHEN 'GRAPHIC'
+                       STRING CAMPO-LARGO-ARR-SA(Y) DELIMITED SIZE
+                              ' '                   DELIMITED SIZE
+                              TIPO-ARR-SA(Y)        DELIMITED SIZE
+                              ' ('                  DELIMITED SIZE
+                              DIGIT-ARR-SA(Y)       DELIMITED SIZE
+                              ') NOT NULL '         DELIMITED SIZE
+                              'WITH DEFAULT,'       DELIMITED SIZE
+                              INTO               CREA-CAMPO
+                      WHEN 'FLOAT'
+                       STRING CAMPO-LARGO-ARR-SA(Y) DELIMITED SIZE
+                              ' '                   DELIMITED SIZE
+                              TIPO-ARR-SA(Y)        DELIMITED SIZE
+                              ' ('                  DELIMITED SIZE
+                              DIGIT-ARR-SA(Y)       DELIMITED SIZE
+                              ') NOT NULL '         DELIMITED SIZE
+                              'WITH DEFAULT,'       DELIMITED SIZE
+                              INTO               CREA-CAMPO
+                    END-EVALUATE
+                    MOVE CREA-CAMPO TO TOTAL-CREA-CAMPO(INI-STR: 100)
+                    ADD  100        TO INI-STR
+                END-IF
+
+            END-PERFORM
+            PERFORM NULO VARYING RET-Y FROM INI-STR BY -1
+                    UNTIL TOTAL-CREA-CAMPO(RET-Y: 1) = ','
+
+            MOVE ')'   TO TOTAL-CREA-CAMPO(RET-Y: 1)
+
+            MOVE SPACES                TO PARTEFINAL
+            STRING PRA-PARTE-SQL       DELIMITED SIZE
+                   TOTAL-CREA-CAMPO    DELIMITED SIZE
+                   INTO                PARTEFINAL
+
+            EXEC SQL
+               PREPARE CREA_TABLA FROM :PARTEFINAL
+            END-EXEC
+            EXEC SQL
+               EXECUTE CREA_TABLA
+            END-EXEC.
+      *
+       ARMA-LABEL-CAB-SQL.
+      *-------------------
+            EXEC SQL
+               DECLARE CREA_LAB_H STATEMENT
+            END-EXEC.
+
+            MOVE SPACES TO TOT-CAMPO-LAB
+                           PRA-PARTE-SQL-LAB
+
+
+            PERFORM NULO VARYING Y FROM 1 BY 1 UNTIL
+                    Y                          > 10
+            SUBTRACT 1 FROM Y
+            STRING 'LABEL ON COLUMN '         DELIMITED SIZE
+                   LK-BIBLIOTECA              DELIMITED SIZE
+                   '/'                        DELIMITED SIZE
+                   LK-ARCHIVO                 DELIMITED SIZE
+                   ' ('                       DELIMITED SIZE
+                   INTO                       PRA-PARTE-SQL-LAB
+
+            MOVE    1         TO INI-STR
+            PERFORM VARYING Y FROM 1 BY 1 UNTIL Y > 999
+                IF  CAMPO-LARGO-ARR(Y) NOT = SPACES
+                    MOVE SPACES   TO CREA-CAMPO-LAB
+                    STRING CAMPO-LARGO-ARR(Y) DELIMITED SIZE
+                           ' IS "'            DELIMITED SIZE
+                           DESCR-ARR      (Y) DELIMITED SIZE
+                           '", '              DELIMITED SIZE
+                           INTO               CREA-CAMPO-LAB
+                    MOVE CREA-CAMPO-LAB TO TOT-CAMPO-LAB(INI-STR: 70)
+                    ADD  70         TO INI-STR
+                END-IF
+
+            END-PERFORM
+            PERFORM VARYING Y FROM 1 BY 1 UNTIL Y > 999
+               IF   CAMPO-LARGO-ARR-SA(Y) NOT = SPACES
+                    MOVE SPACES   TO CREA-CAMPO-LAB
+                    STRING CAMPO-LARGO-ARR-SA(Y) DELIMITED SIZE
+                           ' IS "'               DELIMITED SIZE
+                           DESCR-ARR-SA      (Y) DELIMITED SIZE
+                           '", '                 DELIMITED SIZE
+                           INTO                  CREA-CAMPO-LAB
+                    MOVE CREA-CAMPO-LAB TO TOT-CAMPO-LAB(INI-STR: 70)
+                    ADD  70         TO INI-STR
+               END-IF
+
+            END-PERFORM
+
+            MOVE 0 TO RET-Y
+            PERFORM NULO VARYING RET-Y FROM INI-STR BY -1
+                    UNTIL TOT-CAMPO-LAB(RET-Y: 1) = ','
+
+            MOVE ')'   TO TOT-CAMPO-LAB(RET-Y: 1)
+
+            STRING PRA-PARTE-SQL-LAB   DELIMITED SIZE
+                   TOT-CAMPO-LAB       DELIMITED SIZE
+                   INTO                PARTELAB
+
+            EXEC SQL
+                PREPARE CREA_LAB_H FROM :PARTELAB
+            END-EXEC
+            EXEC SQL
+               EXECUTE CREA_LAB_H
+            END-EXEC.
+      *
+       ARMA-LABEL-TXT-SQL.
+      *-------------------
+            EXEC SQL
+               DECLARE CREA_LAB_H1 STATEMENT
+            END-EXEC.
+            MOVE SPACES TO TOT-CAMPO-LAB
+                           PRA-PARTE-SQL-LAB
+
+
+            PERFORM NULO VARYING Y FROM 1 BY 1 UNTIL
+                    Y                          > 10
+            SUBTRACT 1 FROM Y
+            STRING 'LABEL ON COLUMN '         DELIMITED SIZE
+                   LK-BIBLIOTECA              DELIMITED SIZE
+                   '/'                        DELIMITED SIZE
+                   LK-ARCHIVO                 DELIMITED SIZE
+                   ' ('                       DELIMITED SIZE
+                   INTO                       PRA-PARTE-SQL-LAB
+
+            MOVE    1         TO INI-STR
+            PERFORM VARYING Y FROM 1 BY 1 UNTIL Y = 999
+                IF CAMPO-LARGO-ARR(Y) NOT = SPACES
+                    MOVE SPACES   TO CREA-CAMPO-TXT
+                    STRING CAMPO-LARGO-ARR(Y) DELIMITED SIZE
+                           ' TEXT IS "'       DELIMITED SIZE
+                           DESCR-ARR      (Y) DELIMITED SIZE
+                           '", '              DELIMITED SIZE
+                           INTO               CREA-CAMPO-TXT
+                    MOVE CREA-CAMPO-TXT TO TOT-CAMPO-LAB(INI-STR: 75)
+                    ADD  75         TO INI-STR
+                END-IF
+            END-PERFORM
+            PERFORM VARYING Y FROM 1 BY 1 UNTIL Y > 999
+                IF  CAMPO-LARGO-ARR-SA(Y) NOT = SPACES
+                    MOVE SPACES   TO CREA-CAMPO-TXT
+                    STRING CAMPO-LARGO-ARR-SA(Y) DELIMITED SIZE
+                           ' TEXT IS "'          DELIMITED SIZE
+                           DESCR-ARR-SA      (Y) DELIMITED SIZE
+                           '", '                 DELIMITED SIZE
+                           INTO                  CREA-CAMPO-TXT
+                    MOVE CREA-CAMPO-TXT TO TOT-CAMPO-LAB(INI-STR: 75)
+                    ADD  75         TO INI-STR
+                END-IF
+
+            END-PERFORM
+
+            MOVE 0 TO RET-Y
+            PERFORM NULO VARYING RET-Y FROM INI-STR BY -1
+                    UNTIL TOT-CAMPO-LAB(RET-Y: 1) = ','
+
+            MOVE ')'   TO TOT-CAMPO-LAB(RET-Y: 1)
+
+            STRING PRA-PARTE-SQL-LAB   DELIMITED SIZE
+                   TOT-CAMPO-LAB       DELIMITED SIZE
+                   INTO                PARTELAB
+
+            EXEC SQL
+                 PREPARE CREA_LAB_H1 FROM :PARTELAB
+            END-EXEC
+            EXEC SQL
+               EXECUTE CREA_LAB_H1
+            END-EXEC.
+      *
+
+       NULO.
+      *-----
+      *

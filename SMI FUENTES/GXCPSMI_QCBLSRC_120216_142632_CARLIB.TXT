@@ -1,0 +1,62 @@
+       IDENTIFICATION DIVISION.
+      *------------------------
+       PROGRAM-ID.  CARLIB.
+       AUTHOR. JORGE DUARTE URZUA.
+       ENVIRONMENT DIVISION.
+       CONFIGURATION SECTION.
+       SOURCE-COMPUTER.  IBM-AS400.
+       OBJECT-COMPUTER.  IBM-AS400.
+       SPECIAL-NAMES. LOCAL-DATA IS LOCAL.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+      *-------------
+       DATA DIVISION.
+       FILE SECTION.
+      *-------------
+      *
+       WORKING-STORAGE SECTION.
+      *------------------------
+
+           EXEC SQL
+              INCLUDE SQLCA
+           END-EXEC.
+
+       01 DATOS-SQL.
+          05 BIBLIO-SQL         PIC X(10).
+
+       01 VARIABLES-DE-TRABAJO.
+          05 P-BIB              PIC 9(03).
+          05 N-BIB              PIC 9(02).
+
+       LINKAGE SECTION.
+       01 CONSULTA-LNK   PIC X(010).
+       01 LISTBIB-LNK    PIC X(250).
+
+       PROCEDURE DIVISION USING CONSULTA-LNK LISTBIB-LNK.
+      *-------------------------------------
+           MOVE SPACES           TO LISTBIB-LNK
+
+           EXEC SQL
+           DECLARE C1 CURSOR FOR SELECT DISTINCT A.WHLIBL FROM
+           GXDBSMI/ASQRY02F A, GXDBSMI/ASQRY24F B WHERE B.NOMCONS =
+           :CONSULTA-LNK AND B.NOMARC = A.WHFILE ORDER BY 1
+           END-EXEC.
+           EXEC SQL OPEN C1   END-EXEC
+
+           MOVE 1           TO P-BIB
+           MOVE 0           TO N-BIB
+           PERFORM LEER-FETCH
+           PERFORM UNTIL SQLCODE NOT = 0 OR N-BIB = 25
+               MOVE BIBLIO-SQL  TO LISTBIB-LNK(P-BIB:10)
+               ADD  10          TO P-BIB
+               ADD  1           TO N-BIB
+               PERFORM LEER-FETCH
+           END-PERFORM
+           EXEC SQL CLOSE C1  END-EXEC
+           GOBACK.
+      *
+       LEER-FETCH.
+      *-----------
+           EXEC SQL
+                FETCH NEXT FROM C1 INTO :DATOS-SQL
+           END-EXEC.

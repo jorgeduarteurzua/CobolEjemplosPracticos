@@ -1,0 +1,62 @@
+             PGM        PARM(&CEVE &FPRO &HPRO &SEC &ARUT &BRUT +
+                          &ABAS &BBAS &AGEN &USR &STOPE &REFABAS +
+                          &REFAGEN &REFBGEN &REEARC &RETJOB &ADDREG +
+                          &REGUNI)
+  /*------------------------------------------------------------ +
+     CEVE   -> CODIGO DE EVENTO                                   +
+     FPRO   -> FECHA PROCESO                                      +
+     HPRO   -> HORA  PROCESO                                      +
+     SEC    -> SECUENCIA DEL PROCESO QUE SE EJECUTARA             +
+     ARUT   -> ARCHIVO DE RUT QUE SE UTILIZARA                    +
+     BRUT   -> BIBLIOTECA DONDE SE ENCUENTRA EL ARCHIVO DE RUT    +
+     ABAS   -> ARCHIVO BASE QUE SE UTILIZARA PARA CREAR NUEVO     +
+     BBAS   -> BIBLIOTECA DONDE SE ENCUENTRA EL ARCHIVO BASE      +
+     AGEN   -> NOMBRE DEL ARCHIVO A GENERAR                       +
+     USR    -> USUARIO DEL PROCESO                                +
+     STOPE  -> SECUENCIA TOPE PARA EL EVENTO                      +
+     REFABAS-> ARCHIVO DE RERERENCIA BASE                         +
+     REFAGEN-> ARCHIVO GENERADO                                   +
+     REFBGEN-> BIBLIOTECA GENERADO                                +
+     REEARC -> REEMPLAZAR ARCHIVO                                 +
+     RETJOB -> RETENER TRABAJO                                    +
+     ADDREG -> AGREGAR REGISTROS A ARCHIVO                        +
+     REGUNI -> NO REPETIR REGISTROS IGUALES                       +
+    ------------------------------------------------------------ */
+         DCL VAR(&CEVE)    TYPE(*CHAR) LEN(10)
+         DCL VAR(&FPRO)    TYPE(*CHAR) LEN(08)
+         DCL VAR(&HPRO)    TYPE(*CHAR) LEN(06)
+         DCL VAR(&SEC)     TYPE(*CHAR) LEN(05)
+         DCL VAR(&ARUT)    TYPE(*CHAR) LEN(10)
+         DCL VAR(&BRUT)    TYPE(*CHAR) LEN(10)
+         DCL VAR(&ABAS)    TYPE(*CHAR) LEN(10)
+         DCL VAR(&BBAS)    TYPE(*CHAR) LEN(10)
+         DCL VAR(&AGEN)    TYPE(*CHAR) LEN(10)
+         DCL VAR(&USR)     TYPE(*CHAR) LEN(10)
+         DCL VAR(&STOPE)   TYPE(*CHAR) LEN(05)
+         DCL VAR(&REFABAS) TYPE(*CHAR) LEN(10)
+         DCL VAR(&REFAGEN) TYPE(*CHAR) LEN(10)
+         DCL VAR(&REFBGEN) TYPE(*CHAR) LEN(10)
+         DCL VAR(&REEARC)  TYPE(*CHAR) LEN(01)
+         DCL VAR(&RETJOB)  TYPE(*CHAR) LEN(01)
+         DCL VAR(&ADDREG)  TYPE(*CHAR) LEN(01)
+         DCL VAR(&REGUNI)  TYPE(*CHAR) LEN(01)
+
+         IF COND(&RETJOB *EQ 'S') THEN(DO)
+             SBMJOB     CMD(CALL PGM(ASQRY08P) PARM(&CEVE &FPRO +
+                          &HPRO &SEC &ARUT &BRUT &ABAS &BBAS &AGEN +
+                          &USR &STOPE &REFABAS &REFAGEN &REFBGEN +
+                          &REEARC &RETJOB &ADDREG &REGUNI )) +
+                          JOB(&CEVE) LOG(4 0 *MSG) +
+                          LOGCLPGM(*YES) HOLD(*YES) JOBMSGQFL(*WRAP)
+         ENDDO
+         IF COND(&RETJOB *NE 'S') THEN(DO)
+             SBMJOB     CMD(CALL PGM(ASQRY08P) PARM(&CEVE &FPRO +
+                          &HPRO &SEC &ARUT &BRUT &ABAS &BBAS &AGEN +
+                          &USR &STOPE &REFABAS &REFAGEN &REFBGEN +
+                          &REEARC &RETJOB &ADDREG &REGUNI )) +
+                          JOB(&CEVE) LOG(4 0 *MSG) +
+                          LOGCLPGM(*YES) JOBMSGQFL(*WRAP)
+         ENDDO
+
+
+    ENDPGM

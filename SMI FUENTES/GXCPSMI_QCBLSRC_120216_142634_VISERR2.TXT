@@ -1,0 +1,74 @@
+     F*------------------------------------------------------------*
+     F*  SE DEFINEN LOS ARCHIVOS EN LA HOJA F.                     *
+     F*------------------------------------------------------------*
+     FWINERR  CF  E                    WORKSTN
+     F                                        NREL  KSFILE WS01
+      *
+     E                    MSG       100 65               MENSAJES DE ER
+      *
+     I*------------------------------------------------------------*
+     I*  SE DEFINESN ESTRUCTURAS EN LA HOJA I                      *
+     I*------------------------------------------------------------*
+     I            DS
+     I*------------------------------------------------------------*
+     I* EL PRIMER VALOR CORRESPONDE A LA ESTRUCTURA Y LOS DEMAS    *
+     I* VALORES CORRESPONDEN A LA DEFINICION DENTRO DE LA SUBSERIE *
+     I*------------------------------------------------------------*
+      *
+     C*------------------------------------------------------------*
+     C*  LA ESTRUCTURA DE PROGRAMA SE DEFINE EN LA HOJA C          *
+     C*------------------------------------------------------------*
+     C*
+     C           *ENTRY    PLIST
+     C                     PARM           MSG
+     C*
+     C                     EXSR LIMIND
+     C                     WRITEWC01
+     C                     Z-ADD*ZERO     NREL    50
+     C                     MOVE 1         POS     50
+     C                     EXSR LLSFL
+     C*
+     C                     SETON                     LR
+     C*
+     C           LLSFL     BEGSR
+     C           POS       DOWLT101
+     C           MSG,POS   ANDNE' '
+     C                     MOVELMSG,POS   MENSAJ
+     C                     ADD  1         NREL
+     C                     WRITEWS01
+     C                     ADD  1         POS
+     C                     ENDDO
+     C           NREL      IFNE *ZEROS
+     C                     EXSR ACTIND
+     C                     ELSE
+     C                     EXSR ACTCTL
+     C                     ENDIF
+     C                     MOVE *ZERO     BOTON
+     C           BOTON     DOWEQ0
+     C                     EXFMTWC01
+     C                     ENDDO
+     C                     ENDSR
+     C*
+     C*----------------------------------------------------------*
+     C* SUBRUTINA ACTIVA INDICADORES DE SUBFILE                  *
+     C*----------------------------------------------------------*
+     C           ACTIND    BEGSR
+     C                     MOVE *ON       *IN30
+     C                     MOVE *ON       *IN31
+     C                     MOVE *OFF      *IN32
+     C                     ENDSR
+     C*
+     C           ACTCTL    BEGSR
+     C                     MOVE *OFF      *IN30
+     C                     MOVE *ON       *IN31
+     C                     MOVE *OFF      *IN32
+     C                     ENDSR
+     C*
+     C*----------------------------------------------------------*
+     C* SUBRUTINA LIMPIA INDICADORES DE SUBFILE                  *
+     C*----------------------------------------------------------*
+     C           LIMIND    BEGSR
+     C                     MOVE *OFF      *IN30
+     C                     MOVE *OFF      *IN31
+     C                     MOVE *ON       *IN32
+     C                     ENDSR

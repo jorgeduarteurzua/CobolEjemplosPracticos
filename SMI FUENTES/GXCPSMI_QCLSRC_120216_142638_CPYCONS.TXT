@@ -1,0 +1,11 @@
+             PGM        PARM(&ARCBASE &ARCCOPY &BIB)
+
+             DCL VAR(&ARCBASE) TYPE(*CHAR) LEN(10)
+             DCL VAR(&ARCCOPY) TYPE(*CHAR) LEN(10)
+             DCL VAR(&BIB)     TYPE(*CHAR) LEN(10)
+
+             CPYF       FROMFILE(&BIB/&ARCBASE) +
+                          TOFILE(&BIB/&ARCCOPY) TOMBR(&ARCCOPY) +
+                          CRTFILE(*YES)
+
+     FIN:    ENDPGM

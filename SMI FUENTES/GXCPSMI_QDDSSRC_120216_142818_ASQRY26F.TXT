@@ -1,0 +1,13 @@
+     A          R RASQRY26F
+     A*
+     A            NOMCONS       10A         COLHDG('CONSULTA      ')
+     A            NROPEP         4S 0       COLHDG('NUMERO PEPA')
+     A            WHFLDB         5S 0       COLHDG('LONGITUD DEL CAMPO')
+     A            WHFLDD         5S 0       COLHDG('NUMERO DE DIGITOS')
+     A            WHFLDP         2S 0       COLHDG('POSICIONES DEC.')
+     A            WHFTXT        50A         COLHDG('TEXTO DESCRIP-CAMPO')
+     A            WHFLDT         1A         COLHDG('TIPO CAMPO B,A,S,P,O')
+     A            VALPEP       700A         COLHDG('VALOR PEPA')
+     A*
+     A          K NOMCONS
+     A          K NROPEP

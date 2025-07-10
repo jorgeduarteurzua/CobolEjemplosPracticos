@@ -1,0 +1,8 @@
+    PGM  PARM(&CEVE)
+         DCL VAR(&CEVE)  TYPE(*CHAR) LEN(10)
+         DCL VAR(&USR)   TYPE(*CHAR) LEN(10)
+
+         RTVJOBA    USER(&USR)
+
+         CALL PGM(ASQRY08) PARM(&CEVE &USR)
+         ENDPGM

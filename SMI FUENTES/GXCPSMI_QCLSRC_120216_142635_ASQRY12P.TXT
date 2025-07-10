@@ -1,0 +1,123 @@
+    PGM
+         DCLF       FILE(ASQRY11D) RCDFMT(M01 P01 P02 P03 P04 R01)
+         DCL VAR(&USUARIO) TYPE(*CHAR) LEN(10)
+         DCL VAR(&BIBADD)  TYPE(*CHAR) LEN(10)
+         DCL VAR(&LISTBIB) TYPE(*CHAR) LEN(275)
+         DCL VAR(&PI)      TYPE(*DEC)  LEN(3 0)
+         DCL VAR(&FSYS)    TYPE(*CHAR) LEN(6)
+         DCL VAR(&FECHA)   TYPE(*CHAR) LEN(8)
+
+         RTVSYSVAL  SYSVAL(QDATE) RTNVAR(&FSYS)
+         CVTDAT     DATE(&FSYS) TOVAR(&FECHA) FROMFMT(*SYSVAL) +
+                    TOFMT(*DMYY) TOSEP(*NONE)
+         CHGVAR VAR(&FECSYS) VALUE(&FECHA)
+         RTVJOBA    USER(&USUARIO) USRLIBL(&LISTBIB)
+
+         CALL       PGM(ASQRY19)
+
+    INICIO:
+         SNDRCVF RCDFMT(R01) WAIT(*NO)
+         SNDRCVF RCDFMT(M01) WAIT(*YES)
+         IF COND(&IN03 *EQ '1') THEN(DO)
+            CHGLIBL    LIBL(*NONE)
+            CHGVAR VAR(&PI) VALUE(1)
+            GOTO CMDLBL(RESTBIB)
+         ENDDO
+         IF COND(&MNB001 *EQ 1) THEN(DO)
+            GOTO CMDLBL(MP01)
+         ENDDO
+         IF COND(&MNB001 *EQ 2) THEN(DO)
+            GOTO CMDLBL(MP02)
+         ENDDO
+         IF COND(&MNB001 *EQ 3) THEN(DO)
+            GOTO CMDLBL(MP03)
+         ENDDO
+         IF COND(&MNB001 *EQ 4) THEN(DO)
+            GOTO CMDLBL(MP04)
+         ENDDO
+         GOTO CMDLBL(INICIO)
+
+    MP01:
+         RCVF RCDFMT(P01) WAIT(*YES)
+         IF COND(&OPCIONP01 *EQ 1) THEN(DO)
+            CALL PGM(ASQRY01)
+         ENDDO
+         IF COND(&OPCIONP01 *EQ 2) THEN(DO)
+            CALL PGM(ASQRY22) PARM(&USUARIO)
+         ENDDO
+         IF COND(&OPCIONP01 *EQ 3) THEN(DO)
+            CALL PGM(ASQRY15)
+         ENDDO
+         IF COND(&OPCIONP01 *EQ 4) THEN(DO)
+            CALL PGM(ASQRY16)
+         ENDDO
+         IF COND(&OPCIONP01 *EQ 5) THEN(DO)
+            CALL PGM(ASQRY21)
+         ENDDO
+         IF COND(&OPCIONP01 *EQ 6) THEN(DO)
+            CALL PGM(ASQRY37) PARM(&USUARIO)
+         ENDDO
+         GOTO CMDLBL(INICIO)
+
+    MP02:
+         RCVF       RCDFMT(P02) WAIT(*YES)
+         IF COND(&OPCIONP02 *EQ 1) THEN(DO)
+            CALL PGM(ASQRY02P)
+         ENDDO
+         IF COND(&OPCIONP02 *EQ 2) THEN(DO)
+            CALL PGM(ASQRY04P)
+         ENDDO
+         IF COND(&OPCIONP02 *EQ 3) THEN(DO)
+            CALL PGM(ASQRY10P)
+         ENDDO
+         GOTO CMDLBL(INICIO)
+
+    MP03:
+         RCVF       RCDFMT(P03) WAIT(*YES)
+         IF COND(&OPCIONP03 *EQ 1) THEN(DO)
+            CALL PGM(ASQRY18P)
+         ENDDO
+         IF COND(&OPCIONP03 *EQ 2) THEN(DO)
+            CALL PGM(ASQRY19P)
+         ENDDO
+         IF COND(&OPCIONP03 *EQ 3) THEN(DO)
+            CALL PGM(ASQRY30) PARM(&USUARIO)
+         ENDDO
+         IF COND(&OPCIONP03 *EQ 4) THEN(DO)
+            CALL PGM(ASQRY28) PARM(&USUARIO)
+         ENDDO
+         IF COND(&OPCIONP03 *EQ 5) THEN(DO)
+            CALL PGM(ASQRY44) PARM(&USUARIO)
+         ENDDO
+         IF COND(&OPCIONP03 *EQ 6) THEN(DO)
+            CALL PGM(ASQRY40) PARM(&USUARIO)
+         ENDDO
+         GOTO CMDLBL(INICIO)
+
+    MP04:
+         RCVF       RCDFMT(P04) WAIT(*YES)
+         IF COND(&OPCIONP04 *EQ 1) THEN(DO)
+            CALL PGM(ASQRY09P)
+         ENDDO
+         IF COND(&OPCIONP04 *EQ 2) THEN(DO)
+            CALL PGM(ASQRY14)
+         ENDDO
+         IF COND(&OPCIONP04 *EQ 3) THEN(DO)
+            CALL PGM(ASQRY29)
+         ENDDO
+         GOTO CMDLBL(INICIO)
+
+    RESTBIB:
+         IF COND(&PI *GT 275) THEN(DO)
+            GOTO CMDLBL(FIN)
+         ENDDO
+         IF COND(%SST(&LISTBIB &PI 10) *NE '          ') THEN(DO)
+            CHGVAR VAR(&BIBADD) VALUE(%SST(&LISTBIB &PI 10))
+            ADDLIBLE   LIB(&BIBADD) POSITION(*LAST)
+            MONMSG     MSGID(CPF0000)
+         ENDDO
+         CHGVAR VAR(&PI) VALUE(&PI + 11)
+         GOTO CMDLBL(RESTBIB)
+
+
+    FIN: ENDPGM

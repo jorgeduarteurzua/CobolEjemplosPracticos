@@ -1,0 +1,11 @@
+     A                                      UNIQUE
+     A          R RASQRY16F
+     A            NOMFUN        10A         COLHDG('NOMBRE FUNCION')
+     A            SECFUN         2S 0       COLHDG('SECUENCIA     ')
+     A            TEXFLD        50A         COLHDG('TEXTO CAMPO')
+     A            TIPFLD         1A         COLHDG('TIPO DE CAMPO')
+     A            VALFLD         1A         COLHDG('C=CAMPO;V=VALOR')
+     A*
+     A          K NOMFUN
+     A          K SECFUN
+     A*

@@ -1,0 +1,11 @@
+     A                                      UNIQUE
+     A          R RASQRY14F
+     A            NOMFUN        10A         COLHDG('NOMBRE FUNCION')
+     A            TEXFUN        50A         COLHDG('TEXTO FUNCION ')
+     A            TIPFLD         1A         COLHDG('N=NUMERIC;A=CHAR')
+     A            SENSQL      1330A         COLHDG('SENTENCIA SQL   ')
+     A            NROFLD         2S 0       COLHDG('NRO. CAMPOS SOL.')
+     A            CONGRP         2S 0       COLHDG('1=SI; 2=NO      ')
+     A*
+     A          K NOMFUN
+     A*

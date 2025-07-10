@@ -1,0 +1,1785 @@
+       IDENTIFICATION DIVISION.
+      *------------------------
+       PROGRAM-ID.  ASQRY17.
+       AUTHOR. JORGE DUARTE U.
+       ENVIRONMENT DIVISION.
+       CONFIGURATION SECTION.
+       SOURCE-COMPUTER.  IBM-AS400.
+       OBJECT-COMPUTER.  IBM-AS400.
+       SPECIAL-NAMES. LOCAL-DATA IS LOCAL.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+      *-------------
+
+           SELECT ASQRY14F    ASSIGN       TO DATABASE-ASQRY14F
+                             ORGANIZATION IS INDEXED
+                             ACCESS MODE  IS DYNAMIC
+                             RECORD KEY   IS EXTERNALLY-DESCRIBED-KEY
+                             FILE STATUS  IS FS-ASQRY14F.
+
+           SELECT ASQRY16F    ASSIGN       TO DATABASE-ASQRY16F
+                             ORGANIZATION IS INDEXED
+                             ACCESS MODE  IS DYNAMIC
+                             RECORD KEY   IS EXTERNALLY-DESCRIBED-KEY
+                             FILE STATUS  IS FS-ASQRY16F.
+
+           SELECT PANTALLA   ASSIGN        TO WORKSTATION-ASQRY15D-SI
+                             ORGANIZATION  IS TRANSACTION
+                             ACCESS MODE   IS DYNAMIC
+                             RELATIVE KEY  IS NREL
+                             CONTROL-AREA  IS AREA-CONTROL
+                             FILE STATUS   IS FS-PANTALLA.
+
+           SELECT PANTALLA2  ASSIGN        TO WORKSTATION-ASQRY15D-SI
+                             ORGANIZATION  IS TRANSACTION
+                             ACCESS MODE   IS DYNAMIC
+                             RELATIVE KEY  IS NREL2
+                             CONTROL-AREA  IS AREA-CONTROL
+                             FILE STATUS   IS FS-PANTALLA2.
+
+
+       DATA DIVISION.
+       FILE SECTION.
+      *-------------
+       FD  ASQRY14F  LABEL RECORD STANDARD.
+       01  REG-ASQRY14F.
+           COPY  DDS-ALL-FORMAT OF ASQRY14F.
+
+       FD  ASQRY16F  LABEL RECORD STANDARD.
+       01  REG-ASQRY16F.
+           COPY  DDS-ALL-FORMAT OF ASQRY16F.
+
+       FD  PANTALLA LABEL RECORD STANDARD.
+       01  R-PANTALLA           PIC X(9000).
+
+       FD  PANTALLA2 LABEL RECORD STANDARD.
+       01  R-PANTALLA2          PIC X(9000).
+
+      *
+       WORKING-STORAGE SECTION.
+      *------------------------
+       77 Y10                   PIC 9(2).
+       77 SALIR-Y10             PIC X.
+
+       77 CAN-FUNCIONES         PIC 9(2).
+       77 P-GRP                 PIC 9(2).
+       77 DELIMITADOR           PIC X(12).
+
+       77 AAAAMMDD              PIC X(8).
+       77 DDMMAAAA              PIC X(8).
+       77 FECSYS-AMD            PIC S9(8).
+       77 WS-SENRES             PIC X(10000).
+       77 WS-SECRES             PIC S9(7).
+       77 PRA-PARTE             PIC 9(4).
+
+       77 SEC-ORDEN             PIC 9(2).
+       77 POS-INI               PIC 9(5).
+       77 P-INI-G               PIC 9(5).
+       77 P-INI-O               PIC 9(3).
+       77 P-FX                  PIC 9(5).
+       77 I-PFX                 PIC 9(5).
+       77 ORDEN-X4              PIC X(4).
+
+       77 FX-EDITADA-1          PIC  ZZZ,ZZZ,ZZZ,ZZZ,ZZZ,ZZ9-.
+       77 FX-EDITADA-2          PIC  ZZZ,ZZZ,ZZZ,ZZZ,ZZZ,ZZ9-.
+       77 FX-EDITADA-3          PIC  ZZZ,ZZZ,ZZZ,ZZZ,ZZZ,ZZ9-.
+       77 FX-EDITADA-4          PIC  ZZZ,ZZZ,ZZZ,ZZZ,ZZZ,ZZ9-.
+       77 FX-EDITADA-5          PIC  ZZZ,ZZZ,ZZZ,ZZZ,ZZZ,ZZ9-.
+       77 FX-EDITADA-6          PIC  ZZZ,ZZZ,ZZZ,ZZZ,ZZZ,ZZ9-.
+       77 FX-EDITADA-7          PIC  ZZZ,ZZZ,ZZZ,ZZZ,ZZZ,ZZ9-.
+       77 FX-EDITADA-8          PIC  ZZZ,ZZZ,ZZZ,ZZZ,ZZZ,ZZ9-.
+       77 FX-EDITADA-9          PIC  ZZZ,ZZZ,ZZZ,ZZZ,ZZZ,ZZ9-.
+       77 FX-EDITADA-10         PIC  ZZZ,ZZZ,ZZZ,ZZZ,ZZZ,ZZ9-.
+
+       77 SEN-SQL               PIC X(6000).
+       77 SEN-GROUP             PIC X(120).
+       77 SEN-GROUP-1           PIC X(120).
+       77 SEN-GROUP-F           PIC X(120).
+       77 SEN-ORDEN             PIC X(50).
+       77 SEN-EJECUTAR          PIC X(10000).
+       77 SEN-FUNCION           PIC X(2700).
+       77 NOMFUN-WS             PIC X(10).
+       77 CUENTA-WS             PIC S9(5).
+
+       77 WS-NOMFLD             PIC X(10).
+       77 WS-NOMFUN             PIC X(10).
+       77 WS-TEXFUN             PIC X(50).
+       77 WS-TIPFLD             PIC X(01).
+       77 WS-SENSQL             PIC X(100).
+       77 WS-RESTO-CAMPOS       PIC X(1330).
+       77 WS-FUNCION-CAMPOS     PIC X(1330).
+       77 WS-RESTO-CAMPOS-GRP   PIC X(1330).
+       77 WS-FUNCION-CAMPOS-GRP PIC X(1330).
+       77 WS-NROFLD             PIC S9(2).
+       77 WS-CONGRP             PIC S9(2).
+       77 WS-REGREL             PIC S9(5).
+       77 WS-CAMPO-CON          PIC X(40).
+       77 WS-TIPO               PIC X.
+
+       77 WS-ERROR              PIC 9(01).
+       77 WS-CAMPO              PIC X(10).
+       77 CUENTA-CAMPO          PIC S9(5).
+       77 WS-FUNCIONSQL-1       PIC S9(18).
+       77 WS-FUNCIONSQL-2       PIC S9(18).
+       77 WS-FUNCIONSQL-3       PIC S9(18).
+       77 WS-FUNCIONSQL-4       PIC S9(18).
+       77 WS-FUNCIONSQL-5       PIC S9(18).
+       77 WS-FUNCIONSQL-6       PIC S9(18).
+       77 WS-FUNCIONSQL-7       PIC S9(18).
+       77 WS-FUNCIONSQL-8       PIC S9(18).
+       77 WS-FUNCIONSQL-9       PIC S9(18).
+       77 WS-FUNCIONSQL-10      PIC S9(18).
+       77 WS-GROUPBY-SQL        PIC X(2000).
+       77 WS-GROUPBYSQL         PIC X(2000).
+       77 WS-GROUPBYSQL1        PIC X(2000).
+       77 WS-RESTOSQL           PIC X(2000).
+       77 WS-RESTOSQL1          PIC X(2000).
+
+       77 NREL                  PIC 9(4).
+       77 NREL2                 PIC 9(4).
+       77 R-REL                 PIC 9(4).
+       77 WS-DATECUR            PIC 9(08).
+       77 I-ON                  PIC 1 VALUE B"1".
+       77 I-OFF                 PIC 1 VALUE B"0".
+
+           EXEC SQL
+              INCLUDE SQLCA
+           END-EXEC.
+
+       01 LINEA-RESUMEN.
+           05 L1-R PIC X(70) VALUE
+           "+-----------------------------------------------------------
+      -    "---------+".
+           05 L2-R PIC X(70) VALUE
+           "|
+      -    "         |".
+           05 L3-R PIC X(70) VALUE
+           "| Función    Descripción Función
+      -    "         |".
+           05 L4-R PIC X(70) VALUE
+           "| Campos Ordenación/Agrupación
+      -    "         |".
+           05 L5-R PIC X(70) VALUE
+           "|               R E S U M E N  DE  F U N C I O N
+      -    "         |".
+           05 L6-R PIC X(70) VALUE
+           "|                 F I N    DE   R E S U M E N
+      -    "         |".
+           05 L7-R PIC X(70) VALUE
+           "| Campos Selección Función
+      -    "         |".
+
+       01 WS-VARIABLES-DE-TRABAJO.
+          05 INSREG             PIC X(500).
+          05 HORA-SYS.
+             10 HORSYS-HMS      PIC S9(6).
+             10 FILLER          PIC 9(2).
+
+       01 WS-ESTADOS.
+          05 FS-ASQRY14F         PIC X(02) VALUE "00".
+          05 FS-ASQRY16F         PIC X(02) VALUE "00".
+          05 FS-PANTALLA        PIC X(02) VALUE "00".
+          05 FS-PANTALLA2       PIC X(02) VALUE "00".
+
+       01 PARA-ASQRY05.
+          05 NOMAYU-16C          PIC X(10).
+          05 SELECC-16C          PIC X(500).
+          05 RETORNO-16C.
+             10 CODIGO-16C          PIC X(500).
+             10 LARGOKEY-16C        PIC 9(03).
+             10 LARGODES-16C        PIC 9(03).
+
+       01 AREA-CONTROL.
+          05 MDTO               PIC 9(02).
+             88 INTRO           VALUE 00.
+             88 F3              VALUE 03.
+             88 F4              VALUE 04.
+             88 F7              VALUE 07.
+             88 F9              VALUE 09.
+             88 F12             VALUE 12.
+
+       01 DATOS-SQL01.
+          05 GROUPBY-SQL        PIC X(2000).
+          05 FUNCION-SQL-1      PIC S9(18).
+
+       01 DATOS-SQL02.
+          05 GROUPBY-SQL        PIC X(2000).
+          05 FUNCION-SQL-1      PIC S9(18).
+          05 FUNCION-SQL-2      PIC S9(18).
+
+       01 DATOS-SQL03.
+          05 GROUPBY-SQL        PIC X(2000).
+          05 FUNCION-SQL-1      PIC S9(18).
+          05 FUNCION-SQL-2      PIC S9(18).
+          05 FUNCION-SQL-3      PIC S9(18).
+
+       01 DATOS-SQL04.
+          05 GROUPBY-SQL        PIC X(2000).
+          05 FUNCION-SQL-1      PIC S9(18).
+          05 FUNCION-SQL-2      PIC S9(18).
+          05 FUNCION-SQL-3      PIC S9(18).
+          05 FUNCION-SQL-4      PIC S9(18).
+
+       01 DATOS-SQL05.
+          05 GROUPBY-SQL        PIC X(2000).
+          05 FUNCION-SQL-1      PIC S9(18).
+          05 FUNCION-SQL-2      PIC S9(18).
+          05 FUNCION-SQL-3      PIC S9(18).
+          05 FUNCION-SQL-4      PIC S9(18).
+          05 FUNCION-SQL-5      PIC S9(18).
+
+       01 DATOS-SQL06.
+          05 GROUPBY-SQL        PIC X(2000).
+          05 FUNCION-SQL-1      PIC S9(18).
+          05 FUNCION-SQL-2      PIC S9(18).
+          05 FUNCION-SQL-3      PIC S9(18).
+          05 FUNCION-SQL-4      PIC S9(18).
+          05 FUNCION-SQL-5      PIC S9(18).
+          05 FUNCION-SQL-6      PIC S9(18).
+
+       01 DATOS-SQL07.
+          05 GROUPBY-SQL        PIC X(2000).
+          05 FUNCION-SQL-1      PIC S9(18).
+          05 FUNCION-SQL-2      PIC S9(18).
+          05 FUNCION-SQL-3      PIC S9(18).
+          05 FUNCION-SQL-4      PIC S9(18).
+          05 FUNCION-SQL-5      PIC S9(18).
+          05 FUNCION-SQL-6      PIC S9(18).
+          05 FUNCION-SQL-7      PIC S9(18).
+
+       01 DATOS-SQL08.
+          05 GROUPBY-SQL        PIC X(2000).
+          05 FUNCION-SQL-1      PIC S9(18).
+          05 FUNCION-SQL-2      PIC S9(18).
+          05 FUNCION-SQL-3      PIC S9(18).
+          05 FUNCION-SQL-4      PIC S9(18).
+          05 FUNCION-SQL-5      PIC S9(18).
+          05 FUNCION-SQL-6      PIC S9(18).
+          05 FUNCION-SQL-7      PIC S9(18).
+          05 FUNCION-SQL-8      PIC S9(18).
+
+       01 DATOS-SQL09.
+          05 GROUPBY-SQL        PIC X(2000).
+          05 FUNCION-SQL-1      PIC S9(18).
+          05 FUNCION-SQL-2      PIC S9(18).
+          05 FUNCION-SQL-3      PIC S9(18).
+          05 FUNCION-SQL-4      PIC S9(18).
+          05 FUNCION-SQL-5      PIC S9(18).
+          05 FUNCION-SQL-6      PIC S9(18).
+          05 FUNCION-SQL-7      PIC S9(18).
+          05 FUNCION-SQL-8      PIC S9(18).
+          05 FUNCION-SQL-9      PIC S9(18).
+
+       01 DATOS-SQL10.
+          05 GROUPBY-SQL        PIC X(2000).
+          05 FUNCION-SQL-1      PIC S9(18).
+          05 FUNCION-SQL-2      PIC S9(18).
+          05 FUNCION-SQL-3      PIC S9(18).
+          05 FUNCION-SQL-4      PIC S9(18).
+          05 FUNCION-SQL-5      PIC S9(18).
+          05 FUNCION-SQL-6      PIC S9(18).
+          05 FUNCION-SQL-7      PIC S9(18).
+          05 FUNCION-SQL-8      PIC S9(18).
+          05 FUNCION-SQL-9      PIC S9(18).
+          05 FUNCION-SQL-10     PIC S9(18).
+
+       01 ARREGLOS-DE-TRABAJO.
+          05 CTA-MSG              PIC 9(3).
+          05 VARIABLE-3250        PIC X(6500).
+          05 VAR-ARR-3250 REDEFINES VARIABLE-3250 OCCURS 100 TIMES
+                          ASCENDING KEY IS TEXTO-ARR.
+             10 TEXTO-ARR         PIC X(65).
+      *
+       01 WC01-II.
+          COPY DDS-WC01-I       OF ASQRY15D.
+
+       01 WC01-IND.
+          COPY DDS-WC01-INDIC   OF ASQRY15D.
+
+       01 WS01-OO.
+          COPY DDS-WS01-O       OF ASQRY15D.
+
+      *
+       01 WC02-II.
+          COPY DDS-WC02-I       OF ASQRY15D.
+
+       01 WC02-IND.
+          COPY DDS-WC02-INDIC   OF ASQRY15D.
+
+       01 WS02-OO.
+          COPY DDS-WS02-O       OF ASQRY15D.
+
+       LINKAGE SECTION.
+       01 PARA-LNK.
+          05 ARCHIVO-LNK           PIC X(10).
+          05 BIBLIOTECA-LNK        PIC X(10).
+          05 ARCHIVO-BASE-LNK      PIC X(10).
+          05 CODEVE-LNK            PIC X(10).
+          05 FECPRO-LNK            PIC S9(8).
+          05 HORPRO-LNK            PIC S9(6).
+          05 SECEJE-LNK            PIC S9(5).
+
+       PROCEDURE DIVISION USING PARA-LNK.
+      *----------------------------------
+           PERFORM INICIO
+           PERFORM PROCESO UNTIL F3
+           PERFORM TERMINO
+           GOBACK.
+
+      *
+       INICIO.
+      *-------
+           OPEN I-O PANTALLA
+                INPUT ASQRY14F ASQRY16F.
+           INITIALIZE WC01-I REPLACING
+                      ALPHANUMERIC DATA BY SPACES
+                      NUMERIC      DATA BY ZEROES.
+
+           CALL   "MRTVDAF2" USING AAAAMMDD DDMMAAAA
+           CANCEL "MRTVDAF2"
+           ACCEPT HORA-SYS FROM TIME
+
+           CALL "MRTVDAF1" USING WS-DATECUR
+           MOVE WS-DATECUR       TO DATECUR OF WC01-II.
+           MOVE ZEROES           TO MDTO
+           PERFORM LIMPIA-WS01
+           MOVE ARCHIVO-LNK      TO ARCHIVO    OF WC01-II
+           MOVE BIBLIOTECA-LNK   TO BIBLIOTECA OF WC01-II
+           MOVE I-ON TO IN31  OF WC01-O-INDIC
+           MOVE I-OFF TO IN30 OF WC01-O-INDIC
+                         IN32 OF WC01-O-INDIC.
+      *
+       PROCESO.
+      *--------
+           WRITE R-PANTALLA FROM WC01-II FORMAT "WC01"
+                             INDICATORS ARE WC01-O-INDIC END-WRITE
+           READ  PANTALLA   INTO WC01-II FORMAT "WC01"
+                             INDICATORS ARE WC01-I-INDIC END-READ.
+
+           MOVE    SPACES        TO VARIABLE-3250
+           MOVE    ZEROES        TO CTA-MSG
+                                    WS-ERROR
+
+           IF F7
+              PERFORM SELECCIONA-FUNCION
+           ELSE
+           IF F4
+              IF REGCURSOR OF WC01-II = "WS01" AND
+                 CAMCURSOR OF WC01-II = "CAMPOSEL"
+                 PERFORM AYUDA-SFL-WS01
+              END-IF
+           ELSE
+           IF F9
+              PERFORM CHEQUEA-VALORES-INGRESADOS
+              IF WS-ERROR = 0
+                 MOVE SENSQL OF ASQRY14F TO SEN-FUNCION
+                 PERFORM PROCESO-PANTALLA2.
+
+           IF CTA-MSG NOT = ZEROES
+              CALL    "VISERR2" USING VARIABLE-3250
+              CANCEL  "VISERR2"
+           END-IF.
+      *
+       PROCESO-PANTALLA2.
+      *------------------
+           OPEN I-O PANTALLA2
+           INITIALIZE WC02-I REPLACING
+                      ALPHANUMERIC DATA BY SPACES
+                      NUMERIC      DATA BY ZEROES
+
+           MOVE WS-DATECUR       TO DATECUR OF WC02-II
+           MOVE ZEROES           TO MDTO
+
+           PERFORM LIMPIA-WS02
+
+           MOVE ARCHIVO-LNK      TO ARCHIVO    OF WC02-II
+           MOVE BIBLIOTECA-LNK   TO BIBLIOTECA OF WC02-II
+           MOVE WS-NOMFUN        TO FUNCION    OF WC02-II
+           MOVE WS-TEXFUN        TO TFUNCION   OF WC02-II
+           IF WS-CONGRP = 1
+              MOVE I-ON          TO IN50 OF WC02-O-INDIC
+           ELSE
+              MOVE I-OFF         TO IN50 OF WC02-O-INDIC
+           END-IF
+           MOVE I-ON  TO IN31 OF WC02-O-INDIC
+           MOVE I-OFF TO IN30 OF WC02-O-INDIC
+                         IN32 OF WC02-O-INDIC
+
+           PERFORM PROCESO-2 UNTIL F12
+
+           MOVE ZEROES TO MDTO
+           CLOSE    PANTALLA2.
+      *
+       PROCESO-2.
+      *----------
+           WRITE R-PANTALLA2 FROM WC02-II FORMAT "WC02"
+                             INDICATORS ARE WC02-O-INDIC END-WRITE
+           READ  PANTALLA2   INTO WC02-II FORMAT "WC02"
+                             INDICATORS ARE WC02-I-INDIC END-READ.
+
+           MOVE    SPACES        TO VARIABLE-3250
+           MOVE    ZEROES        TO CTA-MSG
+           IF F4
+              IF REGCURSOR OF WC02-II = "WC02" AND
+                (CAMCURSOR OF WC02-II = "AGRUP01" OR "AGRUP02"
+                                     OR "AGRUP03" OR "AGRUP04"
+                                     OR "AGRUP05" OR "AGRUP06"
+                                     OR "AGRUP07" OR "AGRUP08"
+                                     OR "AGRUP09" OR "AGRUP10"
+                                     )
+                 PERFORM AYUDA-AGRUPACION
+                 EVALUATE CAMCURSOR OF WC02-II
+                   WHEN "AGRUP01" MOVE WS-NOMFLD TO AGRUP01 OF WC02-II
+                   WHEN "AGRUP02" MOVE WS-NOMFLD TO AGRUP02 OF WC02-II
+                   WHEN "AGRUP03" MOVE WS-NOMFLD TO AGRUP03 OF WC02-II
+                   WHEN "AGRUP04" MOVE WS-NOMFLD TO AGRUP04 OF WC02-II
+                   WHEN "AGRUP05" MOVE WS-NOMFLD TO AGRUP05 OF WC02-II
+                   WHEN "AGRUP06" MOVE WS-NOMFLD TO AGRUP06 OF WC02-II
+                   WHEN "AGRUP07" MOVE WS-NOMFLD TO AGRUP07 OF WC02-II
+                   WHEN "AGRUP08" MOVE WS-NOMFLD TO AGRUP08 OF WC02-II
+                   WHEN "AGRUP09" MOVE WS-NOMFLD TO AGRUP09 OF WC02-II
+                   WHEN "AGRUP10" MOVE WS-NOMFLD TO AGRUP10 OF WC02-II
+                 END-EVALUATE
+              END-IF
+           ELSE
+           IF F7
+              PERFORM ANADIR-RESUMEN
+           ELSE
+           IF F9
+              PERFORM GENERA-SENTENCIA.
+
+           IF CTA-MSG NOT = ZEROES
+              CALL    "VISERR2" USING VARIABLE-3250
+              CANCEL  "VISERR2"
+           END-IF.
+      *
+       ANADIR-RESUMEN.
+      *---------------
+           IF IN30 OF WC02-O-INDIC = I-ON
+              MOVE AAAAMMDD     TO FECSYS-AMD
+              MOVE ZEROES       TO WS-SECRES
+              EXEC SQL
+           SELECT MAX(SECRES) INTO :WS-SECRES FROM ASQRY15F WHERE CODEVE
+           = :CODEVE-LNK AND FECPRO1 = :FECPRO-LNK AND HORPRO1 =
+           :HORPRO-LNK AND SECEJE = :SECEJE-LNK AND FECRES = :FECSYS-AMD
+              END-EXEC
+              ADD  1             TO WS-SECRES
+              PERFORM ARMA-RESULTADO-FUNCION.
+
+      *
+       ARMA-RESULTADO-FUNCION.
+      *------------------------
+              MOVE SPACES        TO WS-SENRES
+              MOVE L1-R          TO WS-SENRES
+              PERFORM INSERTAR-ASQRY15F
+
+              ADD  1             TO WS-SECRES
+              MOVE SPACES        TO WS-SENRES
+              MOVE L3-R          TO WS-SENRES
+              PERFORM INSERTAR-ASQRY15F
+
+              ADD  1             TO WS-SECRES
+              MOVE SPACES        TO WS-SENRES
+              MOVE L1-R          TO WS-SENRES
+              PERFORM INSERTAR-ASQRY15F
+
+              ADD  1             TO WS-SECRES
+              MOVE SPACES        TO WS-SENRES
+              MOVE L2-R          TO WS-SENRES
+              MOVE FUNCION  OF WC02-II TO WS-SENRES(3:10)
+              MOVE TFUNCION OF WC02-II TO WS-SENRES(14:50)
+              PERFORM INSERTAR-ASQRY15F
+
+              ADD  1             TO WS-SECRES
+              MOVE SPACES        TO WS-SENRES
+              MOVE L1-R          TO WS-SENRES
+              PERFORM INSERTAR-ASQRY15F
+
+              ADD  1             TO WS-SECRES
+              MOVE SPACES        TO WS-SENRES
+              MOVE L7-R          TO WS-SENRES
+              PERFORM INSERTAR-ASQRY15F
+
+              ADD  1             TO WS-SECRES
+              MOVE SPACES        TO WS-SENRES
+              MOVE L1-R          TO WS-SENRES
+              PERFORM INSERTAR-ASQRY15F
+
+              ADD  1             TO WS-SECRES
+              MOVE SPACES        TO WS-SENRES
+              MOVE L2-R          TO WS-SENRES
+              MOVE SEN-FUNCION(1:60) TO WS-SENRES(3:60)
+              PERFORM INSERTAR-ASQRY15F
+
+              ADD  1             TO WS-SECRES
+              MOVE SPACES        TO WS-SENRES
+              MOVE L2-R          TO WS-SENRES
+              MOVE SEN-FUNCION(61:60) TO WS-SENRES(3:60)
+              PERFORM INSERTAR-ASQRY15F
+
+              ADD  1             TO WS-SECRES
+              MOVE SPACES        TO WS-SENRES
+              MOVE L2-R          TO WS-SENRES
+              MOVE SEN-FUNCION(121:60) TO WS-SENRES(3:60)
+              PERFORM INSERTAR-ASQRY15F
+
+              ADD  1             TO WS-SECRES
+              MOVE SPACES        TO WS-SENRES
+              MOVE L2-R          TO WS-SENRES
+              MOVE SEN-FUNCION(181:60) TO WS-SENRES(3:60)
+              PERFORM INSERTAR-ASQRY15F
+
+              ADD  1             TO WS-SECRES
+              MOVE SPACES        TO WS-SENRES
+              MOVE L1-R          TO WS-SENRES
+              PERFORM INSERTAR-ASQRY15F
+
+              ADD  1             TO WS-SECRES
+              MOVE SPACES        TO WS-SENRES
+              MOVE L4-R          TO WS-SENRES
+              PERFORM INSERTAR-ASQRY15F
+
+              ADD  1             TO WS-SECRES
+              MOVE SPACES        TO WS-SENRES
+              MOVE L1-R          TO WS-SENRES
+              PERFORM INSERTAR-ASQRY15F
+
+           IF AGRUP01 OF WC02-II NOT = SPACES
+              ADD  1             TO WS-SECRES
+              MOVE SPACES        TO WS-SENRES
+              MOVE L2-R          TO WS-SENRES
+              MOVE AGRUP01 OF WC02-II TO WS-SENRES(3:10)
+              PERFORM INSERTAR-ASQRY15F
+           END-IF
+           IF AGRUP02 OF WC02-II NOT = SPACES
+              ADD  1             TO WS-SECRES
+              MOVE SPACES        TO WS-SENRES
+              MOVE L2-R          TO WS-SENRES
+              MOVE AGRUP02 OF WC02-II TO WS-SENRES(3:10)
+              PERFORM INSERTAR-ASQRY15F
+           END-IF
+           IF AGRUP03 OF WC02-II NOT = SPACES
+              ADD  1             TO WS-SECRES
+              MOVE SPACES        TO WS-SENRES
+              MOVE L2-R          TO WS-SENRES
+              MOVE AGRUP03 OF WC02-II TO WS-SENRES(3:10)
+              PERFORM INSERTAR-ASQRY15F
+           END-IF
+           IF AGRUP04 OF WC02-II NOT = SPACES
+              ADD  1             TO WS-SECRES
+              MOVE SPACES        TO WS-SENRES
+              MOVE L2-R          TO WS-SENRES
+              MOVE AGRUP04 OF WC02-II TO WS-SENRES(3:10)
+              PERFORM INSERTAR-ASQRY15F
+           END-IF
+           IF AGRUP05 OF WC02-II NOT = SPACES
+              ADD  1             TO WS-SECRES
+              MOVE SPACES        TO WS-SENRES
+              MOVE L2-R          TO WS-SENRES
+              MOVE AGRUP05 OF WC02-II TO WS-SENRES(3:10)
+              PERFORM INSERTAR-ASQRY15F
+           END-IF
+           IF AGRUP06 OF WC02-II NOT = SPACES
+              ADD  1             TO WS-SECRES
+              MOVE SPACES        TO WS-SENRES
+              MOVE L2-R          TO WS-SENRES
+              MOVE AGRUP06 OF WC02-II TO WS-SENRES(3:10)
+              PERFORM INSERTAR-ASQRY15F
+           END-IF
+           IF AGRUP07 OF WC02-II NOT = SPACES
+              ADD  1             TO WS-SECRES
+              MOVE SPACES        TO WS-SENRES
+              MOVE L2-R          TO WS-SENRES
+              MOVE AGRUP07 OF WC02-II TO WS-SENRES(3:10)
+              PERFORM INSERTAR-ASQRY15F
+           END-IF
+           IF AGRUP08 OF WC02-II NOT = SPACES
+              ADD  1             TO WS-SECRES
+              MOVE SPACES        TO WS-SENRES
+              MOVE L2-R          TO WS-SENRES
+              MOVE AGRUP08 OF WC02-II TO WS-SENRES(3:10)
+              PERFORM INSERTAR-ASQRY15F
+           END-IF
+           IF AGRUP09 OF WC02-II NOT = SPACES
+              ADD  1             TO WS-SECRES
+              MOVE SPACES        TO WS-SENRES
+              MOVE L2-R          TO WS-SENRES
+              MOVE AGRUP09 OF WC02-II TO WS-SENRES(3:10)
+              PERFORM INSERTAR-ASQRY15F
+           END-IF
+           IF AGRUP10 OF WC02-II NOT = SPACES
+              ADD  1             TO WS-SECRES
+              MOVE SPACES        TO WS-SENRES
+              MOVE L2-R          TO WS-SENRES
+              MOVE AGRUP10 OF WC02-II TO WS-SENRES(3:10)
+              PERFORM INSERTAR-ASQRY15F
+           END-IF
+
+              ADD  1             TO WS-SECRES
+              MOVE SPACES        TO WS-SENRES
+              MOVE L1-R          TO WS-SENRES
+              PERFORM INSERTAR-ASQRY15F
+
+              ADD  1             TO WS-SECRES
+              MOVE SPACES        TO WS-SENRES
+              MOVE L5-R          TO WS-SENRES
+              PERFORM INSERTAR-ASQRY15F
+
+              ADD  1             TO WS-SECRES
+              MOVE SPACES        TO WS-SENRES
+              MOVE L1-R          TO WS-SENRES
+              PERFORM INSERTAR-ASQRY15F
+
+           MOVE NREL2      TO R-REL
+           PERFORM VARYING NREL2 FROM 1 BY 1 UNTIL NREL2 > R-REL
+               READ SUBFILE PANTALLA2 INTO WS02-OO FORMAT "WS02"
+                    END-READ
+               IF FS-PANTALLA2 = "00"
+                  ADD  1             TO WS-SECRES
+                  MOVE SPACES            TO WS-SENRES
+                  MOVE SELECC OF WS02-OO TO WS-SENRES
+                  PERFORM INSERTAR-ASQRY15F
+               END-IF
+           END-PERFORM.
+
+              ADD  1             TO WS-SECRES
+              MOVE SPACES        TO WS-SENRES
+              MOVE L1-R          TO WS-SENRES
+              PERFORM INSERTAR-ASQRY15F
+
+              ADD  1             TO WS-SECRES
+              MOVE SPACES        TO WS-SENRES
+              MOVE L6-R          TO WS-SENRES
+              PERFORM INSERTAR-ASQRY15F
+
+              ADD  1             TO WS-SECRES
+              MOVE SPACES        TO WS-SENRES
+              MOVE L1-R          TO WS-SENRES
+              PERFORM INSERTAR-ASQRY15F.
+
+      *
+       INSERTAR-ASQRY15F.
+      *-----------------
+           EXEC SQL
+           INSERT INTO  ASQRY15F VALUES(:CODEVE-LNK,
+           :FECPRO-LNK, :HORPRO-LNK, :SECEJE-LNK, :FECSYS-AMD,
+           :WS-SECRES, :WS-SENRES)
+           END-EXEC.
+      *
+       GENERA-SENTENCIA.
+      *-----------------
+           MOVE SPACES             TO SEN-SQL SEN-GROUP SEN-ORDEN
+
+           MOVE 7                  TO POS-INI
+           MOVE 1                  TO P-INI-G P-INI-O
+           MOVE 0                  TO SEC-ORDEN
+           IF AGRUP01 OF WC02-II NOT = SPACES
+              MOVE AGRUP01 OF WC02-II TO WS-CAMPO
+              PERFORM BUSCA-CAMPO-ASQRY01F-1
+              IF CUENTA-CAMPO > 0
+                 ADD  1                  TO SEC-ORDEN
+                 MOVE SPACES             TO ORDEN-X4
+                 STRING SEC-ORDEN           DELIMITED SIZE
+                        ', '                DELIMITED SIZE
+                                       INTO ORDEN-X4
+                 MOVE ORDEN-X4           TO SEN-ORDEN(P-INI-O:4)
+                 ADD 4                   TO P-INI-O
+
+                 MOVE WS-CAMPO           TO SEN-GROUP(P-INI-G:10)
+                 ADD 10                  TO P-INI-G
+                 MOVE ', '               TO SEN-GROUP(P-INI-G:2)
+                 ADD 2                   TO P-INI-G
+
+                 MOVE WS-CAMPO-CON       TO SEN-SQL(POS-INI:40)
+                 ADD  40                 TO POS-INI
+                 MOVE ' || " " || '      TO SEN-SQL(POS-INI:11)
+                 ADD  11                 TO POS-INI
+              END-IF
+           END-IF
+           IF AGRUP02 OF WC02-II NOT = SPACES
+              MOVE AGRUP02 OF WC02-II TO WS-CAMPO
+              PERFORM BUSCA-CAMPO-ASQRY01F-1
+              IF CUENTA-CAMPO > 0
+                 ADD  1                  TO SEC-ORDEN
+                 MOVE SPACES             TO ORDEN-X4
+                 STRING SEC-ORDEN           DELIMITED SIZE
+                        ', '                DELIMITED SIZE
+                                       INTO ORDEN-X4
+                 MOVE ORDEN-X4           TO SEN-ORDEN(P-INI-O:4)
+                 ADD 4                   TO P-INI-O
+
+                 MOVE WS-CAMPO           TO SEN-GROUP(P-INI-G:10)
+                 ADD 10                  TO P-INI-G
+                 MOVE ', '               TO SEN-GROUP(P-INI-G:2)
+                 ADD 2                   TO P-INI-G
+
+                 MOVE WS-CAMPO-CON       TO SEN-SQL(POS-INI:40)
+                 ADD  40                 TO POS-INI
+                 MOVE ' || " " || '      TO SEN-SQL(POS-INI:11)
+                 ADD  11                 TO POS-INI
+              END-IF
+           END-IF
+           IF AGRUP03 OF WC02-II NOT = SPACES
+              MOVE AGRUP03 OF WC02-II TO WS-CAMPO
+              PERFORM BUSCA-CAMPO-ASQRY01F-1
+              IF CUENTA-CAMPO > 0
+                 ADD  1                  TO SEC-ORDEN
+                 MOVE SPACES             TO ORDEN-X4
+                 STRING SEC-ORDEN           DELIMITED SIZE
+                        ', '                DELIMITED SIZE
+                                       INTO ORDEN-X4
+                 MOVE ORDEN-X4           TO SEN-ORDEN(P-INI-O:4)
+                 ADD 4                   TO P-INI-O
+
+                 MOVE WS-CAMPO           TO SEN-GROUP(P-INI-G:10)
+                 ADD 10                  TO P-INI-G
+                 MOVE ', '               TO SEN-GROUP(P-INI-G:2)
+                 ADD 2                   TO P-INI-G
+
+                 MOVE WS-CAMPO-CON       TO SEN-SQL(POS-INI:40)
+                 ADD  40                 TO POS-INI
+                 MOVE ' || " " || '      TO SEN-SQL(POS-INI:11)
+                 ADD  11                 TO POS-INI
+              END-IF
+           END-IF
+           IF AGRUP04 OF WC02-II NOT = SPACES
+              MOVE AGRUP04 OF WC02-II TO WS-CAMPO
+              PERFORM BUSCA-CAMPO-ASQRY01F-1
+              IF CUENTA-CAMPO > 0
+                 ADD  1                  TO SEC-ORDEN
+                 MOVE SPACES             TO ORDEN-X4
+                 STRING SEC-ORDEN           DELIMITED SIZE
+                        ', '                DELIMITED SIZE
+                                       INTO ORDEN-X4
+                 MOVE ORDEN-X4           TO SEN-ORDEN(P-INI-O:4)
+                 ADD 4                   TO P-INI-O
+
+                 MOVE WS-CAMPO           TO SEN-GROUP(P-INI-G:10)
+                 ADD 10                  TO P-INI-G
+                 MOVE ', '               TO SEN-GROUP(P-INI-G:2)
+                 ADD 2                   TO P-INI-G
+
+                 MOVE WS-CAMPO-CON       TO SEN-SQL(POS-INI:40)
+                 ADD  40                 TO POS-INI
+                 MOVE ' || " " || '      TO SEN-SQL(POS-INI:11)
+                 ADD  11                 TO POS-INI
+              END-IF
+           END-IF
+           IF AGRUP05 OF WC02-II NOT = SPACES
+              MOVE AGRUP05 OF WC02-II TO WS-CAMPO
+              PERFORM BUSCA-CAMPO-ASQRY01F-1
+              IF CUENTA-CAMPO > 0
+                 ADD  1                  TO SEC-ORDEN
+                 MOVE SPACES             TO ORDEN-X4
+                 STRING SEC-ORDEN           DELIMITED SIZE
+                        ', '                DELIMITED SIZE
+                                       INTO ORDEN-X4
+                 MOVE ORDEN-X4           TO SEN-ORDEN(P-INI-O:4)
+                 ADD 4                   TO P-INI-O
+
+                 MOVE WS-CAMPO           TO SEN-GROUP(P-INI-G:10)
+                 ADD 10                  TO P-INI-G
+                 MOVE ', '               TO SEN-GROUP(P-INI-G:2)
+                 ADD 2                   TO P-INI-G
+
+                 MOVE WS-CAMPO-CON       TO SEN-SQL(POS-INI:40)
+                 ADD  40                 TO POS-INI
+                 MOVE ' || " " || '      TO SEN-SQL(POS-INI:11)
+                 ADD  11                 TO POS-INI
+              END-IF
+           END-IF
+           IF AGRUP06 OF WC02-II NOT = SPACES
+              MOVE AGRUP06 OF WC02-II TO WS-CAMPO
+              PERFORM BUSCA-CAMPO-ASQRY01F-1
+              IF CUENTA-CAMPO > 0
+                 ADD  1                  TO SEC-ORDEN
+                 MOVE SPACES             TO ORDEN-X4
+                 STRING SEC-ORDEN           DELIMITED SIZE
+                        ', '                DELIMITED SIZE
+                                       INTO ORDEN-X4
+                 MOVE ORDEN-X4           TO SEN-ORDEN(P-INI-O:4)
+                 ADD 4                   TO P-INI-O
+
+                 MOVE WS-CAMPO           TO SEN-GROUP(P-INI-G:10)
+                 ADD 10                  TO P-INI-G
+                 MOVE ', '               TO SEN-GROUP(P-INI-G:2)
+                 ADD 2                   TO P-INI-G
+
+                 MOVE WS-CAMPO-CON       TO SEN-SQL(POS-INI:40)
+                 ADD  40                 TO POS-INI
+                 MOVE ' || " " || '      TO SEN-SQL(POS-INI:11)
+                 ADD  11                 TO POS-INI
+              END-IF
+           END-IF
+           IF AGRUP07 OF WC02-II NOT = SPACES
+              MOVE AGRUP07 OF WC02-II TO WS-CAMPO
+              PERFORM BUSCA-CAMPO-ASQRY01F-1
+              IF CUENTA-CAMPO > 0
+                 ADD  1                  TO SEC-ORDEN
+                 MOVE SPACES             TO ORDEN-X4
+                 STRING SEC-ORDEN           DELIMITED SIZE
+                        ', '                DELIMITED SIZE
+                                       INTO ORDEN-X4
+                 MOVE ORDEN-X4           TO SEN-ORDEN(P-INI-O:4)
+                 ADD 4                   TO P-INI-O
+
+                 MOVE WS-CAMPO           TO SEN-GROUP(P-INI-G:10)
+                 ADD 10                  TO P-INI-G
+                 MOVE ', '               TO SEN-GROUP(P-INI-G:2)
+                 ADD 2                   TO P-INI-G
+
+                 MOVE WS-CAMPO-CON       TO SEN-SQL(POS-INI:40)
+                 ADD  40                 TO POS-INI
+                 MOVE ' || " " || '      TO SEN-SQL(POS-INI:11)
+                 ADD  11                 TO POS-INI
+              END-IF
+           END-IF
+           IF AGRUP08 OF WC02-II NOT = SPACES
+              MOVE AGRUP08 OF WC02-II TO WS-CAMPO
+              PERFORM BUSCA-CAMPO-ASQRY01F-1
+              IF CUENTA-CAMPO > 0
+                 ADD  1                  TO SEC-ORDEN
+                 MOVE SPACES             TO ORDEN-X4
+                 STRING SEC-ORDEN           DELIMITED SIZE
+                        ', '                DELIMITED SIZE
+                                       INTO ORDEN-X4
+                 MOVE ORDEN-X4           TO SEN-ORDEN(P-INI-O:4)
+                 ADD 4                   TO P-INI-O
+
+                 MOVE WS-CAMPO           TO SEN-GROUP(P-INI-G:10)
+                 ADD 10                  TO P-INI-G
+                 MOVE ', '               TO SEN-GROUP(P-INI-G:2)
+                 ADD 2                   TO P-INI-G
+
+                 MOVE WS-CAMPO-CON       TO SEN-SQL(POS-INI:40)
+                 ADD  40                 TO POS-INI
+                 MOVE ' || " " || '      TO SEN-SQL(POS-INI:11)
+                 ADD  11                 TO POS-INI
+              END-IF
+           END-IF
+           IF AGRUP09 OF WC02-II NOT = SPACES
+              MOVE AGRUP09 OF WC02-II TO WS-CAMPO
+              PERFORM BUSCA-CAMPO-ASQRY01F-1
+              IF CUENTA-CAMPO > 0
+                 ADD  1                  TO SEC-ORDEN
+                 MOVE SPACES             TO ORDEN-X4
+                 STRING SEC-ORDEN           DELIMITED SIZE
+                        ', '                DELIMITED SIZE
+                                       INTO ORDEN-X4
+                 MOVE ORDEN-X4           TO SEN-ORDEN(P-INI-O:4)
+                 ADD 4                   TO P-INI-O
+
+                 MOVE WS-CAMPO           TO SEN-GROUP(P-INI-G:10)
+                 ADD 10                  TO P-INI-G
+                 MOVE ', '               TO SEN-GROUP(P-INI-G:2)
+                 ADD 2                   TO P-INI-G
+
+                 MOVE WS-CAMPO-CON       TO SEN-SQL(POS-INI:40)
+                 ADD  40                 TO POS-INI
+                 MOVE ' || " " || '      TO SEN-SQL(POS-INI:11)
+                 ADD  11                 TO POS-INI
+              END-IF
+           END-IF
+           IF AGRUP10 OF WC02-II NOT = SPACES
+              MOVE AGRUP10 OF WC02-II TO WS-CAMPO
+              PERFORM BUSCA-CAMPO-ASQRY01F-1
+              IF CUENTA-CAMPO > 0
+                 ADD  1                  TO SEC-ORDEN
+                 MOVE SPACES             TO ORDEN-X4
+                 STRING SEC-ORDEN           DELIMITED SIZE
+                        ', '                DELIMITED SIZE
+                                       INTO ORDEN-X4
+                 MOVE ORDEN-X4           TO SEN-ORDEN(P-INI-O:4)
+                 ADD 4                   TO P-INI-O
+
+                 MOVE WS-CAMPO           TO SEN-GROUP(P-INI-G:10)
+                 ADD 10                  TO P-INI-G
+                 MOVE ', '               TO SEN-GROUP(P-INI-G:2)
+                 ADD 2                   TO P-INI-G
+
+                 MOVE WS-CAMPO-CON       TO SEN-SQL(POS-INI:40)
+                 ADD  40                 TO POS-INI
+                 MOVE ' || " " || '      TO SEN-SQL(POS-INI:11)
+                 ADD  11                 TO POS-INI
+              END-IF
+           END-IF
+           IF POS-INI < 8 AND WS-CONGRP = 1
+              MOVE  1     TO WS-ERROR
+              ADD   1     TO CTA-MSG
+              MOVE SPACES TO TEXTO-ARR(CTA-MSG)
+              STRING 'Debe seleccionar '      DELIMITED SIZE
+                     'un campo de AgrupaciÍn' DELIMITED SIZE
+                     ' como mõnimo '          DELIMITED SIZE
+                                        INTO TEXTO-ARR(CTA-MSG)
+           END-IF
+           IF POS-INI > 7
+              SUBTRACT 2            FROM P-INI-G
+              MOVE SPACES             TO SEN-GROUP(P-INI-G:2)
+              SUBTRACT 2            FROM P-INI-O
+              MOVE SPACES             TO SEN-ORDEN(P-INI-O:2)
+
+              MOVE 'CAST(('           TO SEN-SQL(1:6)
+              SUBTRACT 11                FROM POS-INI
+              MOVE '              '   TO SEN-SQL(POS-INI:14)
+              ADD  15                 TO POS-INI
+           END-IF
+           IF CTA-MSG = ZEROES
+              MOVE SPACES                TO WS-RESTO-CAMPOS
+                                            WS-FUNCION-CAMPOS
+              IF WS-CONGRP = 1
+                 PERFORM EVALUA-FUNCION-GRUPO
+                 UNSTRING SEN-FUNCION       DELIMITED BY '"FIN-SEN",'
+                          INTO WS-RESTO-CAMPOS
+                               WS-FUNCION-CAMPOS
+              ELSE
+                 PERFORM EVALUA-FUNCION-GRUPO
+                 UNSTRING SEN-FUNCION DELIMITED BY '|| "FIN-SEN"'
+                          INTO WS-RESTO-CAMPOS
+                               WS-FUNCION-CAMPOS
+              END-IF
+              MOVE 1  TO I-PFX
+              PERFORM VARYING NREL FROM 1 BY 1 UNTIL NREL > WS-NROFLD
+                 READ SUBFILE PANTALLA INTO WS01-OO FORMAT 'WS01'
+                              END-READ
+                IF FS-PANTALLA = '00'
+                   PERFORM BUSCA-CAMPO-INS-FX
+                END-IF
+              END-PERFORM
+              MOVE SPACES     TO SEN-GROUP-1
+              MOVE 1          TO I-PFX
+              MOVE ZEROES     TO PRA-PARTE
+              PERFORM VARYING NREL FROM 1 BY 1 UNTIL NREL > WS-NROFLD
+                 READ SUBFILE PANTALLA INTO WS01-OO FORMAT 'WS01'
+                              END-READ
+                IF FS-PANTALLA = '00'
+                   PERFORM BUSCA-CAMPO-INS-FX-1
+                END-IF
+              END-PERFORM
+              ADD  1  TO PRA-PARTE
+              PERFORM VARYING NREL FROM PRA-PARTE
+                                        BY 1 UNTIL NREL > WS-NROFLD
+                 READ SUBFILE PANTALLA INTO WS01-OO FORMAT 'WS01'
+                              END-READ
+                IF FS-PANTALLA = '00'
+                   PERFORM BUSCA-CAMPO-INS-FX-2
+                END-IF
+              END-PERFORM
+              IF POS-INI > 7
+                 MOVE WS-RESTO-CAMPOS    TO SEN-SQL(POS-INI:1330)
+                 ADD  1330               TO POS-INI
+                MOVE '|| "FIN-SEN" '     TO SEN-SQL(POS-INI:13)
+                ADD 13                   TO POS-INI
+                MOVE ') AS CHAR(2000)) AS UNO  ' TO SEN-SQL(POS-INI:25)
+              END-IF
+              PERFORM EJECUTA-SENTENCIA-CREADA.
+      *
+       EVALUA-FUNCION-GRUPO.
+      *---------------------
+            PERFORM VARYING P-GRP FROM 1 BY 1 UNTIL P-GRP > 10
+                MOVE SPACES   TO DELIMITADOR
+                STRING '"FIN-GRP'          DELIMITED SIZE
+                        P-GRP              DELIMITED SIZE
+                        '",'               DELIMITED SIZE
+                                      INTO DELIMITADOR
+                MOVE SPACES             TO WS-RESTO-CAMPOS-GRP
+                                           WS-FUNCION-CAMPOS-GRP
+                UNSTRING SEN-FUNCION DELIMITED BY DELIMITADOR
+                         INTO WS-RESTO-CAMPOS-GRP
+                              WS-FUNCION-CAMPOS-GRP
+                IF WS-FUNCION-CAMPOS-GRP NOT = SPACES
+                   MOVE P-GRP        TO CAN-FUNCIONES
+                   ADD 10            TO P-GRP
+                END-IF
+            END-PERFORM.
+            MOVE SPACES     TO SEN-FUNCION
+            STRING WS-RESTO-CAMPOS-GRP   DELIMITED BY "          "
+                   WS-FUNCION-CAMPOS-GRP DELIMITED BY "          "
+                                     INTO SEN-FUNCION.
+
+      *
+       EJECUTA-SENTENCIA-CREADA.
+      *-------------------------
+           IF I-PFX > 1
+              SUBTRACT 2 FROM I-PFX
+              MOVE SPACES              TO SEN-GROUP-1(I-PFX:2)
+              IF SEN-SQL NOT = SPACES
+                 STRING ', '               DELIMITED SIZE
+                        SEN-GROUP-1        DELIMITED SIZE
+                                      INTO SEN-GROUP-F
+              ELSE
+                 STRING 'GROUP BY '          DELIMITED SIZE
+                        SEN-GROUP-1          DELIMITED SIZE
+                                      INTO SEN-GROUP-F
+              END-IF
+           END-IF
+           MOVE SPACES                    TO SEN-EJECUTAR
+           IF SEN-SQL NOT = SPACES
+              STRING 'SELECT '               DELIMITED SIZE
+                     SEN-SQL                 DELIMITED SIZE
+                     ', '                    DELIMITED SIZE
+                     WS-FUNCION-CAMPOS       DELIMITED SIZE
+                     ' FROM '                DELIMITED SIZE
+                     BIBLIOTECA-LNK          DELIMITED BY ' '
+                     '/'                     DELIMITED SIZE
+                     ARCHIVO-LNK             DELIMITED SIZE
+                     ' GROUP BY '            DELIMITED SIZE
+                     SEN-GROUP               DELIMITED SIZE
+                     ' '                     DELIMITED SIZE
+                     SEN-GROUP-F             DELIMITED SIZE
+                     ' ORDER BY UNO '        DELIMITED SIZE
+                                        INTO SEN-EJECUTAR
+           ELSE
+              STRING 'SELECT '               DELIMITED SIZE
+                     SEN-FUNCION             DELIMITED SIZE
+                     ' FROM '                DELIMITED SIZE
+                     BIBLIOTECA-LNK          DELIMITED BY ' '
+                     '/'                     DELIMITED SIZE
+                     ARCHIVO-LNK             DELIMITED SIZE
+                     ' '                     DELIMITED SIZE
+                     SEN-GROUP-F             DELIMITED SIZE
+                     ' ORDER BY UNO '        DELIMITED SIZE
+                                        INTO SEN-EJECUTAR
+           END-IF
+
+           EXEC SQL
+                DECLARE SENEJECUTAR STATEMENT
+           END-EXEC
+           EXEC SQL
+               PREPARE SENEJECUTAR FROM :SEN-EJECUTAR
+           END-EXEC
+           EXEC SQL
+               DECLARE C100 CURSOR FOR SENEJECUTAR
+           END-EXEC
+           EXEC SQL OPEN  C100 END-EXEC
+           PERFORM LEER-FETCH-C100
+           PERFORM INICIALIZA-WS-FUNCIONSQL
+           IF SQLCODE = 0
+              PERFORM DESCOMPONE-GROUPBY-SQL
+           END-IF
+           PERFORM LIMPIA-WS02
+           PERFORM LLENA-WS02 UNTIL SQLCODE NOT = 0 OR NREL2 > 1000
+           IF WS-FUNCIONSQL-1  NOT = 0 OR
+              WS-FUNCIONSQL-2  NOT = 0 OR
+              WS-FUNCIONSQL-3  NOT = 0 OR
+              WS-FUNCIONSQL-4  NOT = 0 OR
+              WS-FUNCIONSQL-5  NOT = 0 OR
+              WS-FUNCIONSQL-6  NOT = 0 OR
+              WS-FUNCIONSQL-7  NOT = 0 OR
+              WS-FUNCIONSQL-8  NOT = 0 OR
+              WS-FUNCIONSQL-9  NOT = 0 OR
+              WS-FUNCIONSQL-10 NOT = 0
+              PERFORM GRABA-REG-WS02
+           END-IF
+           IF NREL2 > 0
+              MOVE I-ON        TO IN30 OF WC02-O-INDIC
+                                  IN31 OF WC02-O-INDIC
+              MOVE I-OFF       TO IN32 OF WC02-O-INDIC
+           ELSE
+              MOVE I-OFF       TO IN30 OF WC02-O-INDIC
+              MOVE I-ON        TO IN31 OF WC02-O-INDIC
+              MOVE I-OFF       TO IN32 OF WC02-O-INDIC
+           END-IF
+           EXEC SQL CLOSE C100 END-EXEC.
+      *
+       LLENA-WS02.
+      *-----------
+           MOVE SPACES        TO DETALLE OF WS02-OO
+           PERFORM DESCOMPONE-GROUPBY-SQL1
+
+           IF WS-GROUPBYSQL NOT = WS-GROUPBYSQL1
+              PERFORM GRABA-REG-WS02
+              MOVE WS-GROUPBYSQL1 TO WS-GROUPBYSQL
+              PERFORM EVALUA-GROUPBY-A-MOVER
+              PERFORM INICIALIZA-WS-FUNCIONSQL
+              PERFORM EVALUA-FUNCION-SUMAR
+           ELSE
+              PERFORM EVALUA-FUNCION-SUMAR
+           END-IF
+           PERFORM LEER-FETCH-C100.
+
+      *
+       EVALUA-GROUPBY-A-MOVER.
+      *-----------------------
+           EVALUATE CAN-FUNCIONES
+             WHEN 1 MOVE GROUPBY-SQL OF DATOS-SQL01 TO
+                    WS-GROUPBY-SQL
+             WHEN 2 MOVE GROUPBY-SQL OF DATOS-SQL02 TO
+                    WS-GROUPBY-SQL
+             WHEN 3 MOVE GROUPBY-SQL OF DATOS-SQL03 TO
+                    WS-GROUPBY-SQL
+             WHEN 4 MOVE GROUPBY-SQL OF DATOS-SQL04 TO
+                    WS-GROUPBY-SQL
+             WHEN 5 MOVE GROUPBY-SQL OF DATOS-SQL05 TO
+                    WS-GROUPBY-SQL
+             WHEN 6 MOVE GROUPBY-SQL OF DATOS-SQL06 TO
+                    WS-GROUPBY-SQL
+             WHEN 7 MOVE GROUPBY-SQL OF DATOS-SQL07 TO
+                    WS-GROUPBY-SQL
+             WHEN 8 MOVE GROUPBY-SQL OF DATOS-SQL08 TO
+                    WS-GROUPBY-SQL
+             WHEN 9 MOVE GROUPBY-SQL OF DATOS-SQL09 TO
+                    WS-GROUPBY-SQL
+             WHEN 10 MOVE GROUPBY-SQL OF DATOS-SQL10 TO
+                    WS-GROUPBY-SQL
+           END-EVALUATE.
+      *
+       DESCOMPONE-GROUPBY-SQL1.
+      *-----------------------
+           EVALUATE CAN-FUNCIONES
+              WHEN 1  UNSTRING GROUPBY-SQL OF DATOS-SQL01
+                      DELIMITED BY 'FIN-SEN' INTO WS-GROUPBYSQL1
+                                             WS-RESTOSQL1
+              WHEN 2  UNSTRING GROUPBY-SQL OF DATOS-SQL02
+                      DELIMITED BY 'FIN-SEN' INTO WS-GROUPBYSQL1
+                                             WS-RESTOSQL1
+              WHEN 3  UNSTRING GROUPBY-SQL OF DATOS-SQL03
+                      DELIMITED BY 'FIN-SEN' INTO WS-GROUPBYSQL1
+                                             WS-RESTOSQL1
+              WHEN 4  UNSTRING GROUPBY-SQL OF DATOS-SQL04
+                      DELIMITED BY 'FIN-SEN' INTO WS-GROUPBYSQL1
+                                             WS-RESTOSQL1
+              WHEN 5  UNSTRING GROUPBY-SQL OF DATOS-SQL05
+                      DELIMITED BY 'FIN-SEN' INTO WS-GROUPBYSQL1
+                                             WS-RESTOSQL1
+              WHEN 6  UNSTRING GROUPBY-SQL OF DATOS-SQL06
+                      DELIMITED BY 'FIN-SEN' INTO WS-GROUPBYSQL1
+                                             WS-RESTOSQL1
+              WHEN 7  UNSTRING GROUPBY-SQL OF DATOS-SQL07
+                      DELIMITED BY 'FIN-SEN' INTO WS-GROUPBYSQL1
+                                             WS-RESTOSQL1
+              WHEN 8  UNSTRING GROUPBY-SQL OF DATOS-SQL08
+                      DELIMITED BY 'FIN-SEN' INTO WS-GROUPBYSQL1
+                                             WS-RESTOSQL1
+              WHEN 9  UNSTRING GROUPBY-SQL OF DATOS-SQL09
+                      DELIMITED BY 'FIN-SEN' INTO WS-GROUPBYSQL1
+                                             WS-RESTOSQL1
+              WHEN 10 UNSTRING GROUPBY-SQL OF DATOS-SQL10
+                      DELIMITED BY 'FIN-SEN' INTO WS-GROUPBYSQL1
+                                             WS-RESTOSQL1
+           END-EVALUATE.
+      *
+       DESCOMPONE-GROUPBY-SQL.
+      *-----------------------
+           EVALUATE CAN-FUNCIONES
+              WHEN 1  UNSTRING GROUPBY-SQL OF DATOS-SQL01
+                      DELIMITED BY 'FIN-SEN' INTO WS-GROUPBYSQL
+                                             WS-RESTOSQL1
+              WHEN 2  UNSTRING GROUPBY-SQL OF DATOS-SQL02
+                      DELIMITED BY 'FIN-SEN' INTO WS-GROUPBYSQL
+                                             WS-RESTOSQL1
+              WHEN 3  UNSTRING GROUPBY-SQL OF DATOS-SQL03
+                      DELIMITED BY 'FIN-SEN' INTO WS-GROUPBYSQL
+                                             WS-RESTOSQL1
+              WHEN 4  UNSTRING GROUPBY-SQL OF DATOS-SQL04
+                      DELIMITED BY 'FIN-SEN' INTO WS-GROUPBYSQL
+                                             WS-RESTOSQL1
+              WHEN 5  UNSTRING GROUPBY-SQL OF DATOS-SQL05
+                      DELIMITED BY 'FIN-SEN' INTO WS-GROUPBYSQL
+                                             WS-RESTOSQL1
+              WHEN 6  UNSTRING GROUPBY-SQL OF DATOS-SQL06
+                      DELIMITED BY 'FIN-SEN' INTO WS-GROUPBYSQL
+                                             WS-RESTOSQL1
+              WHEN 7  UNSTRING GROUPBY-SQL OF DATOS-SQL07
+                      DELIMITED BY 'FIN-SEN' INTO WS-GROUPBYSQL
+                                             WS-RESTOSQL1
+              WHEN 8  UNSTRING GROUPBY-SQL OF DATOS-SQL08
+                      DELIMITED BY 'FIN-SEN' INTO WS-GROUPBYSQL
+                                             WS-RESTOSQL1
+              WHEN 9  UNSTRING GROUPBY-SQL OF DATOS-SQL09
+                      DELIMITED BY 'FIN-SEN' INTO WS-GROUPBYSQL
+                                             WS-RESTOSQL1
+              WHEN 10 UNSTRING GROUPBY-SQL OF DATOS-SQL10
+                      DELIMITED BY 'FIN-SEN' INTO WS-GROUPBYSQL
+                                             WS-RESTOSQL1
+           END-EVALUATE.
+      *
+       INICIALIZA-WS-FUNCIONSQL.
+      *-------------------------
+           MOVE ZEROES             TO WS-FUNCIONSQL-1
+                                      WS-FUNCIONSQL-2
+                                      WS-FUNCIONSQL-3
+                                      WS-FUNCIONSQL-4
+                                      WS-FUNCIONSQL-5
+                                      WS-FUNCIONSQL-6
+                                      WS-FUNCIONSQL-7
+                                      WS-FUNCIONSQL-8
+                                      WS-FUNCIONSQL-9
+                                      WS-FUNCIONSQL-10.
+      *
+       GRABA-REG-WS02.
+      *---------------
+           MOVE ZEROES           TO RESULTADO OF WS02-OO
+
+           PERFORM EVALUA-GRABAR-WS02
+           ADD   1            TO NREL2
+           WRITE SUBFILE R-PANTALLA2 FROM WS02-OO FORMAT "WS02"
+                 END-WRITE.
+      *
+       EVALUA-GRABAR-WS02.
+      *-------------------
+           MOVE WS-FUNCIONSQL-1  TO FX-EDITADA-1
+           MOVE WS-FUNCIONSQL-2  TO FX-EDITADA-2
+           MOVE WS-FUNCIONSQL-3  TO FX-EDITADA-3
+           MOVE WS-FUNCIONSQL-4  TO FX-EDITADA-4
+           MOVE WS-FUNCIONSQL-5  TO FX-EDITADA-5
+           MOVE WS-FUNCIONSQL-6  TO FX-EDITADA-6
+           MOVE WS-FUNCIONSQL-7  TO FX-EDITADA-7
+           MOVE WS-FUNCIONSQL-8  TO FX-EDITADA-8
+           MOVE WS-FUNCIONSQL-9  TO FX-EDITADA-9
+           MOVE WS-FUNCIONSQL-10 TO FX-EDITADA-10
+           MOVE SPACES           TO DETALLE OF WS02-OO
+                                    SELECC  OF WS02-OO
+           EVALUATE CAN-FUNCIONES
+              WHEN 1  STRING WS-GROUPBYSQL DELIMITED BY "          "
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-1   DELIMITED SIZE
+                                INTO SELECC  OF WS02-OO
+              WHEN 2  STRING WS-GROUPBYSQL DELIMITED BY "          "
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-1   DELIMITED SIZE
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-2   DELIMITED SIZE
+                                INTO SELECC  OF WS02-OO
+              WHEN 3  STRING WS-GROUPBYSQL DELIMITED BY "          "
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-1   DELIMITED SIZE
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-2   DELIMITED SIZE
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-3   DELIMITED SIZE
+                                INTO SELECC  OF WS02-OO
+              WHEN 4  STRING WS-GROUPBYSQL DELIMITED BY "          "
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-1   DELIMITED SIZE
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-2   DELIMITED SIZE
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-3   DELIMITED SIZE
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-4   DELIMITED SIZE
+                                INTO SELECC  OF WS02-OO
+
+              WHEN 5  STRING WS-GROUPBYSQL DELIMITED BY "          "
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-1   DELIMITED SIZE
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-2   DELIMITED SIZE
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-3   DELIMITED SIZE
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-4   DELIMITED SIZE
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-5   DELIMITED SIZE
+                                INTO SELECC  OF WS02-OO
+              WHEN 6  STRING WS-GROUPBYSQL DELIMITED BY "          "
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-1   DELIMITED SIZE
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-2   DELIMITED SIZE
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-3   DELIMITED SIZE
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-4   DELIMITED SIZE
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-5   DELIMITED SIZE
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-6   DELIMITED SIZE
+                                INTO SELECC  OF WS02-OO
+              WHEN 7  STRING WS-GROUPBYSQL DELIMITED BY "          "
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-1   DELIMITED SIZE
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-2   DELIMITED SIZE
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-3   DELIMITED SIZE
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-4   DELIMITED SIZE
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-5   DELIMITED SIZE
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-6   DELIMITED SIZE
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-7   DELIMITED SIZE
+                                INTO SELECC  OF WS02-OO
+              WHEN 8  STRING WS-GROUPBYSQL DELIMITED BY "          "
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-1   DELIMITED SIZE
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-2   DELIMITED SIZE
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-3   DELIMITED SIZE
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-4   DELIMITED SIZE
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-5   DELIMITED SIZE
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-6   DELIMITED SIZE
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-7   DELIMITED SIZE
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-8   DELIMITED SIZE
+                                INTO SELECC  OF WS02-OO
+              WHEN 9  STRING WS-GROUPBYSQL DELIMITED BY "          "
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-1   DELIMITED SIZE
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-2   DELIMITED SIZE
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-3   DELIMITED SIZE
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-4   DELIMITED SIZE
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-5   DELIMITED SIZE
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-6   DELIMITED SIZE
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-7   DELIMITED SIZE
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-8   DELIMITED SIZE
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-9   DELIMITED SIZE
+                                INTO SELECC  OF WS02-OO
+              WHEN 10 STRING WS-GROUPBYSQL DELIMITED BY "          "
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-1   DELIMITED SIZE
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-2   DELIMITED SIZE
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-3   DELIMITED SIZE
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-4   DELIMITED SIZE
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-5   DELIMITED SIZE
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-6   DELIMITED SIZE
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-7   DELIMITED SIZE
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-8   DELIMITED SIZE
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-9   DELIMITED SIZE
+                      " "            DELIMITED SIZE
+                      FX-EDITADA-10  DELIMITED SIZE
+                                INTO SELECC  OF WS02-OO
+
+           END-EVALUATE.
+
+           INSPECT SELECC OF WS02-OO
+              REPLACING ALL "," BY "."
+
+           MOVE SELECC OF WS02-OO   TO DETALLE OF WS02-OO.
+      *
+       EVALUA-FUNCION-SUMAR.
+      *---------------------
+           EVALUATE CAN-FUNCIONES
+             WHEN 1 ADD FUNCION-SQL-1 OF DATOS-SQL01 TO WS-FUNCIONSQL-1
+             WHEN 2 ADD FUNCION-SQL-1 OF DATOS-SQL02 TO WS-FUNCIONSQL-1
+                    ADD FUNCION-SQL-2 OF DATOS-SQL02 TO WS-FUNCIONSQL-2
+             WHEN 3 ADD FUNCION-SQL-1 OF DATOS-SQL03 TO WS-FUNCIONSQL-1
+                    ADD FUNCION-SQL-2 OF DATOS-SQL03 TO WS-FUNCIONSQL-2
+                    ADD FUNCION-SQL-3 OF DATOS-SQL03 TO WS-FUNCIONSQL-3
+             WHEN 4 ADD FUNCION-SQL-1 OF DATOS-SQL04 TO WS-FUNCIONSQL-1
+                    ADD FUNCION-SQL-2 OF DATOS-SQL04 TO WS-FUNCIONSQL-2
+                    ADD FUNCION-SQL-3 OF DATOS-SQL04 TO WS-FUNCIONSQL-3
+                    ADD FUNCION-SQL-4 OF DATOS-SQL04 TO WS-FUNCIONSQL-4
+             WHEN 5 ADD FUNCION-SQL-1 OF DATOS-SQL05 TO WS-FUNCIONSQL-1
+                    ADD FUNCION-SQL-2 OF DATOS-SQL05 TO WS-FUNCIONSQL-2
+                    ADD FUNCION-SQL-3 OF DATOS-SQL05 TO WS-FUNCIONSQL-3
+                    ADD FUNCION-SQL-4 OF DATOS-SQL05 TO WS-FUNCIONSQL-4
+                    ADD FUNCION-SQL-5 OF DATOS-SQL05 TO WS-FUNCIONSQL-5
+             WHEN 6 ADD FUNCION-SQL-1 OF DATOS-SQL06 TO WS-FUNCIONSQL-1
+                    ADD FUNCION-SQL-2 OF DATOS-SQL06 TO WS-FUNCIONSQL-2
+                    ADD FUNCION-SQL-3 OF DATOS-SQL06 TO WS-FUNCIONSQL-3
+                    ADD FUNCION-SQL-4 OF DATOS-SQL06 TO WS-FUNCIONSQL-4
+                    ADD FUNCION-SQL-5 OF DATOS-SQL06 TO WS-FUNCIONSQL-5
+                    ADD FUNCION-SQL-6 OF DATOS-SQL06 TO WS-FUNCIONSQL-6
+             WHEN 7 ADD FUNCION-SQL-1 OF DATOS-SQL07 TO WS-FUNCIONSQL-1
+                    ADD FUNCION-SQL-2 OF DATOS-SQL07 TO WS-FUNCIONSQL-2
+                    ADD FUNCION-SQL-3 OF DATOS-SQL07 TO WS-FUNCIONSQL-3
+                    ADD FUNCION-SQL-4 OF DATOS-SQL07 TO WS-FUNCIONSQL-4
+                    ADD FUNCION-SQL-5 OF DATOS-SQL07 TO WS-FUNCIONSQL-5
+                    ADD FUNCION-SQL-6 OF DATOS-SQL07 TO WS-FUNCIONSQL-6
+                    ADD FUNCION-SQL-7 OF DATOS-SQL07 TO WS-FUNCIONSQL-7
+             WHEN 8 ADD FUNCION-SQL-1 OF DATOS-SQL08 TO WS-FUNCIONSQL-1
+                    ADD FUNCION-SQL-2 OF DATOS-SQL08 TO WS-FUNCIONSQL-2
+                    ADD FUNCION-SQL-3 OF DATOS-SQL08 TO WS-FUNCIONSQL-3
+                    ADD FUNCION-SQL-4 OF DATOS-SQL08 TO WS-FUNCIONSQL-4
+                    ADD FUNCION-SQL-5 OF DATOS-SQL08 TO WS-FUNCIONSQL-5
+                    ADD FUNCION-SQL-6 OF DATOS-SQL08 TO WS-FUNCIONSQL-6
+                    ADD FUNCION-SQL-7 OF DATOS-SQL08 TO WS-FUNCIONSQL-7
+                    ADD FUNCION-SQL-8 OF DATOS-SQL08 TO WS-FUNCIONSQL-8
+             WHEN 9 ADD FUNCION-SQL-1 OF DATOS-SQL09 TO WS-FUNCIONSQL-1
+                    ADD FUNCION-SQL-2 OF DATOS-SQL09 TO WS-FUNCIONSQL-2
+                    ADD FUNCION-SQL-3 OF DATOS-SQL09 TO WS-FUNCIONSQL-3
+                    ADD FUNCION-SQL-4 OF DATOS-SQL09 TO WS-FUNCIONSQL-4
+                    ADD FUNCION-SQL-5 OF DATOS-SQL09 TO WS-FUNCIONSQL-5
+                    ADD FUNCION-SQL-6 OF DATOS-SQL09 TO WS-FUNCIONSQL-6
+                    ADD FUNCION-SQL-7 OF DATOS-SQL09 TO WS-FUNCIONSQL-7
+                    ADD FUNCION-SQL-8 OF DATOS-SQL09 TO WS-FUNCIONSQL-8
+                    ADD FUNCION-SQL-9 OF DATOS-SQL09 TO WS-FUNCIONSQL-9
+            WHEN 10 ADD FUNCION-SQL-1 OF DATOS-SQL10 TO WS-FUNCIONSQL-1
+                    ADD FUNCION-SQL-2 OF DATOS-SQL10 TO WS-FUNCIONSQL-2
+                    ADD FUNCION-SQL-3 OF DATOS-SQL10 TO WS-FUNCIONSQL-3
+                    ADD FUNCION-SQL-4 OF DATOS-SQL10 TO WS-FUNCIONSQL-4
+                    ADD FUNCION-SQL-5 OF DATOS-SQL10 TO WS-FUNCIONSQL-5
+                    ADD FUNCION-SQL-6 OF DATOS-SQL10 TO WS-FUNCIONSQL-6
+                    ADD FUNCION-SQL-7 OF DATOS-SQL10 TO WS-FUNCIONSQL-7
+                    ADD FUNCION-SQL-8 OF DATOS-SQL10 TO WS-FUNCIONSQL-8
+                    ADD FUNCION-SQL-9 OF DATOS-SQL10 TO WS-FUNCIONSQL-9
+                  ADD FUNCION-SQL-10 OF DATOS-SQL10 TO WS-FUNCIONSQL-10
+           END-EVALUATE.
+      *
+       LEER-FETCH-C100.
+      *----------------
+           EVALUATE CAN-FUNCIONES
+             WHEN 1   EXEC SQL
+                           FETCH NEXT FROM C100 INTO :DATOS-SQL01
+                      END-EXEC
+             WHEN 2   EXEC SQL
+                           FETCH NEXT FROM C100 INTO :DATOS-SQL02
+                      END-EXEC
+             WHEN 3   EXEC SQL
+                           FETCH NEXT FROM C100 INTO :DATOS-SQL03
+                      END-EXEC
+             WHEN 4   EXEC SQL
+                           FETCH NEXT FROM C100 INTO :DATOS-SQL04
+                      END-EXEC
+             WHEN 5   EXEC SQL
+                           FETCH NEXT FROM C100 INTO :DATOS-SQL05
+                      END-EXEC
+             WHEN 6   EXEC SQL
+                           FETCH NEXT FROM C100 INTO :DATOS-SQL06
+                      END-EXEC
+             WHEN 7   EXEC SQL
+                           FETCH NEXT FROM C100 INTO :DATOS-SQL07
+                      END-EXEC
+             WHEN 8   EXEC SQL
+                           FETCH NEXT FROM C100 INTO :DATOS-SQL08
+                      END-EXEC
+             WHEN 9   EXEC SQL
+                           FETCH NEXT FROM C100 INTO :DATOS-SQL09
+                      END-EXEC
+             WHEN 10  EXEC SQL
+                           FETCH NEXT FROM C100 INTO :DATOS-SQL10
+                      END-EXEC
+           END-EVALUATE.
+      *
+       BUSCA-CAMPO-INS-FX.
+      *-------------------
+           MOVE 1  TO P-FX
+           PERFORM UNTIL
+                   SEN-FUNCION(P-FX:1) = "&" OR P-FX = 1330
+                   ADD 1 TO P-FX
+           END-PERFORM.
+           IF P-FX < 1330
+              MOVE CAMPOSEL OF WS01-OO TO SEN-FUNCION(P-FX:10).
+      *
+       BUSCA-CAMPO-INS-FX-1.
+      *-------------------
+           MOVE 1  TO P-FX
+           PERFORM UNTIL
+                   WS-RESTO-CAMPOS(P-FX:1) = "&" OR P-FX = 1330
+                   ADD 1 TO P-FX
+           END-PERFORM
+           IF P-FX < 1330
+              ADD  1                   TO PRA-PARTE
+              MOVE CAMPOSEL OF WS01-OO TO WS-RESTO-CAMPOS(P-FX:10)
+              IF VALFLD OF WS01-OO = "C"
+                 MOVE CAMPOSEL OF WS01-OO TO SEN-GROUP-1(I-PFX:10)
+                 ADD 10                   TO I-PFX
+                 MOVE ", "                TO SEN-GROUP-1(I-PFX:2)
+                 ADD 2                    TO I-PFX.
+      *
+       BUSCA-CAMPO-INS-FX-2.
+      *-------------------
+           MOVE 1  TO P-FX
+           PERFORM UNTIL
+                   WS-FUNCION-CAMPOS(P-FX:1) = "&" OR P-FX = 1330
+                   ADD 1 TO P-FX
+           END-PERFORM
+           IF P-FX < 1330
+              MOVE CAMPOSEL OF WS01-OO TO WS-FUNCION-CAMPOS(P-FX:10).
+      *
+       SELECCIONA-FUNCION.
+      *-------------------
+           MOVE I-OFF              TO IN30 OF WC01-O-INDIC
+           MOVE 'FUNCIONES '       TO NOMAYU-16C
+           MOVE SPACES             TO SELECC-16C
+           MOVE SPACES             TO CODIGO-16C
+                                      TEXFUN OF WC01-II
+           MOVE ZEROES             TO LARGOKEY-16C
+                                      LARGODES-16C
+
+           CALL   'ASQRY05' USING NOMAYU-16C
+                                  SELECC-16C
+                                  RETORNO-16C
+
+           CANCEL 'ASQRY05'
+           IF CODIGO-16C NOT = SPACES
+              MOVE CODIGO-16C(01:10) TO WS-NOMFUN
+              MOVE CODIGO-16C(11:50) TO WS-TEXFUN
+                                        TEXFUN OF WC01-II
+              PERFORM PROCESA-FUNCION
+              MOVE 1  TO POSCUR OF WC01-II REGREL OF WC01-II.
+
+      *
+       PROCESA-FUNCION.
+      *----------------
+            PERFORM LIMPIA-WS01
+            MOVE WS-NOMFUN      TO NOMFUN OF ASQRY14F
+            READ ASQRY14F END-READ
+            IF FS-ASQRY14F = "00"
+               MOVE TIPFLD OF ASQRY14F TO WS-TIPFLD
+               MOVE NROFLD OF ASQRY14F TO WS-NROFLD
+               MOVE CONGRP OF ASQRY14F TO WS-CONGRP
+               MOVE SENSQL OF ASQRY14F TO SEN-FUNCION
+               MOVE I-ON    TO IN31 OF WC01-O-INDIC
+               MOVE I-OFF   TO IN30 OF WC01-O-INDIC
+                               IN32 OF WC01-O-INDIC
+               IF NROFLD OF ASQRY14F > 0
+                  PERFORM LIMPIA-WS01
+                  PERFORM VARYING NREL FROM 1 BY 1 UNTIL NREL >
+                                 NROFLD OF ASQRY14F
+                         MOVE WS-NOMFUN  TO NOMFUN    OF ASQRY16F
+                         MOVE NREL       TO SECUENCIA OF WS01-OO
+                                            SECFUN    OF ASQRY16F
+                         READ ASQRY16F END-READ
+                         IF FS-ASQRY16F = "00"
+                            MOVE TEXFLD OF ASQRY16F TO
+                                 TEXFLD OF WS01-OO
+                            MOVE TIPFLD OF ASQRY16F TO
+                                 TIPFLD OF WS01-OO
+                            MOVE VALFLD OF ASQRY16F TO
+                                 VALFLD OF WS01-OO
+                         ELSE
+                            MOVE SPACES            TO
+                                 TEXFLD OF WS01-OO
+                            MOVE "A"               TO
+                                 TIPFLD OF WS01-OO
+                            MOVE "C"               TO
+                                 VALFLD OF WS01-OO
+                         END-IF
+                         MOVE SPACES TO CAMPOSEL  OF WS01-OO
+                         WRITE SUBFILE R-PANTALLA FROM WS01-OO
+                               FORMAT  "WS01" END-WRITE
+                  END-PERFORM
+                  MOVE I-ON    TO IN30 OF WC01-O-INDIC
+                                  IN31 OF WC01-O-INDIC
+                  MOVE I-OFF   TO IN32 OF WC01-O-INDIC.
+
+      *
+       AYUDA-SFL-WS01.
+      *---------------
+           MOVE REGREL OF WC01-II  TO WS-REGREL
+           MOVE WS-NOMFUN  TO NOMFUN    OF ASQRY16F
+           MOVE WS-REGREL  TO SECFUN    OF ASQRY16F
+           READ ASQRY16F END-READ
+           IF FS-ASQRY16F = "00"
+              MOVE TIPFLD OF ASQRY16F    TO WS-TIPFLD
+              IF VALFLD OF ASQRY16F = "C"
+                 PERFORM AYUDA-CAMPOS-ARCHIVO
+              ELSE
+                 ADD   1     TO CTA-MSG
+                 MOVE SPACES TO TEXTO-ARR(CTA-MSG)
+                 STRING "Debe ingresar valor,"   DELIMITED SIZE
+                        "no es posible ayuda en" DELIMITED SIZE
+                        " este campo  "          DELIMITED SIZE
+                                            INTO TEXTO-ARR(CTA-MSG)
+                 MOVE WS-REGREL  TO POSCUR OF WC01-II.
+
+      *
+       AYUDA-CAMPOS-ARCHIVO.
+      *---------------------
+           MOVE REGREL OF WC01-II  TO WS-REGREL
+           MOVE SPACES             TO CODIGO-16C
+           MOVE SPACES             TO SELECC-16C
+           IF WS-TIPFLD = 'N'
+              STRING 'WHFLDT IN("P", "S") ' DELIMITED SIZE
+                     ' AND WHFILE = "'      DELIMITED SIZE
+                     ARCHIVO-BASE-LNK       DELIMITED SIZE
+                     '" '                   DELIMITED SIZE
+                                       INTO SELECC-16C
+           ELSE
+              STRING 'WHFLDT = "'           DELIMITED SIZE
+                     WS-TIPFLD              DELIMITED SIZE
+                     '" '                   DELIMITED SIZE
+                     ' AND WHFILE = "'      DELIMITED SIZE
+                     ARCHIVO-BASE-LNK       DELIMITED SIZE
+                     '" '                   DELIMITED SIZE
+                               INTO SELECC-16C
+           END-IF
+           MOVE 'CAMPOSRES '       TO NOMAYU-16C
+           MOVE ZEROES             TO LARGOKEY-16C
+                                      LARGODES-16C
+
+           CALL   'ASQRY05' USING NOMAYU-16C
+                                   SELECC-16C
+                                   RETORNO-16C
+
+           CANCEL 'ASQRY05'
+           IF CODIGO-16C NOT = SPACES
+              MOVE CODIGO-16C(01:10) TO WS-NOMFLD
+              PERFORM INSERTA-CAMPO-WS01
+              MOVE WS-REGREL  TO POSCUR OF WC01-II.
+
+      *
+       AYUDA-AGRUPACION.
+      *-----------------
+           MOVE SPACES             TO CODIGO-16C
+           MOVE SPACES             TO SELECC-16C
+           STRING ' WHFILE = "'       DELIMITED SIZE
+                  ARCHIVO-BASE-LNK    DELIMITED SIZE
+                  '" '                DELIMITED SIZE
+                                  INTO SELECC-16C
+           MOVE 'CAMPOSRES '       TO NOMAYU-16C
+           MOVE ZEROES             TO LARGOKEY-16C
+                                      LARGODES-16C
+
+           CALL   'ASQRY05' USING NOMAYU-16C
+                                   SELECC-16C
+                                   RETORNO-16C
+
+           CANCEL 'ASQRY05'
+           IF CODIGO-16C NOT = SPACES
+              MOVE CODIGO-16C(01:10) TO WS-NOMFLD.
+
+      *
+       INSERTA-CAMPO-WS01.
+      *-------------------
+           PERFORM VARYING NREL FROM 1 BY 1 UNTIL NREL > WS-NROFLD
+             READ SUBFILE PANTALLA INTO WS01-OO FORMAT "WS01"
+                          END-READ
+             IF NREL = WS-REGREL
+                MOVE WS-NOMFLD TO CAMPOSEL OF WS01-OO
+                REWRITE SUBFILE R-PANTALLA FROM WS01-OO FORMAT "WS01"
+                        END-REWRITE
+             END-IF
+           END-PERFORM.
+      *
+       CHEQUEA-VALORES-INGRESADOS.
+      *---------------------------
+           MOVE 0   TO WS-ERROR
+           PERFORM VARYING NREL FROM 1 BY 1 UNTIL NREL > WS-NROFLD
+              READ SUBFILE PANTALLA INTO WS01-OO FORMAT "WS01"
+                           END-READ
+              IF FS-PANTALLA = "00"
+                 MOVE CAMPOSEL OF WS01-OO TO WS-CAMPO
+                 IF VALFLD OF WS01-OO = "C"
+                    PERFORM BUSCA-CAMPO-ASQRY01F
+                 ELSE
+                    IF TIPFLD OF WS01-OO = "N"
+                       MOVE 1   TO Y10
+                       MOVE "N" TO SALIR-Y10
+                       PERFORM REC-CAMPOSEL
+                                    UNTIL Y10 > 10 OR SALIR-Y10 = "S"
+
+                       SUBTRACT 1 FROM Y10
+                       IF WS-CAMPO(1:Y10) IS NOT NUMERIC
+
+                       MOVE  1     TO WS-ERROR
+                       ADD   1     TO CTA-MSG
+                       MOVE SPACES TO TEXTO-ARR(CTA-MSG)
+                       STRING "Valor ingresado debe"    DELIMITED SIZE
+                              " ser numšrico, inserte " DELIMITED SIZE
+                              "valor en todo el Campo " DELIMITED SIZE
+                                          INTO TEXTO-ARR(CTA-MSG)
+
+                       END-IF
+                    END-IF
+                 END-IF
+              END-IF
+           END-PERFORM.
+      *
+       REC-CAMPOSEL.
+      *-------------
+           IF CAMPOSEL OF WS01-OO(Y10:1) = " "
+              MOVE "S" TO SALIR-Y10
+           ELSE
+              ADD 1    TO Y10.
+      *
+       BUSCA-CAMPO-ASQRY01F.
+      *--------------------
+           MOVE ZEROES           TO CUENTA-CAMPO
+
+           EXEC SQL
+           SELECT CAST(COUNT(*) AS NUMERIC (5, 0)) INTO :CUENTA-CAMPO
+           FROM ASQRY01F WHERE WHFILE = :ARCHIVO-BASE-LNK AND WHFLDI =
+           :WS-CAMPO
+           END-EXEC
+
+           IF CUENTA-CAMPO = 0
+              MOVE  1     TO WS-ERROR
+              ADD   1     TO CTA-MSG
+              MOVE SPACES TO TEXTO-ARR(CTA-MSG)
+              STRING "Campo "                 DELIMITED SIZE
+                     WS-CAMPO                 DELIMITED BY " "
+                     " no existe en archivo " DELIMITED SIZE
+                                        INTO TEXTO-ARR(CTA-MSG)
+           END-IF.
+      *
+       BUSCA-CAMPO-ASQRY01F-1.
+      *----------------------
+           MOVE ZEROES           TO CUENTA-CAMPO
+           MOVE SPACES           TO WS-CAMPO-CON WS-TIPO
+
+           EXEC SQL
+           SELECT WHFLDT, CAST(COUNT(*) AS NUMERIC (5, 0)) INTO
+           :WS-TIPO, :CUENTA-CAMPO FROM ASQRY01F WHERE WHFILE =
+           :ARCHIVO-BASE-LNK AND WHFLDI = :WS-CAMPO GROUP BY WHFLDT
+           END-EXEC
+
+           IF CUENTA-CAMPO = 0
+              MOVE  1     TO WS-ERROR
+              ADD   1     TO CTA-MSG
+              MOVE SPACES TO TEXTO-ARR(CTA-MSG)
+              STRING "Campo "                DELIMITED SIZE
+                     WS-CAMPO                DELIMITED BY " "
+                     "no existe en archivo " DELIMITED SIZE
+                                        INTO TEXTO-ARR(CTA-MSG)
+           ELSE
+               EVALUATE WS-TIPO
+                   WHEN "S"  STRING "DIGITS("   DELIMITED SIZE
+                                    WS-CAMPO    DELIMITED SIZE
+                                    ")"         DELIMITED SIZE
+                                           INTO WS-CAMPO-CON
+                   WHEN "P"  STRING "DIGITS("   DELIMITED SIZE
+                                    WS-CAMPO    DELIMITED SIZE
+                                    ")"         DELIMITED SIZE
+                                           INTO WS-CAMPO-CON
+                   WHEN "F"  STRING "DIGITS("   DELIMITED SIZE
+                                    WS-CAMPO    DELIMITED SIZE
+                                    ")"         DELIMITED SIZE
+                                           INTO WS-CAMPO-CON
+                   WHEN "T"  STRING "CAST("     DELIMITED SIZE
+                             WS-CAMPO           DELIMITED SIZE
+                             " AS CHAR(10))"    DELIMITED SIZE
+                                           INTO WS-CAMPO-CON
+                   WHEN "L"  STRING "CAST("     DELIMITED SIZE
+                             WS-CAMPO           DELIMITED SIZE
+                             " AS CHAR(10))"    DELIMITED SIZE
+                                           INTO WS-CAMPO-CON
+                   WHEN OTHER MOVE WS-CAMPO  TO WS-CAMPO-CON
+               END-EVALUATE
+           END-IF.
+      *
+       LIMPIA-WS01.
+      *------------
+           MOVE I-ON            TO IN32 OF WC01-O-INDIC
+           MOVE I-OFF           TO IN30 OF WC01-O-INDIC
+                                   IN31 OF WC01-O-INDIC
+           MOVE ZEROES          TO NREL
+           WRITE R-PANTALLA FROM WC01-II FORMAT "WC01"
+                                 INDICATORS ARE WC01-O-INDIC.
+      *
+       LIMPIA-WS02.
+      *------------
+           MOVE I-ON            TO IN32 OF WC02-O-INDIC
+           MOVE I-OFF           TO IN30 OF WC02-O-INDIC
+                                   IN31 OF WC02-O-INDIC
+           MOVE ZEROES          TO NREL2
+           WRITE R-PANTALLA2 FROM WC02-II FORMAT "WC02"
+                                 INDICATORS ARE WC02-O-INDIC.
+      *
+       TERMINO.
+      *-------
+           CLOSE    PANTALLA ASQRY14F ASQRY16F.

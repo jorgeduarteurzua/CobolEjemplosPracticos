@@ -1,0 +1,9 @@
+     A                                      UNIQUE
+     A          R RARCIPFTP
+     A            IDFTP         10A         COLHDG('ID FTP')
+     A            DESFTP        50A         COLHDG('DESC. FTP')
+     A            IPFTP         20A         COLHDG('IP FTP')
+     A            USRFTP        10A         COLHDG('USUARIO CONX FTP')
+     A            PSWFTP        10A         COLHDG('PASSWORD CONX FTP')
+     A            RUTAFTP       50A         COLHDG('RUTA DEJAR FTP')
+     A          K IDFTP

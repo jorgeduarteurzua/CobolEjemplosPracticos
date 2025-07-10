@@ -1,0 +1,108 @@
+       IDENTIFICATION DIVISION.
+      *-----------------------*
+       PROGRAM-ID. ASQRY36.
+       AUTHOR. JORGE DUARTE U.
+       ENVIRONMENT DIVISION.
+      *--------------------*
+       CONFIGURATION SECTION.
+       SOURCE-COMPUTER.      IBM-AS400.
+       OBJECT-COMPUTER.      IBM-AS400.
+       SPECIAL-NAMES.        LOCAL-DATA IS LOCAL-DATA-AREA .
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+
+       DATA DIVISION.
+      *--------------*
+       FILE SECTION.
+      *-------------*
+
+       WORKING-STORAGE SECTION.
+      *------------------------*
+       77 P-CONCEPTO           PIC 9(4).
+       77 P-ARR                PIC 9(4).
+       77 SEL-C1               PIC X(2000).
+       77 ARC-CONCEPTOS        PIC X(2000).
+
+           EXEC SQL
+              INCLUDE SQLCA
+           END-EXEC.
+
+       01 DATOS-CURSOR-C1.
+          05 ARCHIVO-C1        PIC X(10).
+
+       01 ARREGLOS-DE-TRABAJO.
+          05 RR-CONCEPTOS PIC X(250).
+          05 ARR-CONCE REDEFINES RR-CONCEPTOS  OCCURS 25 TIMES.
+             10 CONCEPTO-ARR      PIC X(10).
+
+          05 CAMPOS-DEF-ARR  OCCURS 200 TIMES.
+             10 ARCHIVO-D        PIC X(10).
+
+      *
+       LINKAGE SECTION.
+      *----------------
+       01 CONCEPTOS-LNK   PIC X(250).
+       01 ARCHIVOS-LNK    PIC X(2000).
+
+       PROCEDURE DIVISION USING CONCEPTOS-LNK, ARCHIVOS-LNK.
+      *--------------------------------------------------------
+
+           MOVE 1            TO P-ARR
+                                P-CONCEPTO
+           MOVE SPACES       TO SEL-C1
+                                RR-CONCEPTOS
+                               ARC-CONCEPTOS
+
+           MOVE CONCEPTOS-LNK TO RR-CONCEPTOS
+           PERFORM UNTIL  CONCEPTO-ARR(P-ARR) = SPACES
+                      OR  P-ARR > 25
+              IF P-ARR > 1
+                 MOVE ', '           TO ARC-CONCEPTOS(P-CONCEPTO:2 )
+                 ADD  3              TO P-CONCEPTO
+              END-IF
+              MOVE '"'                 TO ARC-CONCEPTOS(P-CONCEPTO:1)
+              ADD 1                    TO P-CONCEPTO
+              MOVE CONCEPTO-ARR(P-ARR) TO ARC-CONCEPTOS(P-CONCEPTO:10)
+              ADD  10                  TO P-CONCEPTO
+              MOVE '"'                 TO ARC-CONCEPTOS(P-CONCEPTO:1)
+
+              ADD 1                    TO P-CONCEPTO
+              ADD 1                    TO P-ARR
+
+           END-PERFORM.
+
+           STRING 'SELECT DISTINCT NOMARC FROM ASQRY21F '
+                                                 DELIMITED SIZE
+                  ' WHERE NOMCON IN('            DELIMITED SIZE
+                  ARC-CONCEPTOS                  DELIMITED SIZE
+                  ') '                           DELIMITED SIZE
+                                              INTO SEL-C1
+           EXEC SQL
+                DECLARE SELC1 STATEMENT
+           END-EXEC
+           EXEC SQL
+                PREPARE SELC1 FROM :SEL-C1
+           END-EXEC
+           EXEC SQL
+                DECLARE C1 CURSOR FOR SELC1
+           END-EXEC.
+
+           MOVE 0 TO P-ARR
+
+           EXEC SQL OPEN     C1    END-EXEC
+           PERFORM FETCH-CURSOR-C1
+           PERFORM UNTIL SQLCODE NOT = 0 OR P-ARR = 200
+                 ADD 1   TO P-ARR
+                 MOVE ARCHIVO-C1    TO ARCHIVO-D (P-ARR)
+                 PERFORM FETCH-CURSOR-C1
+
+           END-PERFORM
+           MOVE CAMPOS-DEF-ARR TO ARCHIVOS-LNK
+           EXEC SQL CLOSE    C1    END-EXEC.
+           GOBACK.
+      *
+       FETCH-CURSOR-C1.
+      *---------------
+           EXEC SQL
+                FETCH NEXT FROM C1 INTO :DATOS-CURSOR-C1
+           END-EXEC.

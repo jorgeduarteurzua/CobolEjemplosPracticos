@@ -1,0 +1,8 @@
+     A                                      UNIQUE
+     A          R RASQRY41F
+     A*
+     A            NOMCON        10A         TEXT('CONCEPTO      ')
+     A            NOMFLD        10A         TEXT('CAMPO         ')
+     A            NOMENC        40A         TEXT('ENCABEZADO CAMPO')
+     A          K NOMCON
+     A          K NOMFLD

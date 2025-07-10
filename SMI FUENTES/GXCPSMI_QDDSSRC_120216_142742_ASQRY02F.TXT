@@ -1,0 +1,11 @@
+     A                                      UNIQUE
+     A          R RASQRY02F
+     A*
+     A            WHFILE        10A         COLHDG('ARCHIVO')
+     A            WHLIBL        10A         COLHDG('BIBLIOTECA')
+     A            WHFTXT        50A         COLHDG('TEXTO DESCRIP-CAMPO')
+     A            WHNFLD         3S 0       COLHDG('NUMERO DE CAMPOS   ')
+     A            MIEMBRO        1A         COLHDG('USA MIEMBRO')
+     A            OTRARC         1A         COLHDG('REF. OTRO ARC')
+     A          K WHFILE
+     A*

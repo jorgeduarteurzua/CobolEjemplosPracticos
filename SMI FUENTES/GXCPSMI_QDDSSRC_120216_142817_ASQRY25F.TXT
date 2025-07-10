@@ -1,0 +1,30 @@
+     A                                      UNIQUE
+     A          R RASQRY25F
+     A*
+     A            NOMCONS       10A         COLHDG('CONSULTA      ')
+     A*
+     A* EJEMPLO
+     A*    ARCGEN -> "PROMO"
+     A*    ARCBAS -> "B" || ARCGEN || "BASE" - > (BPROMOBASE)
+     A*
+     A            ARCGEN         5A         COLHDG('Car.Archivo Generar')
+     A            CORGEN         4S 0       COLHDG('Cor.Archivo Generar')
+     A            BIBGEN        10A         COLHDG('Bib. Generacion')
+     A            ARCBAS        10A         COLHDG('Archivo Base   ')
+     A            FECCRE         8S 0       COLHDG('Fecha Creacion')
+     A            HORCRE         6S 0       COLHDG('Hora  Creacion')
+     A            USRCRE        10A         COLHDG('Usuario Creacion')
+     A            FECMOD         8S 0       COLHDG('Fecha Modific.')
+     A            HORMOD         6S 0       COLHDG('Hora  Modific.')
+     A            USRMOD        10A         COLHDG('Usuario Modific.')
+     A            LARSEL         5S 0       COLHDG('Largo seleccion')
+     A            REEARC         1A         TEXT('Reemplazar Archivo')
+     A            RETJOB         1A         TEXT('Retener Trabajo   ')
+     A            ADDREG         1A         TEXT('A±adir Registros  ')
+     A            REGUNI         1A         TEXT('SelecciÍn Distinct')
+     A            SELECC     12000A         COLHDG('SELECCION')
+     A            CONSQL       980A         COLHDG('CONDICION SQL')
+     A            SELCON     10000A         COLHDG('SELECCION Conve.')
+     A            CONUNI      1920A         COLHDG('CONDICION UNION ')
+     A          K NOMCONS
+     A*

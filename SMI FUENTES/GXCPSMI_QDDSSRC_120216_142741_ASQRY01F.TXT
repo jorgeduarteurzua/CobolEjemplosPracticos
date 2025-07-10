@@ -1,0 +1,12 @@
+     A          R RASQRY01F
+     A*
+     A            WHFILE        10A         COLHDG('ARCHIVO')
+     A            WHFLDI        10A         COLHDG('NOMBRE CAMPO')
+     A            WHFLDB         5S 0       COLHDG('LONGITUD DEL CAMPO')
+     A            WHFLDD         5S 0       COLHDG('NUMERO DE DIGITOS')
+     A            WHFLDP         2S 0       COLHDG('POSICIONES DEC.')
+     A            WHFTXT        50A         COLHDG('TEXTO DESCRIP-CAMPO')
+     A            WHFLDT         1A         COLHDG('TIPO CAMPO B,A,S,P,O')
+     A          K WHFILE
+     A
+     A*

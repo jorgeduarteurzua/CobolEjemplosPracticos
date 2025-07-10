@@ -1,0 +1,356 @@
+       IDENTIFICATION DIVISION.
+      *------------------------
+       PROGRAM-ID.  ASQRY18.
+       AUTHOR. JORGE DUARTE U.
+       ENVIRONMENT DIVISION.
+       CONFIGURATION SECTION.
+       SOURCE-COMPUTER.  IBM-AS400.
+       OBJECT-COMPUTER.  IBM-AS400.
+       SPECIAL-NAMES. LOCAL-DATA IS LOCAL.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+      *-------------
+           SELECT PANTALLA   ASSIGN        TO WORKSTATION-ASQRY16D-SI
+                             ORGANIZATION  IS TRANSACTION
+                             ACCESS MODE   IS DYNAMIC
+                             RELATIVE KEY  IS NREL
+                             CONTROL-AREA  IS AREA-CONTROL
+                             FILE STATUS   IS FS-PANTALLA.
+
+       DATA DIVISION.
+       FILE SECTION.
+      *-------------
+       FD  PANTALLA LABEL RECORD STANDARD.
+       01  R-PANTALLA           PIC X(9000).
+      *
+       WORKING-STORAGE SECTION.
+      *------------------------
+       77 AAAAMMDD              PIC X(8).
+       77 DDMMAAAA              PIC X(8).
+       77 FECSYS-AMD            PIC S9(8).
+
+       77 NREL                  PIC 9(4).
+       77 WS-DATECUR            PIC 9(08).
+       77 I-ON                  PIC 1 VALUE B"1".
+       77 I-OFF                 PIC 1 VALUE B"0".
+       77 SALIR-CICLO           PIC X.
+
+      *----- VARIABLES DE TRABAJO
+       77 FILE-FIELD            PIC X(21).
+       77 WS-TEVENTO            PIC X(50).
+       77 WS-TPROCESO           PIC X(50).
+       77 WS-TSPROCESO          PIC X(50).
+       77 WS-LONGITUD           PIC S9(5).
+       77 WS-DIGITOS            PIC S9(5).
+       77 WS-DECIMALES          PIC S9(2).
+       77 WS-TIPO               PIC X.
+       77 VARIABLE-48           PIC X(48).
+
+       77 PI-CAMPO              PIC 9(5).
+       77 P-CAMPO               PIC 9(5).
+       77 LARGO-CAMPO           PIC 9(5).
+       77 P-ARR                 PIC 9(5).
+       77 POS-ARR               PIC 9(5).
+       77 P-CHG                 PIC 9(5).
+       77 TOPE                  PIC 9(5).
+       77 P-TOPE                PIC 9(5).
+       77 P-VALOR               PIC 9(5).
+
+       77 WS-ARCSEL             PIC X(10).
+       77 WS-CAMSEL             PIC X(10).
+
+       77 WS-CODEVE             PIC X(10).
+       77 WS-NROPRO             PIC S9(5).
+       77 WS-CORPRO             PIC S9(5).
+       77 WS-SELEJE             PIC X(10000).
+       77 SEN-CAMBIAR           PIC X(10000).
+
+           EXEC SQL
+              INCLUDE SQLCA
+           END-EXEC.
+
+
+       01 WS-VARIABLES-DE-TRABAJO.
+          05 INSREG             PIC X(500).
+          05 HORA-SYS.
+             10 HORSYS-HMS      PIC S9(6).
+             10 FILLER          PIC 9(2).
+
+       01 WS-ESTADOS.
+          05 FS-PANTALLA        PIC X(02) VALUE "00".
+
+       01 AREA-CONTROL.
+          05 MDTO               PIC 9(02).
+             88 INTRO           VALUE 00.
+             88 F3              VALUE 03.
+             88 F9              VALUE 09.
+
+       01 ARREGLOS-DE-TRABAJO.
+          05 CTA-MSG              PIC 9(3).
+          05 VARIABLE-3250        PIC X(6500).
+          05 VAR-ARR-3250 REDEFINES VARIABLE-3250 OCCURS 100 TIMES
+                          ASCENDING KEY IS TEXTO-ARR.
+             10 TEXTO-ARR         PIC X(65).
+
+       01 ARREGLO-SENTENCIA-PAR.
+          05 SEN-PARAMETROS OCCURS 200 TIMES.
+             10 CAMPO-ARR       PIC X(21).
+             10 LONGITUD-ARR    PIC S9(5).
+             10 DIGITOS-ARR     PIC S9(5).
+             10 DECIMALES-ARR   PIC S9(2).
+             10 TIPO-ARR        PIC X.
+             10 P-INICIAL       PIC S9(5).
+             10 N-CARACTERES    PIC S9(5).
+             10 VALPAR-ARR      PIC X(48).
+
+      *
+       01 WC01-II.
+          COPY DDS-WC01-I       OF ASQRY16D.
+
+       01 WC01-IND.
+          COPY DDS-WC01-INDIC   OF ASQRY16D.
+
+       01 WS01-OO.
+          COPY DDS-WS01-O       OF ASQRY16D.
+
+       LINKAGE SECTION.
+       01 PARA-LNK.
+          05 CODEVE-LNK            PIC X(10).
+          05 FECPRO-LNK            PIC S9(8).
+          05 HORPRO-LNK            PIC S9(6).
+          05 SECEJE-LNK            PIC S9(5).
+
+       PROCEDURE DIVISION USING PARA-LNK.
+      *----------------------------------
+           PERFORM INICIO
+           PERFORM PROCESO UNTIL F9 OR POS-ARR = 0
+           PERFORM TERMINO
+           GOBACK.
+
+      *
+       INICIO.
+      *-------
+           OPEN I-O PANTALLA.
+           INITIALIZE WC01-I REPLACING
+                      ALPHANUMERIC DATA BY SPACES
+                      NUMERIC      DATA BY ZEROES.
+
+           CALL   "MRTVDAF2" USING AAAAMMDD DDMMAAAA
+           CANCEL "MRTVDAF2"
+           ACCEPT HORA-SYS FROM TIME
+
+           CALL "MRTVDAF1" USING WS-DATECUR
+           MOVE WS-DATECUR       TO DATECUR OF WC01-II
+           MOVE ZEROES           TO MDTO
+           PERFORM LIMPIA-WS01
+           PERFORM RESCATA-EVENTO-PROC-SPROC
+           PERFORM CHEQUEA-SENTENCIA-EJECUTAR
+           MOVE I-ON       TO IN30 OF WC01-O-INDIC
+                              IN31 OF WC01-O-INDIC
+           MOVE I-OFF      TO IN32 OF WC01-O-INDIC.
+      *
+       RESCATA-EVENTO-PROC-SPROC.
+      *--------------------------
+           EXEC SQL
+           SELECT CODEVE, NROPRO, CORPRO, SELEJE INTO :WS-CODEVE,
+           :WS-NROPRO, :WS-CORPRO, :WS-SELEJE FROM ASQRY04F WHERE CODEVE
+           = :CODEVE-LNK AND FECPRO1 = :FECPRO-LNK AND HORPRO1 =
+           :HORPRO-LNK AND SECEJE = :SECEJE-LNK
+           END-EXEC
+
+           EXEC SQL
+           SELECT DESEVE INTO :WS-TEVENTO FROM ASQRY03F WHERE CODEVE =
+           :WS-CODEVE
+           END-EXEC
+
+           EXEC SQL
+           SELECT NOMPRO INTO :WS-TPROCESO FROM ASQRY10F WHERE NROPRO =
+           :WS-NROPRO
+           END-EXEC
+
+           EXEC SQL
+           SELECT DCOPRO INTO :WS-TSPROCESO FROM ASQRY09F WHERE NROPRO =
+           :WS-NROPRO AND CORPRO = :WS-CORPRO
+           END-EXEC
+
+           MOVE WS-TEVENTO    TO TEVENTO   OF WC01-II
+           MOVE WS-TPROCESO   TO TPROCESO  OF WC01-II
+           MOVE WS-TSPROCESO  TO TSPROCESO OF WC01-II.
+
+      *
+       CHEQUEA-SENTENCIA-EJECUTAR.
+      *---------------------------
+           MOVE ZEROES     TO POS-ARR
+           PERFORM VARYING P-ARR FROM 1 BY 1 UNTIL P-ARR > 10000
+               IF WS-SELEJE(P-ARR:1) = "?"
+                  PERFORM BUSCA-BLANCO-ARCHIVO-CAMPO
+               END-IF
+           END-PERFORM
+           IF POS-ARR > 0
+              PERFORM LLENA-WS01.
+
+      *
+       BUSCA-BLANCO-ARCHIVO-CAMPO.
+      *---------------------------
+           MOVE P-ARR         TO P-CAMPO
+           ADD  1             TO P-CAMPO
+           MOVE ZEROES        TO LARGO-CAMPO PI-CAMPO
+           PERFORM UNTIL (WS-SELEJE(P-CAMPO:1) = ' ' OR '"' OR ')' OR
+                                                 ',' OR '%')
+                AND      LARGO-CAMPO > 0
+                   IF WS-SELEJE(P-CAMPO:1) NOT = ' '
+                      IF LARGO-CAMPO = 0
+                         MOVE P-CAMPO  TO PI-CAMPO
+                      END-IF
+                   END-IF
+                   ADD  1       TO LARGO-CAMPO
+                   ADD 1        TO P-CAMPO
+           END-PERFORM
+
+      *
+      *  SE AÑADE CAMPO
+      *
+           MOVE P-CAMPO         TO P-ARR
+           ADD  1               TO POS-ARR
+           MOVE PI-CAMPO        TO P-INICIAL    (POS-ARR)
+           MOVE LARGO-CAMPO     TO N-CARACTERES (POS-ARR)
+           MOVE WS-SELEJE(PI-CAMPO:LARGO-CAMPO) TO CAMPO-ARR(POS-ARR)
+                                                   FILE-FIELD
+           UNSTRING CAMPO-ARR(POS-ARR) DELIMITED BY '.'
+                          INTO WS-ARCSEL
+                               WS-CAMSEL
+
+           EXEC SQL
+           SELECT WHFLDB, WHFLDD, WHFLDP, WHFLDT INTO :WS-LONGITUD,
+           :WS-DIGITOS, :WS-DECIMALES, :WS-TIPO FROM ASQRY01F WHERE
+           WHFILE = :WS-ARCSEL AND WHFLDI = :WS-CAMSEL
+           END-EXEC
+
+           MOVE WS-LONGITUD    TO LONGITUD-ARR (POS-ARR)
+           MOVE WS-DIGITOS     TO DIGITOS-ARR  (POS-ARR)
+           MOVE WS-DECIMALES   TO DECIMALES-ARR(POS-ARR)
+           MOVE WS-TIPO        TO TIPO-ARR     (POS-ARR).
+
+      *
+       LLENA-WS01.
+      *-----------
+           PERFORM VARYING NREL FROM 1 BY 1 UNTIL NREL > POS-ARR
+               PERFORM GRABAR-WS01
+           END-PERFORM.
+      *
+       GRABAR-WS01.
+      *------------
+           MOVE SPACES             TO VALPAR   OF WS01-OO
+           MOVE CAMPO-ARR(NREL)    TO CAMPO    OF WS01-OO
+           MOVE LONGITUD-ARR(NREL) TO LONGITUD OF WS01-OO
+           MOVE DIGITOS-ARR (NREL) TO DIGITOS  OF WS01-OO
+           MOVE TIPO-ARR    (NREL) TO TIPO     OF WS01-OO
+           IF TIPO-ARR(NREL) NOT = "P" AND "S"
+              MOVE LONGITUD-ARR(NREL) TO TOPE
+              IF TOPE > 48
+                 MOVE 48   TO TOPE
+              END-IF
+              MOVE ALL "*" TO VALPAR OF WS01-OO(1:TOPE)
+           ELSE
+              MOVE DIGITOS-ARR(NREL)  TO TOPE
+              MOVE ALL "*" TO VALPAR OF WS01-OO(1:TOPE)
+           END-IF
+           WRITE SUBFILE R-PANTALLA FROM WS01-OO FORMAT "WS01".
+      *
+       PROCESO.
+      *--------
+           WRITE R-PANTALLA FROM WC01-II FORMAT "WC01"
+                             INDICATORS ARE WC01-O-INDIC END-WRITE
+           READ  PANTALLA   INTO WC01-II FORMAT "WC01"
+                             INDICATORS ARE WC01-I-INDIC END-READ.
+
+           MOVE    SPACES        TO VARIABLE-3250
+           MOVE    ZEROES        TO CTA-MSG
+           IF F9
+              PERFORM VALIDA-WS01
+              IF CTA-MSG = 0
+                 PERFORM ACTUALIZAR-ASQRY04F
+              ELSE
+                 MOVE ZEROES   TO MDTO
+              END-IF
+           END-IF
+
+           IF CTA-MSG NOT = ZEROES
+              CALL    "VISERR2" USING VARIABLE-3250
+              CANCEL  "VISERR2"
+           END-IF.
+      *
+       VALIDA-WS01.
+      *------------
+           PERFORM VARYING NREL FROM 1 BY 1 UNTIL NREL > POS-ARR
+              READ SUBFILE PANTALLA INTO WS01-OO FORMAT "WS01"
+                   END-READ
+              IF FS-PANTALLA = "00"
+                 IF TIPO OF WS01-OO = "P" OR "S"
+                    IF VALPAR OF WS01-OO(1:DIGITOS OF WS01-OO)
+                       IS NOT NUMERIC
+                       ADD  1      TO CTA-MSG
+                       MOVE SPACES TO TEXTO-ARR(CTA-MSG)
+                       STRING "Campo "                 DELIMITED SIZE
+                           CAMPO-ARR(NREL)             DELIMITED SIZE
+                           "posee un valor no vßlido " DELIMITED SIZE
+                                     INTO TEXTO-ARR(CTA-MSG)
+                    END-IF
+                 END-IF
+                 MOVE VALPAR OF WS01-OO  TO VALPAR-ARR(NREL)
+              END-IF
+           END-PERFORM.
+      *
+       ACTUALIZAR-ASQRY04F.
+      *-------------------
+           MOVE ZEROES     TO P-VALOR P-CHG
+           MOVE SPACES     TO SEN-CAMBIAR
+           PERFORM VARYING P-ARR FROM 1 BY 1 UNTIL P-ARR > 10000
+               IF WS-SELEJE(P-ARR:1) = "?"
+                  ADD  1  TO P-VALOR
+                  IF TIPO-ARR(P-VALOR) NOT = "P" AND "S"
+                     MOVE LONGITUD-ARR(P-VALOR) TO TOPE
+                  ELSE
+                     MOVE DIGITOS-ARR(P-VALOR)  TO TOPE
+                  END-IF
+                  PERFORM AGREGA-HASTA-TOPE
+                  ADD N-CARACTERES(P-VALOR) TO P-ARR
+               ELSE
+                  ADD  1                  TO P-CHG
+                  MOVE WS-SELEJE(P-ARR:1) TO SEN-CAMBIAR(P-CHG:1)
+               END-IF
+           END-PERFORM
+
+           EXEC SQL
+           UPDATE  ASQRY04F SET SELEJE = :SEN-CAMBIAR WHERE
+           CODEVE = :CODEVE-LNK AND FECPRO1 = :FECPRO-LNK AND HORPRO1 =
+           :HORPRO-LNK AND SECEJE = :SECEJE-LNK
+           END-EXEC.
+      *
+       AGREGA-HASTA-TOPE.
+      *------------------
+           MOVE   "N"   TO SALIR-CICLO
+           PERFORM VARYING P-TOPE FROM 1 BY 1 UNTIL P-TOPE > TOPE
+              OR SALIR-CICLO = "S"
+              ADD  1                     TO P-CHG
+              MOVE VALPAR-ARR(P-VALOR)   TO VARIABLE-48
+              IF VARIABLE-48(P-TOPE:1) = " "
+                 MOVE "S"  TO SALIR-CICLO
+                 SUBTRACT 1 FROM P-CHG
+              ELSE
+                 MOVE VARIABLE-48(P-TOPE:1) TO SEN-CAMBIAR(P-CHG:1)
+              END-IF
+           END-PERFORM.
+      *
+       LIMPIA-WS01.
+      *------------
+           MOVE I-ON            TO IN32 OF WC01-O-INDIC
+           MOVE I-OFF           TO IN30 OF WC01-O-INDIC
+                                   IN31 OF WC01-O-INDIC
+           MOVE ZEROES          TO NREL
+           WRITE R-PANTALLA FROM WC01-II FORMAT "WC01"
+                                 INDICATORS ARE WC01-O-INDIC.
+      *
+       TERMINO.
+      *-------
+           CLOSE    PANTALLA.

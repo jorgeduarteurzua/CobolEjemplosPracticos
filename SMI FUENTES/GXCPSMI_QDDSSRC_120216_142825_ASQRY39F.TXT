@@ -1,0 +1,25 @@
+     A                                      UNIQUE
+     A          R RASQRY39F
+     A*
+     A            NOMCONS       10A         TEXT('CONSULTA      ')
+     A            FECPRO         8S 0       TEXT('FECHA PROCESO ')
+     A            HORPRO         6S 0       TEXT('HORA  PROCESO ')
+     A            SECEJE         5S 0       TEXT('SECUENCIA EJE.')
+     A            CORREL         5S 0       TEXT('CORREL.PARAM  ')
+     A            FILFLD        21A         TEXT('ARCHIVO.CAMPO')
+     A            ARCHIVO       10A         TEXT('ARCHIVO      ')
+     A            CAMPO         10A         TEXT('CAMPO        ')
+     A            LONGIT         5S 0       TEXT('LONGITUD CAMPO')
+     A            DIGITO         5S 0       TEXT('DIGITOS CAMPO')
+     A            DECIMA         2S 0       TEXT('DECIMALES    ')
+     A            TIPO           1A         TEXT('TIPO DATO    ')
+     A            PINI           5S 0       TEXT('POS.INI.PARM ')
+     A            NCAR           5S 0       TEXT('NRO.CARACTERES')
+     A            VALPAR        48A         TEXT('VALOR PARAM.')
+     A            DSCFLD        50A         TEXT('DESCRI.CAMPO')
+     A          K NOMCONS
+     A          K FECPRO
+     A          K HORPRO
+     A          K SECEJE
+     A          K CORREL
+     A          K FILFLD

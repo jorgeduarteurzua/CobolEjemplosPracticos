@@ -1,0 +1,296 @@
+       IDENTIFICATION DIVISION.
+      *------------------------*
+       PROGRAM-ID. ASQRY09.
+       AUTHOR.     JORGE DUARTE U.
+      *
+       ENVIRONMENT DIVISION.
+      *---------------------*
+       CONFIGURATION SECTION.
+       SOURCE-COMPUTER.      IBM-AS400.
+       OBJECT-COMPUTER.      IBM-AS400.
+       INPUT-OUTPUT SECTION.
+      *--------------------*
+       FILE-CONTROL.
+      *------------*
+
+       DATA DIVISION.
+      *-------------*
+       FILE SECTION.
+      *-------------*
+
+       WORKING-STORAGE SECTION.
+      *------------------------
+       77 WS-ARCGEN           PIC X(10).
+       77 WS-BIBGEN           PIC X(10).
+       77 WS-SECEJE           PIC S9(5).
+       77 WS-NROPRO           PIC S9(5).
+       77 WS-CORPRO           PIC S9(5).
+       77 WS-MIEMBRO          PIC X(4000).
+
+       77 WS-CANREG           PIC S9(8).
+       77 CTA-REGISTROS       PIC X(1000).
+       77 WS-SELECC           PIC X(10000).
+       77 SEN-INSERT          PIC X(20000).
+           EXEC SQL
+               INCLUDE SQLCA
+           END-EXEC.
+
+       01 VARIABLES-DE-TRABAJO.
+          05 AAAAMMDD         PIC X(8).
+          05 AAAAMMDD-9 REDEFINES AAAAMMDD PIC S9(8).
+          05 DDMMAAAA         PIC X(8).
+
+          05 HORA-SISTEMA.
+             10 HORA-SYS      PIC S9(6).
+             10 FILLER        PIC S9(2).
+
+       01 PARAMETROS-20A.
+          05 CODEVE-20A       PIC X(10).
+          05 FECPRO-20A       PIC S9(8).
+          05 FECPRO-20A-R REDEFINES FECPRO-20A PIC X(8).
+          05 HORPRO-20A       PIC S9(6).
+          05 HORPRO-20A-R REDEFINES HORPRO-20A PIC X(6).
+          05 ARCRUT-20A       PIC X(10).
+          05 BIBRUT-20A       PIC X(10).
+          05 ARCBAS-20A       PIC X(10).
+          05 BIBBAS-20A       PIC X(10).
+          05 ARCGEN-20A       PIC X(10).
+          05 SECEJE-20A       PIC X(05).
+          05 SECTOP-20A       PIC X(05).
+          05 REFABAS-20A      PIC X(10).
+          05 REFAGEN-20A      PIC X(10).
+          05 REFBGEN-20A      PIC X(10).
+          05 PROREF-20A       PIC S9(5).
+          05 CPRREF-20A       PIC S9(5).
+          05 REEARC-20A       PIC X(01).
+          05 RETJOB-20A       PIC X(01).
+          05 ADDREG-20A       PIC X(01).
+          05 REGUNI-20A       PIC X(01).
+
+       01 ARREGLO-OVRDBF.
+          05 P-OVR            PIC 9(3).
+          05 MIEMBRO-OVR-X    PIC X(4000).
+          05 MIEMBRO-OVR-R REDEFINES MIEMBRO-OVR-X OCCURS 100 TIMES.
+             10 ARCHIVO-OVR   PIC X(10).
+             10 MASCARA-OVR   PIC X(10).
+             10 BIBLIOT-OVR   PIC X(10).
+             10 MIEMBRO-OVR   PIC X(10).
+
+       01 MANDATO-OVR.
+          05 MANDATO-200      PIC X(200).
+          05 LARGO-200        PIC S9(10)V9(5) COMP-3 VALUE 200.
+
+       LINKAGE SECTION.
+       01 EVENTO-LNK          PIC X(10).
+       01 FECPRO-LNK          PIC S9(8).
+       01 HORPRO-LNK          PIC S9(6).
+       01 SECEJE-LNK          PIC S9(5).
+       01 SECTOP-LNK          PIC S9(5).
+       01 USUARIO-LNK         PIC X(10).
+       01 ADDREG-LNK          PIC X(01).
+       01 REGUNI-LNK          PIC X(01).
+
+       PROCEDURE DIVISION USING EVENTO-LNK
+                                FECPRO-LNK
+                                HORPRO-LNK
+                                SECEJE-LNK
+                                SECTOP-LNK
+                                USUARIO-LNK
+                                ADDREG-LNK
+                                REGUNI-LNK.
+      *-------------------------------------
+           CALL    "MRTVDAF2" USING AAAAMMDD DDMMAAAA
+           CANCEL  "MRTVDAF2"
+           ACCEPT HORA-SISTEMA FROM TIME
+
+           MOVE SPACES    TO WS-SELECC WS-ARCGEN WS-BIBGEN
+                             WS-MIEMBRO
+           EXEC SQL
+           SELECT SELEJE, ARCGEN, BIBGEN, NROPRO, CORPRO, MIEMBR INTO
+           :WS-SELECC, :WS-ARCGEN, :WS-BIBGEN, :WS-NROPRO, :WS-CORPRO,
+           :WS-MIEMBRO FROM ASQRY04F WHERE CODEVE = :EVENTO-LNK AND
+           FECPRO1 = :FECPRO-LNK AND HORPRO1 = :HORPRO-LNK AND SECEJE =
+           :SECEJE-LNK
+           END-EXEC
+
+           IF WS-MIEMBRO NOT = " "
+              MOVE WS-MIEMBRO    TO MIEMBRO-OVR-X
+              PERFORM GENERA-OVR-ARCHIVOS
+           END-IF
+
+           IF WS-ARCGEN NOT = " "
+              PERFORM GENERA-ARCHIVO
+           END-IF
+           ADD 1     TO SECEJE-LNK
+           IF SECEJE-LNK NOT > SECTOP-LNK
+              PERFORM EJECUTA-SGTE-PROCESO
+           END-IF
+           GOBACK.
+
+      *
+       GENERA-OVR-ARCHIVOS.
+      *--------------------
+           PERFORM VARYING P-OVR FROM 1 BY 1 UNTIL
+                           ARCHIVO-OVR(P-OVR) = " "
+               MOVE SPACES TO MANDATO-200
+               STRING "OVRDBF FILE("       DELIMITED BY SIZE
+                      ARCHIVO-OVR(P-OVR)   DELIMITED BY SIZE
+                      ") TOFILE("          DELIMITED BY SIZE
+                      BIBLIOT-OVR(P-OVR)   DELIMITED BY " "
+                      "/"                  DELIMITED BY SIZE
+                      MASCARA-OVR(P-OVR)   DELIMITED BY " "
+                      ") MBR("             DELIMITED BY SIZE
+                      MIEMBRO-OVR(P-OVR)   DELIMITED BY " "
+                      ") SHARE(*YES) "     DELIMITED BY SIZE
+                                       INTO MANDATO-200
+               CALL  "QCMDEXC" USING MANDATO-200 LARGO-200
+
+           END-PERFORM.
+      *
+       EJECUTA-SGTE-PROCESO.
+      *---------------------
+           PERFORM RESCATA-VOLORES-A-SOMETER.
+      *
+       RESCATA-VOLORES-A-SOMETER.
+      *--------------------------
+           EXEC SQL
+           SELECT CODEVE, FECPRO1, HORPRO1, ARCRUT, BIBRUT, ARCBAS,
+           BIBBAS, ARCGEN, REEARC, RETJOB, NROPRO, CORPRO, ADDREG,
+           REGUNI, MIEMBR INTO :CODEVE-20A, :FECPRO-20A, :HORPRO-20A,
+           :ARCRUT-20A, :BIBRUT-20A, :ARCBAS-20A, :BIBBAS-20A,
+           :ARCGEN-20A, :REEARC-20A, :RETJOB-20A, :WS-NROPRO,
+           :WS-CORPRO, :ADDREG-20A, :REGUNI-20A FROM
+            ASQRY04F WHERE CODEVE = :EVENTO-LNK AND FECPRO1 =
+           :FECPRO-LNK AND HORPRO1 = :HORPRO-LNK AND SECEJE =
+           :SECEJE-LNK
+           END-EXEC
+
+           MOVE SPACES     TO REFABAS-20A
+                              REFAGEN-20A
+                              REFBGEN-20A
+
+           PERFORM RESCATA-REF-ARCHIVO
+
+           MOVE SECEJE-LNK          TO SECEJE-20A
+           MOVE SECTOP-LNK          TO SECTOP-20A
+           CALL "ASQRY07P" USING CODEVE-20A
+                                 FECPRO-20A-R
+                                 HORPRO-20A-R
+                                 SECEJE-20A
+                                 ARCRUT-20A
+                                 BIBRUT-20A
+                                 ARCBAS-20A
+                                 BIBBAS-20A
+                                 ARCGEN-20A
+                                 USUARIO-LNK
+                                 SECTOP-20A
+                                 REFABAS-20A
+                                 REFAGEN-20A
+                                 REFBGEN-20A
+                                 REEARC-20A
+                                 RETJOB-20A
+                                 ADDREG-20A
+                                 REGUNI-20A
+           CANCEL "ASQRY07P".
+      *
+       RESCATA-REF-ARCHIVO.
+      *--------------------
+           EXEC SQL
+           SELECT PROREF, CPRREF INTO :PROREF-20A, :CPRREF-20A FROM
+            ASQRY09F WHERE NROPRO = :WS-NROPRO AND CORPRO =
+           :WS-CORPRO
+           END-EXEC
+
+           MOVE SPACES  TO REFABAS-20A
+           IF PROREF-20A NOT = ZEROES
+              EXEC SQL
+           SELECT ARCBAS INTO :REFABAS-20A FROM  ASQRY09F WHERE
+           NROPRO = :PROREF-20A AND CORPRO = :CPRREF-20A
+              END-EXEC
+           END-IF
+
+           EXEC SQL
+           SELECT ARCBAS, ARCGEN, BIBGEN INTO :REFABAS-20A,
+           :REFAGEN-20A, :REFBGEN-20A FROM  ASQRY04F WHERE
+           CODEVE = :EVENTO-LNK AND FECPRO1 = :FECPRO-LNK AND HORPRO1 =
+           :HORPRO-LNK AND NROPRO = :PROREF-20A AND CORPRO = :CPRREF-20A
+           END-EXEC.
+      *
+       GENERA-ARCHIVO.
+      *---------------
+      *
+      * MODIFICA ARCHIVO DE CONTROL INDICANDO EN PROCESO
+      *
+            EXEC SQL
+           UPDATE  ASQRY04F SET FECPRO2 = :AAAAMMDD-9, HORPRO2 =
+           :HORA-SYS, ARCGEN = :WS-ARCGEN, BIBGEN = :WS-BIBGEN, ESTPRO
+           = "P" WHERE CODEVE = :EVENTO-LNK AND FECPRO1 = :FECPRO-LNK
+           AND HORPRO1 = :HORPRO-LNK AND SECEJE = :SECEJE-LNK
+            END-EXEC.
+      *
+      * INSERTA INFORNMACION SELECCIONADA EN ARCHIVO A GENERAR
+      *
+            MOVE SPACES               TO SEN-INSERT
+            STRING "INSERT INTO "     DELIMITED SIZE
+                   WS-BIBGEN          DELIMITED BY " "
+                   "/"                DELIMITED SIZE
+                   WS-ARCGEN          DELIMITED BY " "
+                   " "                DELIMITED SIZE
+                   WS-SELECC          DELIMITED SIZE
+                   " ORDER BY 1 "     DELIMITED SIZE
+                                 INTO SEN-INSERT.
+
+            EXEC SQL
+                DECLARE INSERTADATOS STATEMENT
+            END-EXEC
+            EXEC SQL
+                PREPARE INSERTADATOS FROM :SEN-INSERT
+            END-EXEC.
+            EXEC SQL
+                EXECUTE INSERTADATOS
+            END-EXEC.
+
+      *
+      * CUENTA LA CANTIDAD DE REGISTROS INSERTADOS
+      *
+            MOVE SPACES    TO CTA-REGISTROS
+            STRING "SELECT CAST(COUNT(*)" DELIMITED SIZE
+                   " AS NUMERIC (8, 0)) " DELIMITED SIZE
+                   " FROM "               DELIMITED SIZE
+                   WS-BIBGEN              DELIMITED BY SPACES
+                   "/"                    DELIMITED SIZE
+                   WS-ARCGEN              DELIMITED BY SPACES
+                                     INTO CTA-REGISTROS
+
+            EXEC SQL
+               DECLARE CTAREGISTROS STATEMENT
+            END-EXEC
+            EXEC SQL
+               PREPARE CTAREGISTROS FROM :CTA-REGISTROS
+            END-EXEC
+            EXEC SQL
+               DECLARE CREGISTROS CURSOR FOR CTAREGISTROS
+            END-EXEC
+            EXEC SQL
+               OPEN CREGISTROS
+            END-EXEC
+            EXEC SQL
+               FETCH NEXT FROM CREGISTROS INTO :WS-CANREG
+            END-EXEC
+            EXEC SQL
+               CLOSE CREGISTROS
+            END-EXEC
+      *
+      * MODIFICA ARCHIVO DE CONTROL INDICANDO TERMINO
+      *
+           CALL    "MRTVDAF2" USING AAAAMMDD DDMMAAAA
+           CANCEL  "MRTVDAF2"
+           ACCEPT HORA-SISTEMA FROM TIME
+
+            EXEC SQL
+           UPDATE  ASQRY04F SET FECPRO2 = :AAAAMMDD-9, HORPRO2 =
+           :HORA-SYS, ARCGEN = :WS-ARCGEN, BIBGEN = :WS-BIBGEN, ESTPRO
+           = "T", CANREG = :WS-CANREG WHERE CODEVE = :EVENTO-LNK AND
+           FECPRO1 = :FECPRO-LNK AND HORPRO1 = :HORPRO-LNK AND SECEJE =
+           :SECEJE-LNK
+            END-EXEC.

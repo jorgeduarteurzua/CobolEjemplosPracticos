@@ -1,0 +1,7 @@
+     A                                      UNIQUE
+     A          R RASQRY38F
+     A*
+     A            NOMCONS       10A         TEXT('CONCEPTO      ')
+     A            CODUSR        10A         TEXT('USUARIO       ')
+     A          K NOMCONS
+     A          K CODUSR

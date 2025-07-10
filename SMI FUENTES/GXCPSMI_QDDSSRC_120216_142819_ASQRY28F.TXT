@@ -1,0 +1,7 @@
+     A                                      UNIQUE
+     A          R RASQRY28F
+     A*
+     A            NOMCONS       10A         TEXT('CONSULTA      ')
+     A            NOMCON        10A         TEXT('CONCEPTO      ')
+     A          K NOMCONS
+     A          K NOMCON

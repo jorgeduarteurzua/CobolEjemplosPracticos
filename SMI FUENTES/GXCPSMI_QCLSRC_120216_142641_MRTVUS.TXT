@@ -1,0 +1,29 @@
+             PGM        PARM(&USER &DESC &RET)
+
+             DCL VAR(&USER) TYPE(*CHAR) LEN(10)
+             DCL VAR(&DESC) TYPE(*CHAR) LEN(50)
+             DCL VAR(&RET)  TYPE(*CHAR) LEN(01)
+
+             CHGVAR VAR(&RET)  VALUE('0')
+             IF COND(&USER *EQ '*ALL') THEN(DO)
+                CHGVAR VAR(&DESC) VALUE('TODOS LOS USUARIO')
+             ENDDO
+             IF COND(&USER *NE '*ALL') THEN(DO)
+                IF COND(&USER *EQ ' ') THEN(DO)
+                   RTVUSRPRF  RTNUSRPRF(&USER) TEXT(&DESC)
+                ENDDO
+                IF COND(&USER *NE  ' ') THEN(DO)
+                   RTVUSRPRF  USRPRF(&USER) TEXT(&DESC)
+                   MONMSG     MSGID(CPF0000) EXEC(GOTO CMDLBL(ERROR))
+                ENDDO
+             ENDDO
+             GOTO CMDLBL(FIN)
+
+      ERROR:
+             CHGVAR VAR(&DESC) VALUE('USUARIO NO ES VALIDO')
+             CHGVAR VAR(&RET)  VALUE('1')
+             GOTO CMDLBL(FIN)
+
+     FIN:    ENDPGM
+
+

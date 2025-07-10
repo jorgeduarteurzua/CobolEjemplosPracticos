@@ -1,0 +1,13 @@
+     A                                      UNIQUE
+     A          R RASQRY20F
+     A*
+     A            NOMCON        10A         COLHDG('CONCEPTO      ')
+     A            DESCON        50A         COLHDG('DESCRIPCION CONCEPTO')
+     A            USRCRE        10A         COLHDG('USUARIO CREACION')
+     A            FECCRE         8S 0       COLHDG('FECHA   CREACION')
+     A            HORCRE         8S 0       COLHDG('HORA    CREACION')
+     A            USRMOD        10A         COLHDG('USUARIO MODIFIC.')
+     A            FECMOD         8S 0       COLHDG('FECHA   MODIFIC.')
+     A            HORMOD         8S 0       COLHDG('HORA    MODIFIC.')
+     A          K NOMCON
+     A*

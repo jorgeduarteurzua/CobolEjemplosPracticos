@@ -1,0 +1,74 @@
+       IDENTIFICATION DIVISION.
+      *-----------------------*
+       PROGRAM-ID. ASQRY38.
+       AUTHOR. JORGE DUARTE U.
+       ENVIRONMENT DIVISION.
+      *--------------------*
+       CONFIGURATION SECTION.
+       SOURCE-COMPUTER.      IBM-AS400.
+       OBJECT-COMPUTER.      IBM-AS400.
+       SPECIAL-NAMES.        LOCAL-DATA IS LOCAL-DATA-AREA .
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+
+           SELECT ASQRY39F   ASSIGN        TO DATABASE-ASQRY39F
+                             ORGANIZATION  IS INDEXED
+                             ACCESS MODE   IS DYNAMIC
+                             RECORD KEY    IS EXTERNALLY-DESCRIBED-KEY
+                             FILE STATUS   IS FS-ASQRY39F.
+
+       DATA DIVISION.
+      *--------------*
+       FILE SECTION.
+      *-------------*
+       FD  ASQRY39F     LABEL RECORD STANDARD.
+       01  R-ASQRY39F.
+           COPY  DDS-ALL-FORMAT OF ASQRY39F.
+
+
+       WORKING-STORAGE SECTION.
+      *------------------------*
+       77 P-CONCEPTO           PIC 9(4).
+       77 P-ARR                PIC 9(4).
+       77 SEL-C1               PIC X(2500).
+       77 ARC-CONCEPTOS        PIC X(2000).
+       77 FS-ASQRY39F          PIC XX VALUE "00".
+      *
+       LINKAGE SECTION.
+      *----------------
+       01 CONSULTA-LNK    PIC X(10).
+       01 FECPRO-LNK      PIC 9(08).
+       01 HORPRO-LNK      PIC 9(06).
+       01 SECEJE-LNK      PIC 9(05).
+       01 CORREL-LNK      PIC 9(05).
+       01 FILFLD-LNK      PIC X(21).
+       01 VALPAR-LNK      PIC X(48).
+
+       PROCEDURE DIVISION USING CONSULTA-LNK,
+                                FECPRO-LNK,
+                                HORPRO-LNK,
+                                SECEJE-LNK,
+                                CORREL-LNK,
+                                FILFLD-LNK,
+                                VALPAR-LNK.
+      *--------------------------------------------------------
+           OPEN I-O ASQRY39F.
+           INSPECT CONSULTA-LNK CONVERTING "," TO " ".
+           INSPECT FILFLD-LNK   CONVERTING "," TO " ".
+           INSPECT VALPAR-LNK   CONVERTING "," TO " ".
+
+           MOVE CONSULTA-LNK    TO NOMCONS OF ASQRY39F
+           MOVE FECPRO-LNK      TO FECPRO  OF ASQRY39F
+           MOVE HORPRO-LNK      TO HORPRO  OF ASQRY39F
+           MOVE SECEJE-LNK      TO SECEJE  OF ASQRY39F
+           MOVE CORREL-LNK      TO CORREL  OF ASQRY39F
+           MOVE FILFLD-LNK      TO FILFLD  OF ASQRY39F
+           READ ASQRY39F END-READ
+           IF FS-ASQRY39F = "00"
+              MOVE VALPAR-LNK    TO VALPAR OF ASQRY39F
+              REWRITE R-ASQRY39F END-REWRITE
+           END-IF
+
+           CLOSE    ASQRY39F
+           GOBACK.
+

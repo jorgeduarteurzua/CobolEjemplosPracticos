@@ -1,0 +1,8 @@
+     A                                      UNIQUE
+     A          R RASQRY37F
+     A*
+     A            KEYUNO         1S 0       TEXT('KEY 1 ')
+     A            LETRA          1A         TEXT('CARAC.ARC.GEN ')
+     A            CORRIN         4S 0       TEXT('CORREL. INICIAL')
+     A            BIBGEN        10A         TEXT('BIB.GENERAR   ')
+     A          K KEYUNO

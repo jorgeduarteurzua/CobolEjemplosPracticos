@@ -1,0 +1,8 @@
+     A                                      UNIQUE
+     A          R RASQRY24F
+     A*
+     A            NOMCONS       10A         COLHDG('CONSULTA      ')
+     A            NOMARC        10A         COLHDG('Arch.Seleccionados')
+     A          K NOMCONS
+     A          K NOMARC
+     A*

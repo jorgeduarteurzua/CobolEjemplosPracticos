@@ -1,0 +1,36 @@
+     A                                      UNIQUE
+     A          R RASQRY09F
+     A*
+     A            NROPRO         5S 0       COLHDG('NUMERO Proceso')
+     A            CORPRO         5S 0       COLHDG('Correl. Proceso')
+     A            DCOPRO        50A         COLHDG('Des.Sub-Proceso')
+     A            PROREF         5S 0       COLHDG('N° Proceso Ref.')
+     A            CPRREF         5S 0       COLHDG('Corr. Proc.Ref.')
+     A            ARCGEN         5A         COLHDG('Car.Archivo Generar')
+     A            CORGEN         4S 0       COLHDG('Cor.Archivo Generar')
+     A            BIBGEN        10A         COLHDG('Bib. Generacion')
+     A            ARCBAS        10A         COLHDG('Archivo Base   ')
+     A*
+     A* EJEMPLO
+     A*    ARCGEN -> "PROMO"
+     A*    ARCBAS -> "B" || ARCGEN || "BASE" - > (BPROMOBASE)
+     A*
+     A            ARCRUT        10A         COLHDG('Archivo de Rut ')
+     A            UARRUT         1A         COLHDG('Utiliza Arc-Rut')
+     A            FECCRE         8S 0       COLHDG('Fecha Creacion')
+     A            HORCRE         6S 0       COLHDG('Hora  Creacion')
+     A            USRCRE        10A         COLHDG('Usuario Creacion')
+     A            FECMOD         8S 0       COLHDG('Fecha Modific.')
+     A            HORMOD         6S 0       COLHDG('Hora  Modific.')
+     A            USRMOD        10A         COLHDG('Usuario Modific.')
+     A            LARSEL         5S 0       COLHDG('Largo seleccion')
+     A            REEARC         1A         TEXT('Reemplazar Archivo')
+     A            RETJOB         1A         TEXT('Retener Trabajo   ')
+     A            ADDREG         1A         TEXT('A±adir Registros  ')
+     A            REGUNI         1A         TEXT('SelecciÍn Distinct')
+     A            SELECC     10000A         COLHDG('SELECCION')
+     A            CONSQL       980A         COLHDG('CondiciÍn SQL')
+     A            SELCON     10000A         COLHDG('SELECCION Conve.')
+     A          K NROPRO
+     A          K CORPRO
+     A*

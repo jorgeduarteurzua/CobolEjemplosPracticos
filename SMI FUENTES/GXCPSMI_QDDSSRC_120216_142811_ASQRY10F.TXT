@@ -1,0 +1,14 @@
+     A                                      UNIQUE
+     A          R RASQRY10F
+     A*
+     A            NROPRO         5S 0       COLHDG('N·mero Proceso')
+     A            NOMPRO        30A         COLHDG('Nombre Proceso')
+     A            CANSPR         5S 0       COLHDG('Cant. Sub-Proceso')
+     A            FECCRE         8S 0       COLHDG('Fecha Creacion')
+     A            HORCRE         6S 0       COLHDG('Hora  Creacion')
+     A            USRCRE        10A         COLHDG('Usuario Creacion')
+     A            FECMOD         8S 0       COLHDG('Fecha Modific.')
+     A            HORMOD         6S 0       COLHDG('Hora  Modific.')
+     A            USRMOD        10A         COLHDG('Usuario Modific.')
+     A          K NROPRO
+     A*

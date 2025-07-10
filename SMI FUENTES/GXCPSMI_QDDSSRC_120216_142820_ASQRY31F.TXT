@@ -1,0 +1,10 @@
+     A                                      UNIQUE
+     A          R RASQRY31F
+     A*
+     A            WHFILE        10A         TEXT('ARCHIVO')
+     A            WHFLDI        10A         TEXT('CAMPO  ')
+     A            REGAGE         1A         TEXT('REGIONA/AGENCIA')
+     A            DEFFLD       180A         TEXT('DEFINICION')
+     A          K WHFILE
+     A          K WHFLDI
+     A          K REGAGE

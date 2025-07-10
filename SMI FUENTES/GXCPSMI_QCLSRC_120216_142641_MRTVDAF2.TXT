@@ -1,0 +1,12 @@
+             PGM        PARM(&AMD &DMA)
+             DCL VAR(&AMD)    TYPE(*CHAR) LEN(08)
+             DCL VAR(&DMA)    TYPE(*CHAR) LEN(08)
+             DCL VAR(&FECSYS) TYPE(*CHAR) LEN(06)
+
+             RTVSYSVAL  SYSVAL(QDATE) RTNVAR(&FECSYS)
+             CVTDAT     DATE(&FECSYS) TOVAR(&AMD) FROMFMT(*SYSVAL) +
+                          TOFMT(*YYMD) TOSEP(*NONE)
+             CVTDAT     DATE(&FECSYS) TOVAR(&DMA) FROMFMT(*SYSVAL) +
+                          TOFMT(*DMYY) TOSEP(*NONE)
+
+             ENDPGM

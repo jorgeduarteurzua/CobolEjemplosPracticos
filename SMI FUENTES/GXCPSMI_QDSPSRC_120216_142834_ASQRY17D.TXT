@@ -1,0 +1,149 @@
+     A*%%TS  SD  20070801  103013  NBKDY9U     REL-V5R3M0  5722-WDS
+     A*%%EC
+     A                                      DSPSIZ(24 80 *DS3)
+     A                                      INDARA
+     A                                      CF03(03 'Salir')
+     A                                      CF12(12 'Anterior')
+     A                                      CF05(05 'Actualizar/Condición')
+     A                                      CF09(09 'Ingresar')
+     A                                      CF23(23 'Eliminar')
+     A                                      CF07(07 'Modificar')
+     A                                      CF04(04 'VISUALIZAR')
+     A          R WS01                      SFL
+     A*%%TS  SD  20020322  121738  DUARTEJ     REL-V4R4M0  5769-PW1
+     A            AYUDA         10A  H
+     A            CTL001         1Y 0H      SFLCHCCTL
+     A            DETSFL        69A  O  9  1
+     A          R WC01                      SFLCTL(WS01)
+     A*%%TS  SD  20070801  103013  NBKDY9U     REL-V5R3M0  5722-WDS
+     A                                      SFLSIZ(0100)
+     A                                      SFLPAG(0010)
+     A                                      WINDOW(2 2 20 74)
+     A  30                                  SFLDSP
+     A  31                                  SFLDSPCTL
+     A  32                                  SFLCLR
+     A  30                                  SFLEND(*SCRBAR *SCRBAR)
+     A                                      WDWBORDER((*COLOR BLU) (*DSPATR RI)-
+     A                                       (*CHAR '        '))
+     A                                      USRRSTDSP
+     A                                      WDWTITLE((*TEXT 'INGRESO DE AYUDA G-
+     A                                      ENERICAS') (*COLOR WHT))
+     A                                      SFLRTNSEL
+     A                                      SFLSNGCHC
+     A            DATECUR        8Y 0B  1 65
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                      CHECK(RB)
+     A                                      EDTWRD('  /  /    ')
+     A                                  2 67TIME
+     A                                  3 67'ASQRY17D'
+     A                                      DSPATR(HI)
+     A            BOTON          2Y 0B  6  1PSHBTNFLD
+     A                                      PSHBTNCHC(1 'F3-Salir' CF03)
+     A                                      PSHBTNCHC(2 'F9-Nuevo ' CF09)
+     A                                      PSHBTNCHC(3 'F7-Modifica' CF07)
+     A                                      PSHBTNCHC(4 'F5-Actualizar' CF05)
+     A                                      PSHBTNCHC(6 'F23-Eliminar' CF23)
+     A                                      PSHBTNCHC(7 'F4-Visualiza' CF04)
+     A                                  8  1' Ayuda     Titulo                 -
+     A                                                                         -
+     A                                          '
+     A                                      DSPATR(HI)
+     A                                      DSPATR(UL)
+     A          R W01
+     A*%%TS  SD  20020322  153918  DUARTEJ     REL-V4R4M0  5769-PW1
+     A                                      WINDOW(2 2 20 74)
+     A                                      PUTOVR
+     A                                      OVRATR
+     A                                      USRRSTDSP
+     A                                  1  1'Ayuda.......:'
+     A                                      DSPATR(HI)
+     A            AYUDA     R        B  1 15REFFLD(RASQRY05F/AYUDA ASQRY05F)
+     A  50                                  DSPATR(PR)
+     A                                  1 28'Titulo.......:'
+     A                                      DSPATR(HI)
+     A            TITAYUDA  R        B  1 43REFFLD(RASQRY05F/TITAYUDA ASQRY05F)
+     A                                  2  1'Archivo.....:'
+     A                                      DSPATR(HI)
+     A            ARCHBASE  R        B  2 15REFFLD(RASQRY05F/ARCHBASE ASQRY05F)
+     A                                  2 28'Biblioteca...:'
+     A                                      DSPATR(HI)
+     A            BIBLBASE  R        B  2 43REFFLD(RASQRY05F/BIBLBASE ASQRY05F)
+     A                                  3  1'Campo Llave'
+     A                                      DSPATR(HI)
+     A                                  4  4'Descripción...:'
+     A                                      DSPATR(HI)
+     A            COLHDGCO  R        B  4 20REFFLD(RASQRY05F/COLHDGCO ASQRY05F)
+     A                                  4 43'Largo...:'
+     A                                      DSPATR(HI)
+     A            LARKEYCO  R        B  4 53REFFLD(RASQRY05F/LARKEYCO ASQRY05F)
+     A                                      CHECK(RB)
+     A                                      EDTCDE(Z)
+     A                                  5  4'Sentencia.....:'
+     A                                      DSPATR(HI)
+     A            NOMKEYCO1     50   B  5 20
+     A            NOMKEYCO2     50   B  6 20
+     A            NOMKEYCO3     50   B  7 20
+     A            NOMKEYCO4     50   B  8 20
+     A            NOMKEYCO5     50   B  9 20
+     A                                 11  1'Campo Descripción'
+     A                                      DSPATR(HI)
+     A                                 12  4'Descripción...:'
+     A                                      DSPATR(HI)
+     A            COLHDGDE  R        B 12 20REFFLD(RASQRY05F/COLHDGDE ASQRY05F)
+     A                                 12 43'Largo...:'
+     A                                      DSPATR(HI)
+     A            LARKEYDE  R        B 12 53REFFLD(RASQRY05F/LARKEYDE ASQRY05F)
+     A                                      CHECK(RB)
+     A                                      EDTCDE(Z)
+     A                                 13  4'Sentencia.....:'
+     A                                      DSPATR(HI)
+     A            NOMKEYDE1     50   B 13 20
+     A            NOMKEYDE2     50   B 14 20
+     A            NOMKEYDE3     50   B 15 20
+     A            NOMKEYDE4     50   B 16 20
+     A            NOMKEYDE5     50   B 17 20
+     A            BOTON          2Y 0B 19  2PSHBTNFLD
+     A                                      PSHBTNCHC(1 'F9-Grabar' CF09)
+     A                                      PSHBTNCHC(5 'F5-Condición' CF05)
+     A                                      PSHBTNCHC(3 'F12-Volver' CF12)
+     A          R W02
+     A*%%TS  SD  20070801  100617  NBKDY9U     REL-V5R3M0  5722-WDS
+     A                                      WINDOW(2 2 20 74)
+     A                                      PUTOVR
+     A                                      OVRATR
+     A                                      USRRSTDSP
+     A                                  1  1'Ayuda.......:'
+     A                                      DSPATR(HI)
+     A            AYUDA     R        B  1 15REFFLD(RASQRY05F/AYUDA ASQRY05F)
+     A                                      DSPATR(PR)
+     A  99                                  DSPATR(UL)
+     A                                  1 28'Titulo.......:'
+     A                                      DSPATR(HI)
+     A            TITAYUDA  R        B  1 43REFFLD(RASQRY05F/TITAYUDA ASQRY05F)
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                  2  1'Archivo.....:'
+     A                                      DSPATR(HI)
+     A            ARCHBASE  R        B  2 15REFFLD(RASQRY05F/ARCHBASE ASQRY05F)
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                  2 28'Biblioteca...:'
+     A                                      DSPATR(HI)
+     A            BIBLBASE  R        B  2 43REFFLD(RASQRY05F/BIBLBASE ASQRY05F)
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                  4 31'Condición Ayuda'
+     A                                      DSPATR(HI)
+     A                                      DSPATR(UL)
+     A            CONDAYUDA R        B  6 13REFFLD(RASQRY05F/CONDAYUDA ASQRY05F)
+     A                                      CNTFLD(050)
+     A            BOTONW02       2Y 0B 19  2PSHBTNFLD
+     A                                      PSHBTNCHC(1 'F9-Grabar' CF09)
+     A                                      PSHBTNCHC(2 'F12-Volver' CF12)
+     A          R XX
+     A*%%TS  SD  20020322  155154  DUARTEJ     REL-V4R4M0  5769-PW1
+     A                                      KEEP
+     A                                      ASSUME
+     A                                      OVERLAY
+     A                                  1  3' '

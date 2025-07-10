@@ -1,0 +1,7 @@
+         PGM PARM(&BIB)
+             DCL VAR(&BIB) TYPE(*CHAR) LEN(10)
+
+             ADDLIBLE   LIB(&BIB) POSITION(*LAST)
+             MONMSG     MSGID(CPF0000)
+
+         ENDPGM

@@ -1,0 +1,94 @@
+       IDENTIFICATION DIVISION.
+      *------------------------*
+       PROGRAM-ID. ASQRY20.
+       AUTHOR.    JORGE DUARTE U.
+      *
+       ENVIRONMENT DIVISION.
+      *---------------------*
+       CONFIGURATION SECTION.
+       SOURCE-COMPUTER.      IBM-AS400.
+       OBJECT-COMPUTER.      IBM-AS400.
+       INPUT-OUTPUT SECTION.
+      *--------------------*
+       FILE-CONTROL.
+      *------------*
+
+       DATA DIVISION.
+      *-------------*
+       FILE SECTION.
+      *-------------*
+
+       WORKING-STORAGE SECTION.
+      *------------------------
+       77 WS-ARCGEN           PIC X(10).
+       77 WS-BIBGEN           PIC X(10).
+       77 WS-SECEJE           PIC S9(5).
+       77 WS-NROPRO           PIC S9(5).
+       77 WS-CORPRO           PIC S9(5).
+
+       77 WS-CANREG           PIC S9(8).
+       77 CTA-REGISTROS       PIC X(1000).
+       77 WS-SELECC           PIC X(10000).
+       77 SEN-INSERT          PIC X(20000).
+           EXEC SQL
+               INCLUDE SQLCA
+           END-EXEC.
+
+       01 VARIABLES-DE-TRABAJO.
+          05 AAAAMMDD         PIC X(8).
+          05 AAAAMMDD-9 REDEFINES AAAAMMDD PIC S9(8).
+          05 DDMMAAAA         PIC X(8).
+
+          05 HORA-SISTEMA.
+             10 HORA-SYS      PIC S9(6).
+             10 FILLER        PIC S9(2).
+
+
+       LINKAGE SECTION.
+       01 EVENTO-LNK          PIC X(10).
+       01 FECPRO-LNK          PIC S9(8).
+       01 HORPRO-LNK          PIC S9(6).
+       01 SECEJE-LNK          PIC S9(5).
+       01 SECTOP-LNK          PIC S9(5).
+       01 USUARIO-LNK         PIC X(10).
+       01 ADDREG-LNK          PIC X(01).
+       01 REGUNI-LNK          PIC X(01).
+
+       PROCEDURE DIVISION USING EVENTO-LNK
+                                FECPRO-LNK
+                                HORPRO-LNK
+                                SECEJE-LNK
+                                SECTOP-LNK
+                                USUARIO-LNK
+                                ADDREG-LNK
+                                REGUNI-LNK.
+      *-------------------------------------
+           CALL    "MRTVDAF2" USING AAAAMMDD DDMMAAAA
+           CANCEL  "MRTVDAF2"
+           ACCEPT HORA-SISTEMA FROM TIME
+
+           MOVE SPACES    TO WS-SELECC WS-ARCGEN WS-BIBGEN
+
+           EXEC SQL
+           SELECT SELEJE, ARCGEN, BIBGEN, NROPRO, CORPRO INTO
+           :WS-SELECC, :WS-ARCGEN, :WS-BIBGEN, :WS-NROPRO, :WS-CORPRO
+           FROM ASQRY04F WHERE CODEVE = :EVENTO-LNK AND FECPRO1 =
+           :FECPRO-LNK AND HORPRO1 = :HORPRO-LNK AND SECEJE =
+           :SECEJE-LNK
+           END-EXEC
+
+           PERFORM GENERA-BLOQUEO
+
+           GOBACK.
+      *
+       GENERA-BLOQUEO.
+      *---------------
+      *
+      * MODIFICA ARCHIVO DE CONTROL INDICANDO EN PROCESO
+      *
+            EXEC SQL
+           UPDATE  ASQRY04F SET FECPRO2 = :AAAAMMDD-9, HORPRO2 =
+           :HORA-SYS, ARCGEN = :WS-ARCGEN, BIBGEN = :WS-BIBGEN, ESTPRO
+           = "B" WHERE CODEVE = :EVENTO-LNK AND FECPRO1 = :FECPRO-LNK
+           AND HORPRO1 = :HORPRO-LNK AND SECEJE >= :SECEJE-LNK
+            END-EXEC.

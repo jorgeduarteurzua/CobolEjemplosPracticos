@@ -1,0 +1,413 @@
+     A*%%TS  SD  20071217  165518  NBKDY9U     REL-V5R3M0  5722-WDS
+     A*%%EC
+     A                                      DSPSIZ(24 80 *DS3)
+     A                                      INDARA
+     A                                      CF03(03 'Salir')
+     A                                      CF07(07 'Modifica')
+     A                                      CF09(09 'Grabar')
+     A                                      CF12(12 'Anterior')
+     A                                      CF14(14 'Ver Conceptos')
+     A                                      CF16(16 'New Conceptos')
+     A                                      CF23(23 'Eliminar')
+     A                                      CF04(04 'Ayuda')
+     A                                      CF06(06 'Ayuda-CAMPOS')
+     A                                      CF13(13 'Secuenciar')
+     A                                      CF15(15 'Crear Pepas')
+     A                                      CF05(05 'VISUALIZAR')
+     A                                      CF10(10 'Autorizar ')
+     A                                      CF18(18 'Eliminar Concepto')
+     A          R WS00                      SFL
+     A*%%TS  SD  20070726  154708  NBKDY9U     REL-V5R3M0  5722-WDS
+     A            NOMCONS       10A  H
+     A            DESCONS       50A  H
+     A            ARCGEN         5A  H
+     A            CORGEN         4S 0H
+     A            BIBGEN        10A  H
+     A            ARCBAS        10A  H
+     A            REEARC         1A  H
+     A            RETJOB         1A  H
+     A            ADDREG         1A  H
+     A            REGUNI         1A  H
+     A            CTL001         1Y 0H      SFLCHCCTL
+     A            DETSFL        69A  O  8  1
+     A          R WC00                      SFLCTL(WS00)
+     A*%%TS  SD  20070726  143043  NBKDY9U     REL-V5R3M0  5722-WDS
+     A                                      SFLSIZ(0200)
+     A                                      SFLPAG(0012)
+     A                                      WINDOW(2 2 20 74)
+     A                                      OVERLAY
+     A N30                                  ERASE(WS00)
+     A  30                                  SFLDSP
+     A  31                                  SFLDSPCTL
+     A  32                                  SFLCLR
+     A  30                                  SFLEND(*SCRBAR *SCRBAR)
+     A                                      WDWBORDER((*DSPATR RI) (*CHAR '    -
+     A                                          '))
+     A                                      USRRSTDSP
+     A                                      WDWTITLE((*TEXT 'CONSULTAS')       -
+     A                                      (*COLOR WHT))
+     A                                      SFLRTNSEL
+     A                                      SFLMLTCHC
+     A            EMPRE1        15A  B  1  1
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A            DATECUR        8Y 0B  1 65
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                      CHECK(RB)
+     A                                      EDTWRD('  /  /    ')
+     A            EMPRE2        15A  B  2  1
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                  2 67TIME
+     A                                  3 67'ASQRY30'
+     A                                      DSPATR(HI)
+     A            BOTON          2Y 0B  4  2PSHBTNFLD
+     A                                      PSHBTNCHC(1 'F7-Modif.Cons.' CF07)
+     A                                      PSHBTNCHC(2 'F23-Borra Cons.' CF23)
+     A                                      PSHBTNCHC(3 'F3-Salir' CF03)
+     A                                      PSHBTNCHC(4 'F10-Autorizar' CF10)
+     A                                  6  1'CONSULTA    Descripción de CONSULT-
+     A                                      A                                  -
+     A                                         '
+     A                                      DSPATR(HI)
+     A                                      DSPATR(UL)
+     A          R WS01                      SFL
+     A*%%TS  SD  20020107  125140  DUARTEJ     REL-V4R4M0  5769-PW1
+     A            ARCHIVO       10A  H
+     A            CAMPO         10A  H
+     A            LARGO          5S 0H
+     A            DIGIT          2S 0H
+     A            DECIM          2S 0H
+     A            TIPO          17A  H
+     A            FLDREF        22A  H
+     A            POSICION       3S 0H
+     A            CTL001         1Y 0H      SFLCHCCTL
+     A            SELFLD        52A  O  5  1
+     A          R WC01                      SFLCTL(WS01)
+     A*%%TS  SD  20010906  103854  DUARTEJ     REL-V4R4M0  5769-PW1
+     A                                      OVERLAY
+     A                                      SFLCSRRRN(&REGREL)
+     A  30                                  SFLDSP
+     A  31                                  SFLDSPCTL
+     A  32                                  SFLCLR
+     A  30                                  SFLEND(*SCRBAR *SCRBAR)
+     A                                      SFLSIZ(0200)
+     A                                      SFLPAG(0012)
+     A                                      WINDOW(3 10 18 60)
+     A                                      WDWBORDER((*DSPATR RI) (*CHAR '    -
+     A                                          '))
+     A                                      USRRSTDSP
+     A                                      WDWTITLE((*TEXT &TITULO) (*COLOR WH-
+     A                                      T))
+     A                                      WDWTITLE((*TEXT 'F3-SALIR') (*COLOR-
+     A                                       WHT) *BOTTOM)
+     A                                      SFLRTNSEL
+     A                                      SFLMLTCHC
+     A            TITULO        30A  P
+     A            REGREL         5S 0H
+     A            BOTON          2Y 0B  1 43PSHBTNFLD
+     A                                      PSHBTNCHC(1 'GENERAR' CF09)
+     A                                      PSHBTNCHC(2 'SALIR' CF03)
+     A                                  4  1'Archivo    Campo      Descripción -
+     A                                      Campo             '
+     A                                      DSPATR(HI)
+     A                                      DSPATR(UL)
+     A          R WS02                      SFL
+     A*%%TS  SD  20020108  092748  DUARTEJ     REL-V4R4M0  5769-PW1
+     A            ARCHIVO       10A  H
+     A            TIPO          17A  H
+     A            LARGO          5S 0H
+     A            DIGIT          2S 0H
+     A            DECIM          2S 0H
+     A            FLDREF        22A  H
+     A            CAMPO         10A  B  4  1
+     A  80                                  DSPATR(PR)
+     A            DCAMPO        28A  B  4 12
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A            ORDEN          3Y 0B  4 43CHECK(RB)
+     A                                      EDTCDE(Z)
+     A            ARCCAMPO      10A  B  4 48
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A          R WC02                      SFLCTL(WS02)
+     A*%%TS  SD  20010802  185040  DUARTEJ     REL-V4R4M0  5769-PW1
+     A                                      OVERLAY
+     A  30                                  SFLDSP
+     A  31                                  SFLDSPCTL
+     A  32                                  SFLCLR
+     A  30                                  SFLEND(*SCRBAR *SCRBAR)
+     A                                      SFLSIZ(0100)
+     A                                      SFLPAG(0010)
+     A  70                                  SFLMSG('Existe(n) N° orden repetido-
+     A                                      (s).')
+     A                                      WINDOW(7 10 15 60)
+     A                                      WDWBORDER((*DSPATR RI) (*CHAR '    -
+     A                                          '))
+     A                                      USRRSTDSP
+     A                                      WDWTITLE((*TEXT 'Generación Archivo-
+     A                                      s') (*COLOR WHT))
+     A                                      WDWTITLE((*TEXT 'F13-Secuenciar F15-
+     A                                      -PEPAS') (*COLOR WHT) *BOTTOM)
+     A                                  1  1'Archivo    :'
+     A            ARCHIVO       10A  B  1 14DSPATR(HI)
+     A                                      DSPATR(PR)
+     A  99                                  DSPATR(UL)
+     A            BOTON2         2Y 0B  1 46PSHBTNFLD
+     A                                      PSHBTNCHC(1 'GRABAR' CF09)
+     A                                      PSHBTNCHC(2 'ANTERIOR' CF12)
+     A                                  2  1'Biblioteca :'
+     A            BIBLIOTECA    10A  B  2 14DSPATR(HI)
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                  3  1'Campo      Descripción            -
+     A                                             Orden Archivo    '
+     A                                      DSPATR(HI)
+     A                                      DSPATR(UL)
+     A          R WS04                      SFL
+     A*%%TS  SD  20020107  144932  DUARTEJ     REL-V4R4M0  5769-PW1
+     A            NROPEPA        4S 0H
+     A            CTL001         1Y 0H      SFLCHCCTL
+     A            DETSFL        69A  O 10  1
+     A          R WC04                      SFLCTL(WS04)
+     A*%%TS  SD  20071217  165518  NBKDY9U     REL-V5R3M0  5722-WDS
+     A                                      SFLSIZ(0270)
+     A                                      SFLPAG(0009)
+     A                                      WINDOW(2 2 20 74)
+     A                                      OVERLAY
+     A N30                                  ERASE(WS04)
+     A  30                                  SFLDSP
+     A  31                                  SFLDSPCTL
+     A  32                                  SFLCLR
+     A  30                                  SFLEND(*SCRBAR *SCRBAR)
+     A                                      WDWBORDER((*DSPATR RI) (*CHAR '    -
+     A                                          '))
+     A                                      USRRSTDSP
+     A                                      WDWTITLE((*TEXT 'DEFINICION DE PEPA-
+     A                                      S') (*COLOR WHT))
+     A                                      SFLRTNSEL
+     A                                      SFLSNGCHC
+     A            EMPRE1        15A  B  1  1
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A            DATECUR        8Y 0B  1 65
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                      CHECK(RB)
+     A                                      EDTWRD('  /  /    ')
+     A            EMPRE2        15A  B  2  1
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                  2 67TIME
+     A                                  3 67'ASQRY30 '
+     A                                      DSPATR(HI)
+     A                                  4  1'Concepto.. :'
+     A                                      DSPATR(HI)
+     A            NOMCONS       10A  B  4 14
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A            DESCONS       45A  B  5 14
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A            BOTONWC04      2Y 0B  7  2PSHBTNFLD
+     A                                      PSHBTNCHC(1 'F9-Crea PEPA' CF09)
+     A                                      PSHBTNCHC(2 'F7-Mod. PEPA' CF07)
+     A                                      PSHBTNCHC(3 'F23-Elimina' CF23)
+     A                                      PSHBTNCHC(4 'F12-Anterior' CF12)
+     A                                  9  1'N° PEPA  Descripción PEPA         -
+     A                                                                         -
+     A                                         '
+     A                                      DSPATR(HI)
+     A                                      DSPATR(UL)
+     A          R W01
+     A*%%TS  SD  20071217  165518  NBKDY9U     REL-V5R3M0  5722-WDS
+     A                                      WINDOW(3 10 18 60)
+     A                                      WDWBORDER((*COLOR BLU) (*DSPATR RI)-
+     A                                       (*CHAR '        '))
+     A                                      USRRSTDSP
+     A            EMPRE1        15A  B  1  1
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A            DATECUR        8Y 0B  1 50
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                      CHECK(RB)
+     A                                      EDTWRD('  /  /    ')
+     A            EMPRE2        15A  B  2  1
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                  2 52TIME
+     A                                  3 52'ASQRY30 '
+     A                                      DSPATR(HI)
+     A                                  4  2'NOMBRE CONSULTA..:'
+     A                                      DSPATR(HI)
+     A            NOMCONS       10A  B  4 21DSPATR(HI)
+     A                                      DSPATR(PR)
+     A                                  4 33'(Debe ingresar Nombre)'
+     A            DESCONS       40A  B  5 21DSPATR(HI)
+     A                                  7  2'Reemplazar Archivo       '
+     A                                      COLOR(YLW)
+     A            RARC           2Y 0B  7 29SNGCHCFLD(*NORSTCSR *AUTOSLT *SLTIN-
+     A                                      D *NOAUTOENT (*NUMCOL 2))
+     A                                      CHOICE(1 '>Si')
+     A                                      CHOICE(2 '>No')
+     A                                  8  2'Añadir Registros         '
+     A                                      COLOR(YLW)
+     A            AREG           2Y 0B  8 29SNGCHCFLD(*NORSTCSR *AUTOSLT *SLTIN-
+     A                                      D *NOAUTOENT (*NUMCOL 2))
+     A                                      CHOICE(1 '>Si')
+     A                                      CHOICE(2 '>No')
+     A                                  9  2'Retener Trabajo Sometido '
+     A                                      COLOR(YLW)
+     A            RJOB           2Y 0B  9 29SNGCHCFLD(*NORSTCSR *AUTOSLT *SLTIN-
+     A                                      D *NOAUTOENT (*NUMCOL 2))
+     A                                      CHOICE(1 '>Si')
+     A                                      CHOICE(2 '>No')
+     A                                 10  2'Selección Registro único '
+     A                                      COLOR(YLW)
+     A            RUNICO         2Y 0B 10 29SNGCHCFLD(*NORSTCSR *AUTOSLT *SLTIN-
+     A                                      D *NOAUTOENT (*NUMCOL 2))
+     A                                      CHOICE(1 '>Si')
+     A                                      CHOICE(2 '>No')
+     A                                 11  2'Caracteres Arc.Generar   '
+     A                                      COLOR(YLW)
+     A            ARCGEN         5A  B 11 30
+     A            BOTON          2Y 0B 11 42PSHBTNFLD
+     A                                      PSHBTNCHC(1 'F12-Anterior' CF12)
+     A                                      PSHBTNCHC(2 'F9-Siguiente' CF09)
+     A                                      PSHBTNCHC(3 'F5-Cambio Cond.' CF05)
+     A                                      PSHBTNCHC(4 'F14 Ver Cooncep.' CF14)
+     A                                      PSHBTNCHC(5 'F16 New Concepto' CF16)
+     A                                      PSHBTNCHC(6 'F18 DEL Concepto' CF18)
+     A                                 12  2'Correlativo Inicial      '
+     A                                      COLOR(YLW)
+     A            CORGEN         4Y 0B 12 31EDTCDE(Z)
+     A                                 13  2'Biblioteca Generación    '
+     A                                      DSPATR(HI)
+     A                                      COLOR(YLW)
+     A            BIBGEN        10A  B 13 30
+     A                                 14  2'Archivo Base a Generar   '
+     A                                      DSPATR(HI)
+     A                                      COLOR(YLW)
+     A            ARCBAS        10A  B 14 30
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A          R W02
+     A*%%TS  SD  20070717  144420  NBKDY9U     REL-V5R3M0  5722-WDS
+     A                                      WINDOW(2 2 20 74)
+     A                                      RTNCSRLOC(*RECNAME &REGCURSOR &CAMC-
+     A                                      URSOR &POSCURSOR)
+     A                                      CSRLOC(FILA       COLU)
+     A                                      WDWBORDER((*COLOR BLU) (*DSPATR RI)-
+     A                                       (*CHAR '        '))
+     A                                      USRRSTDSP
+     A                                      WDWTITLE((*TEXT 'CONDICION DE FILTR-
+     A                                      O PROCESO') (*COLOR WHT))
+     A                                      WDWTITLE((*TEXT 'F4-AYUDA SQL F6-CA-
+     A                                      MPOS F9-GRABAR F12-ANTERIOR F5-COND-
+     A                                      ICION UNION') (*COLOR WHT) *BOTTOM)
+     A            FILA           3S 0H
+     A            COLU           3S 0H
+     A            REGCURSOR     10A  H
+     A            CAMCURSOR     10A  H
+     A            POSCURSOR      4S 0H
+     A            SENSQL01     980A  B  2  1CNTFLD(070)
+     A                                 17  1'Nota : Recuerde que si posee más d-
+     A                                      e un archivo los debe unir por sus -
+     A                                       '
+     A                                      DSPATR(HI)
+     A                                 18  1'       claves para que su selecció-
+     A                                      n sea más óptima, los campos deben -
+     A                                       '
+     A                                      DSPATR(HI)
+     A                                 19  1'       estar calificados con el no-
+     A                                      mbre del archivo ( ARCHIVO.CAMPO  )-
+     A                                       '
+     A                                      DSPATR(HI)
+     A          R W03
+     A*%%TS  SD  20070717  144420  NBKDY9U     REL-V5R3M0  5722-WDS
+     A                                      WINDOW(2 2 20 74)
+     A                                      RTNCSRLOC(*RECNAME &REGCURSOR &CAMC-
+     A                                      URSOR &POSCURSOR)
+     A                                      CSRLOC(FILA       COLU)
+     A                                      WDWBORDER((*COLOR BLU) (*DSPATR RI)-
+     A                                       (*CHAR '        '))
+     A                                      USRRSTDSP
+     A                                      WDWTITLE((*TEXT 'DEFINICION DE PEPA-
+     A                                      S') (*COLOR WHT))
+     A                                      WDWTITLE((*TEXT 'F4-AYUDA SQL F6-CA-
+     A                                      MPOS F9-GRABAR F3-ANTERIOR') (*COLO-
+     A                                      R WHT) *BOTTOM)
+     A            FILA           3S 0H
+     A            COLU           3S 0H
+     A            REGCURSOR     10A  H
+     A            CAMCURSOR     10A  H
+     A            POSCURSOR      4S 0H
+     A                                  2  1'Pepa :'
+     A                                      DSPATR(HI)
+     A            NROPEPA        4Y 0B  2  8DSPATR(HI)
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                      CHECK(RB)
+     A                                      EDTCDE(Z)
+     A            DESPEPA       50A  B  2 14DSPATR(UL)
+     A                                      DSPATR(HI)
+     A                                  3  1'Tipo :'
+     A                                      DSPATR(HI)
+     A            TIPPEPA        2Y 0B  3  9SNGCHCFLD(*NORSTCSR *AUTOSLT *SLTIN-
+     A                                      D *NOAUTOENT (*NUMCOL 2))
+     A                                      CHOICE(1 '>Número')
+     A                                      CHOICE(2 '>Alfanumerico')
+     A                                  4  1'Largo:'
+     A                                      DSPATR(HI)
+     A            LARPEPA        5Y 0B  4  8CHECK(RB)
+     A                                      EDTCDE(Z)
+     A                                  4 18'Decimales:'
+     A                                      DSPATR(HI)
+     A            DECPEPA        2Y 0B  4 29CHECK(RB)
+     A                                      EDTCDE(Z)
+     A            SENPEPA      700A  B  6  1CNTFLD(070)
+     A                                 17  1'Nota : Recuerde que si posee más d-
+     A                                      e un archivo los debe unir por sus -
+     A                                       '
+     A                                      DSPATR(HI)
+     A                                 18  1'       claves para que su selecció-
+     A                                      n sea más óptima, los campos deben -
+     A                                       '
+     A                                      DSPATR(HI)
+     A                                 19  1'       estar calificados con el no-
+     A                                      mbre del archivo ( ARCHIVO.CAMPO  )-
+     A                                       '
+     A                                      DSPATR(HI)
+     A          R W04
+     A*%%TS  SD  20070725  091431  NBKDY9U     REL-V5R3M0  5722-WDS
+     A                                      WINDOW(2 2 20 74)
+     A                                      WDWBORDER((*COLOR BLU) (*DSPATR RI)-
+     A                                       (*CHAR '        '))
+     A                                      USRRSTDSP
+     A                                      WDWTITLE((*TEXT 'CONDICION DE UNION-
+     A                                      ') (*COLOR WHT))
+     A                                      WDWTITLE((*TEXT 'F12-ANTERIOR')    -
+     A                                      (*COLOR WHT) *BOTTOM)
+     A            CONUNION     980A  B  2  1CNTFLD(070)
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                 17  1'Nota : Recuerde que si posee más d-
+     A                                      e un archivo los debe unir por sus -
+     A                                       '
+     A                                      DSPATR(HI)
+     A                                 18  1'       claves para que su selecció-
+     A                                      n sea más óptima, los campos deben -
+     A                                       '
+     A                                      DSPATR(HI)
+     A                                 19  1'       estar calificados con el no-
+     A                                      mbre del archivo ( ARCHIVO.CAMPO  )-
+     A                                       '
+     A                                      DSPATR(HI)
+     A          R XX
+     A*%%TS  SD  19990318  161752  DUARTEJ     REL-V4R2M0  5769-PW1
+     A                                      KEEP
+     A                                      ASSUME
+     A                                      OVERLAY
+     A                                  1  3' '

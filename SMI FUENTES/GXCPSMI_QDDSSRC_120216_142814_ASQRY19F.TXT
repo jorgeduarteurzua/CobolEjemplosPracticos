@@ -1,0 +1,18 @@
+     A                                      UNIQUE
+     A          R RASQRY19F
+     A*
+     A            INTFIL1       10A         COLHDG('ARC.INTEGRIDAD 1')
+     A            DARCHI1       40A         COLHDG('DESC. ARCHIVO 1')
+     A            INTFIL2       10A         COLHDG('ARC.INTEGRIDAD 2')
+     A            DARCHI2       40A         COLHDG('DESC. ARCHIVO 2')
+     A            DINTEGR       40A         COLHDG('DESC.INTEGRIDAD')
+     A            CONUNI       500A         COLHDG('CONDICION DE UNION')
+     A            USRCRE        10A         COLHDG('USUARIO CREACION')
+     A            FECCRE         8S 0       COLHDG('FECHA CREACION')
+     A            HORCRE         8S 0       COLHDG('HORA  CREACION')
+     A            USRMOD        10A         COLHDG('USUARIO MODIFICACION')
+     A            FECMOD         8S 0       COLHDG('FECHA MODIFICACION')
+     A            HORMOD         8S 0       COLHDG('HORA  MODIFICACION')
+     A*
+     A          K INTFIL1
+     A          K INTFIL2

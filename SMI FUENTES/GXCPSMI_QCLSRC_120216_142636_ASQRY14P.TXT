@@ -1,0 +1,12 @@
+    PGM PARM(&BIB &ARC &RET)
+        DCL VAR(&BIB)    TYPE(*CHAR) LEN(10)
+        DCL VAR(&ARC)    TYPE(*CHAR) LEN(10)
+        DCL VAR(&RET)    TYPE(*CHAR) LEN(01)
+
+        CHGVAR VAR(&RET) VALUE('0')
+
+        DLTF       FILE(&BIB/&ARC)
+        MONMSG     MSGID(CPF3202) EXEC(CHGVAR VAR(&RET) VALUE('1'))
+        MONMSG     MSGID(CPF0000)
+
+    FIN: ENDPGM

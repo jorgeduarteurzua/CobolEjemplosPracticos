@@ -1,0 +1,488 @@
+       IDENTIFICATION DIVISION.
+      *------------------------
+       PROGRAM-ID.  ASQRY22.
+       AUTHOR. JORGE DUARTE U.
+      *----------------------------------------------------------------
+       ENVIRONMENT DIVISION.
+       CONFIGURATION SECTION.
+       SOURCE-COMPUTER.  IBM-AS400.
+       OBJECT-COMPUTER.  IBM-AS400.
+       SPECIAL-NAMES. LOCAL-DATA IS LOCAL.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+      *-------------
+
+           SELECT PANTALLA   ASSIGN        TO WORKSTATION-ASQRY18D-SI
+                             ORGANIZATION  IS TRANSACTION
+                             ACCESS MODE   IS DYNAMIC
+                             RELATIVE KEY  IS NREL
+                             FILE STATUS   IS FS-PANTALLA.
+
+           SELECT PANTALLA2  ASSIGN        TO WORKSTATION-ASQRY18D-SI
+                             ORGANIZATION  IS TRANSACTION
+                             ACCESS MODE   IS DYNAMIC
+                             RELATIVE KEY  IS NREL2
+                             FILE STATUS   IS FS-PANTALLA2.
+
+
+       DATA DIVISION.
+       FILE SECTION.
+      *-------------
+       FD  PANTALLA LABEL RECORD STANDARD.
+       01  R-PANTALLA           PIC X(1920).
+
+       FD  PANTALLA2 LABEL RECORD STANDARD.
+       01  R-PANTALLA2          PIC X(1920).
+
+      *
+       WORKING-STORAGE SECTION.
+      *------------------------
+       77 WS-MODIFICA           PIC X.
+       77 ARCHIVO1-WS           PIC X(10).
+       77 ARCHIVO2-WS           PIC X(10).
+       77 WS-ARCHIVO            PIC X(10).
+       77 WS-DARCHIVO           PIC X(40).
+       77 WS-H-ARCHIVO          PIC X(10).
+       77 WS-H-CAMPO            PIC X(10).
+       77 WS-H-ARC-CAMPO        PIC X(21).
+       77 WS-H-PC               PIC 9(04).
+       77 WS-FILA               PIC 9(03).
+       77 WS-COLU               PIC 9(03).
+
+       77 CUENTA-WS             PIC S9(05).
+
+       77 AAAAMMDD              PIC X(8).
+       77 DDMMAAAA              PIC X(8).
+
+       77 I-ON                  PIC 1 VALUE B"1".
+       77 I-OFF                 PIC 1 VALUE B"0".
+
+           EXEC SQL
+              INCLUDE SQLCA
+           END-EXEC.
+
+       01 WS-VARIABLES-DE-TRABAJO.
+          05 INSREG             PIC X(500).
+
+       01 REGISTROS-RELATIVO.
+          05 NREL               PIC 9(04).
+          05 NREL2              PIC 9(04).
+
+       01 WS-ESTADOS.
+          05 FS-PANTALLA        PIC X(02) VALUE "00".
+          05 FS-PANTALLA2       PIC X(02) VALUE "00".
+
+
+       01 DATOS-SQL-C1.
+          05 ARCHIVO1-SQL       PIC X(10).
+          05 ARCHIVO2-SQL       PIC X(10).
+          05 DINTEGRIDAD-SQL    PIC X(40).
+          05 UNION-SQL          PIC X(500).
+
+
+       01 PARAMETROS-40.
+           05 NOMARC-40          PIC X(10).
+           05 BIBARC-40          PIC X(10).
+           05 TEXTO-40           PIC X(50).
+           05 RET-40             PIC X(01).
+
+       01 ARREGLOS-DE-TRABAJO.
+          05 CTA-MSG              PIC 9(3).
+          05 VARIABLE-3250        PIC X(6500).
+          05 VAR-ARR-3250 REDEFINES VARIABLE-3250 OCCURS 100 TIMES
+                          ASCENDING KEY IS TEXTO-ARR.
+             10 TEXTO-ARR         PIC X(65).
+
+      *
+       01 VARIABLES-CAMBIAR.
+          05 ARCHIVO1-W01       PIC X(10).
+          05 ARCHIVO2-W01       PIC X(10).
+          05 DARCHIVO1-W01      PIC X(40).
+          05 DARCHIVO2-W01      PIC X(40).
+          05 DINTEGRIDAD-W01    PIC X(40).
+          05 UNION-W01          PIC X(500).
+      *
+       01 WC01-II.
+          COPY DDS-WC01-I       OF ASQRY18D.
+
+       01 WC01-IND.
+          COPY DDS-WC01-INDIC   OF ASQRY18D.
+
+       01 WS01-OO.
+          COPY DDS-WS01-O       OF ASQRY18D.
+
+      *
+       01 W01-II.
+          COPY DDS-W01-O        OF ASQRY18D.
+
+       01 W01-IND.
+          COPY DDS-W01-INDIC    OF ASQRY18D.
+
+
+       01 PARA-CCGEC16C.
+          05 NOMAYU-16C          PIC X(10).
+          05 SELECC-16C          PIC X(500).
+          05 RETORNO-16C.
+             10 CODIGO-16C          PIC X(500).
+             10 LARGOKEY-16C        PIC 9(03).
+             10 LARGODES-16C        PIC 9(03).
+
+       LINKAGE SECTION.
+       01 PARA-LNK.
+           05 USUARIO-LNK       PIC X(10).
+
+       PROCEDURE DIVISION USING PARA-LNK.
+      *----------------------------------
+           PERFORM INICIO
+           MOVE I-OFF      TO IN03 OF WC01-I-INDIC
+           PERFORM PROCESO UNTIL IN03 OF WC01-I-INDIC = I-ON
+           PERFORM TERMINO
+           GOBACK.
+
+      *
+       INICIO.
+      *-------
+           OPEN I-O   PANTALLA.
+           INITIALIZE WC01-I REPLACING
+                      ALPHANUMERIC DATA BY SPACES
+                      NUMERIC      DATA BY ZEROES.
+           CALL   "MRTVDAF1" USING DDMMAAAA
+
+           MOVE DDMMAAAA         TO DATECUR OF WC01-II
+           PERFORM CARGAR-INTEGRIDAD-WS01.
+      *
+       PROCESO.
+      *--------
+           WRITE R-PANTALLA FROM WC01-II FORMAT "WC01"
+                             INDICATORS ARE WC01-O-INDIC END-WRITE
+           READ  PANTALLA   INTO WC01-II FORMAT "WC01"
+                             INDICATORS ARE WC01-I-INDIC END-READ.
+
+           MOVE    SPACES        TO VARIABLE-3250
+           MOVE    ZEROES        TO CTA-MSG
+
+           IF IN05 OF WC01-I-INDIC = I-ON
+              PERFORM CARGAR-INTEGRIDAD-WS01
+           ELSE
+           IF IN07 OF WC01-I-INDIC = I-ON
+              PERFORM MODIFICA-INTEGRIDAD
+              PERFORM CARGAR-INTEGRIDAD-WS01
+           ELSE
+           IF IN23 OF WC01-I-INDIC = I-ON
+              PERFORM ELIMINAR-INTEGRIDAD
+              PERFORM CARGAR-INTEGRIDAD-WS01
+           ELSE
+           IF IN09 OF WC01-I-INDIC = I-ON
+              PERFORM INSERTAR-INTEGRIDAD
+              PERFORM CARGAR-INTEGRIDAD-WS01.
+
+           IF CTA-MSG NOT = ZEROES
+              CALL    "VISERR2"  USING VARIABLE-3250
+              CANCEL  "VISERR2"
+           END-IF.
+      *
+       TERMINO.
+      *-------
+           CLOSE    PANTALLA.
+      *
+       INSERTAR-INTEGRIDAD.
+      *---------------------
+           OPEN I-O PANTALLA2
+      *    MOVE I-OFF               TO IN50 OF W01-O-INDIC
+           MOVE I-OFF               TO IN12 OF W01-I-INDIC
+           MOVE SPACES              TO ARCHIVO1-W01
+                                       ARCHIVO2-W01
+                                       DARCHIVO1-W01
+                                       DARCHIVO2-W01
+                                       DINTEGRIDAD-W01
+                                       UNION-W01
+           MOVE "N"                 TO WS-MODIFICA
+           PERFORM MOVER-VARIABLES-A-W01
+           PERFORM PROCESA-W01 UNTIL IN12 OF W01-I-INDIC = I-ON
+           CLOSE    PANTALLA2.
+
+      *
+       MODIFICA-INTEGRIDAD.
+      *--------------------
+           READ SUBFILE PANTALLA NEXT MODIFIED INTO WS01-OO
+                        FORMAT "WS01" END-READ.
+           IF FS-PANTALLA = "00"
+              OPEN I-O PANTALLA2
+              MOVE ARCHIVO1 OF WS01-OO   TO ARCHIVO1-WS
+              MOVE ARCHIVO2 OF WS01-OO   TO ARCHIVO2-WS
+              PERFORM RESCATAR-VALORES-INTEGRIDAD
+              PERFORM MOVER-VARIABLES-A-W01
+      *       MOVE I-ON                TO IN50 OF W01-O-INDIC
+              MOVE "S"                 TO WS-MODIFICA
+              MOVE I-OFF               TO IN12 OF W01-I-INDIC
+              PERFORM PROCESA-W01 UNTIL IN12 OF W01-I-INDIC = I-ON
+              CLOSE    PANTALLA2.
+
+      *
+       ELIMINAR-INTEGRIDAD.
+      *--------------------
+           READ SUBFILE PANTALLA NEXT MODIFIED INTO WS01-OO
+                        FORMAT "WS01" END-READ.
+           IF FS-PANTALLA = "00"
+              MOVE ARCHIVO1 OF WS01-OO   TO ARCHIVO1-WS
+              MOVE ARCHIVO2 OF WS01-OO   TO ARCHIVO2-WS
+              EXEC SQL
+           DELETE FROM ASQRY19F WHERE INTFIL1 = :ARCHIVO1-WS AND
+           INTFIL2 = :ARCHIVO2-WS
+              END-EXEC
+              ADD   1            TO CTA-MSG
+              MOVE SPACES        TO TEXTO-ARR(CTA-MSG)
+              STRING "SE HA ELIMINADO INTEGRIDAD" DELIMITED SIZE
+                                  INTO TEXTO-ARR(CTA-MSG).
+
+
+      *
+       PROCESA-W01.
+      *------------
+           WRITE R-PANTALLA2 FROM W01-II FORMAT "W01"   END-WRITE
+      *                      INDICATORS ARE W01-O-INDIC END-WRITE
+           READ  PANTALLA2   INTO W01-II FORMAT "W01"
+                             INDICATORS ARE W01-I-INDIC END-READ.
+
+           MOVE    SPACES        TO VARIABLE-3250
+           MOVE    ZEROES        TO CTA-MSG
+
+           IF IN04 OF W01-I-INDIC = I-ON
+              PERFORM AYUDA-W01
+           ELSE
+           IF IN09 OF W01-I-INDIC = I-ON
+              IF WS-MODIFICA = "S"
+                 PERFORM ACTUALIZA-INTEGRIDAD
+              ELSE
+                 PERFORM GRABAR-INTEGRIDAD.
+
+           IF CTA-MSG NOT = ZEROES
+              CALL    "VISERR2"  USING VARIABLE-3250
+              CANCEL  "VISERR2"
+           END-IF.
+      *
+       AYUDA-W01.
+      *----------
+           IF CAMCURSOR OF W01-II = "ARCHIVO1"
+              PERFORM AYUDA-FILE
+              MOVE WS-ARCHIVO    TO ARCHIVO1  OF W01-II
+              MOVE WS-DARCHIVO   TO DARCHIVO1 OF W01-II
+           ELSE
+              IF CAMCURSOR OF W01-II = "ARCHIVO2"
+                 PERFORM AYUDA-FILE
+                 MOVE WS-ARCHIVO    TO ARCHIVO2  OF W01-II
+                 MOVE WS-DARCHIVO   TO DARCHIVO2 OF W01-II
+              ELSE
+                 IF CAMCURSOR OF W01-II = "CONDUNION"
+                    PERFORM AYUDA-CAMPOS-FILE.
+      *
+       AYUDA-FILE.
+      *-----------
+           MOVE 'ARCQUERYS '       TO NOMAYU-16C
+           MOVE SPACES             TO SELECC-16C
+           MOVE SPACES             TO CODIGO-16C
+           MOVE ZEROES             TO LARGOKEY-16C
+                                      LARGODES-16C
+
+           CALL   'ASQRY05' USING NOMAYU-16C
+                                   SELECC-16C
+                                   RETORNO-16C
+
+           CANCEL 'ASQRY05'.
+           IF CODIGO-16C NOT = SPACES
+              MOVE CODIGO-16C(01:10)  TO WS-ARCHIVO
+              MOVE CODIGO-16C(12:40)  TO WS-DARCHIVO
+      *       ADD  13             TO WS-FILA
+      *       MOVE WS-FILA        TO FILA OF W01-II
+      *       MOVE WS-COLU        TO COLU OF W01-II
+           END-IF.
+      *
+       AYUDA-CAMPOS-FILE.
+      *------------------
+           MOVE 'CAMPOSFILE'       TO NOMAYU-16C
+           MOVE SPACES             TO SELECC-16C
+           STRING 'WHFILE IN("'       DELIMITED SIZE
+                  ARCHIVO1 OF W01-II  DELIMITED SIZE
+                  '", "'              DELIMITED SIZE
+                  ARCHIVO2 OF W01-II  DELIMITED SIZE
+                  '") '               DELIMITED SIZE
+                                 INTO SELECC-16C
+           MOVE SPACES             TO CODIGO-16C
+           MOVE ZEROES             TO LARGOKEY-16C
+                                      LARGODES-16C
+
+           CALL   'ASQRY05' USING NOMAYU-16C
+                                   SELECC-16C
+                                   RETORNO-16C
+
+           CANCEL 'ASQRY05'.
+           IF CODIGO-16C NOT = SPACES
+              MOVE SPACES             TO WS-H-ARC-CAMPO
+              MOVE CODIGO-16C(01:10)  TO WS-H-ARCHIVO
+              MOVE CODIGO-16C(12:10)  TO WS-H-CAMPO
+              STRING WS-H-ARCHIVO DELIMITED BY " "
+                     "."          DELIMITED BY SIZE
+                     WS-H-CAMPO   DELIMITED BY " "
+                               INTO WS-H-ARC-CAMPO
+              MOVE POSCURSOR OF W01-II TO WS-H-PC
+              DIVIDE WS-H-PC BY 50 GIVING WS-FILA REMAINDER
+                                          WS-COLU
+              MOVE WS-H-ARC-CAMPO TO CONDUNION OF W01-II(WS-H-PC:21)
+              ADD  7              TO WS-FILA
+              ADD  13             TO WS-COLU
+              MOVE WS-FILA        TO FILA OF W01-II
+              MOVE WS-COLU        TO COLU OF W01-II.
+      *
+      *
+       ACTUALIZA-INTEGRIDAD.
+      *---------------------
+           PERFORM MOVER-A-VARIABLES-DE-W01
+
+           EXEC SQL
+           UPDATE ASQRY19F SET INTFIL1 = :ARCHIVO1-W01, DARCHI1
+           = :DARCHIVO1-W01, INTFIL2 = :ARCHIVO2-W01, DARCHI2 =
+           :DARCHIVO2-W01, DINTEGR = :DINTEGRIDAD-W01, CONUNI =
+           :UNION-W01, USRMOD = :USUARIO-LNK WHERE INTFIL1 =
+           :ARCHIVO1-W01 AND INTFIL2 = :ARCHIVO2-W01
+           END-EXEC
+
+           ADD   1            TO CTA-MSG
+           MOVE SPACES        TO TEXTO-ARR(CTA-MSG)
+           STRING "INTEGRIDAD"                DELIMITED SIZE
+                  " HA SIDO ACTUALIZADA     " DELIMITED SIZE
+                               INTO TEXTO-ARR(CTA-MSG).
+
+      *
+       GRABAR-INTEGRIDAD.
+      *------------------
+           MOVE ARCHIVO1 OF W01-II  TO ARCHIVO1-WS
+           MOVE ARCHIVO2 OF W01-II  TO ARCHIVO2-WS
+           MOVE ZEROES   TO CUENTA-WS
+
+           EXEC SQL
+           SELECT CAST(COUNT(*) AS NUMERIC(5, 0)) INTO :CUENTA-WS FROM
+           ASQRY19F WHERE (INTFIL1 = :ARCHIVO1-WS AND INTFIL2 =
+           :ARCHIVO2-WS) OR (INTFIL1 = :ARCHIVO2-WS AND INTFIL2 =
+           :ARCHIVO1-WS)
+           END-EXEC
+
+           IF CUENTA-WS > 0
+              ADD   1            TO CTA-MSG
+              MOVE SPACES        TO TEXTO-ARR(CTA-MSG)
+              STRING "INTEGRIDAD"                 DELIMITED SIZE
+                     " YA SE ENCUENTRA INGRESADA" DELIMITED SIZE
+                                  INTO TEXTO-ARR(CTA-MSG)
+
+           ELSE
+
+           MOVE ZEROES   TO CUENTA-WS
+
+           EXEC SQL
+           SELECT CAST(COUNT(*) AS NUMERIC(5, 0)) INTO :CUENTA-WS FROM
+           ASQRY02F WHERE WHFILE IN( :ARCHIVO1-WS, :ARCHIVO2-WS)
+           END-EXEC
+
+           IF CUENTA-WS < 2
+              ADD   1            TO CTA-MSG
+              MOVE SPACES        TO TEXTO-ARR(CTA-MSG)
+              STRING "DEBE SELECCIONAR 2 ARCHIVOS" DELIMITED SIZE
+                     " DISTINTOS QUE EXISTAN "     DELIMITED SIZE
+                                  INTO TEXTO-ARR(CTA-MSG)
+           ELSE
+           PERFORM MOVER-A-VARIABLES-DE-W01
+
+           EXEC SQL
+           INSERT INTO ASQRY19F VALUES(:ARCHIVO1-W01,
+           :DARCHIVO1-W01, :ARCHIVO2-W01, :DARCHIVO2-W01,
+           :DINTEGRIDAD-W01, :UNION-W01, :USUARIO-LNK, 0, 0, 0, 0, 0)
+           END-EXEC.
+      *
+       RESCATAR-VALORES-INTEGRIDAD.
+      *----------------------------
+           EXEC SQL
+           SELECT INTFIL1, DARCHI1, INTFIL2, DARCHI2, DINTEGR, CONUNI
+           INTO :ARCHIVO1-W01, :DARCHIVO1-W01, :ARCHIVO2-W01,
+           :DARCHIVO2-W01, :DINTEGRIDAD-W01, :UNION-W01 FROM ASQRY19F
+           WHERE INTFIL1 = :ARCHIVO1-WS AND INTFIL2 = :ARCHIVO2-WS
+           END-EXEC.
+      *
+       MOVER-VARIABLES-A-W01.
+      *----------------------
+              MOVE ARCHIVO1-W01    TO ARCHIVO1  OF W01-II
+              MOVE ARCHIVO2-W01    TO ARCHIVO2  OF W01-II
+              MOVE DARCHIVO1-W01   TO DARCHIVO1 OF W01-II
+              MOVE DARCHIVO2-W01   TO DARCHIVO2 OF W01-II
+              MOVE DINTEGRIDAD-W01 TO DINTEGRI  OF W01-II
+              MOVE UNION-W01       TO CONDUNION OF W01-II
+              .
+      *
+       MOVER-A-VARIABLES-DE-W01.
+      *-------------------------
+              MOVE ARCHIVO1  OF W01-II TO ARCHIVO1-W01
+              MOVE DARCHIVO1 OF W01-II TO DARCHIVO1-W01
+              MOVE ARCHIVO2  OF W01-II TO ARCHIVO2-W01
+              MOVE DARCHIVO2 OF W01-II TO DARCHIVO2-W01
+              MOVE DINTEGRI  OF W01-II TO DINTEGRIDAD-W01
+              MOVE CONDUNION OF W01-II TO UNION-W01
+              .
+      *
+       CARGAR-INTEGRIDAD-WS01.
+      *-------------------
+           PERFORM LIMPIA-WS01
+
+           EXEC SQL
+           DECLARE C1 CURSOR FOR SELECT INTFIL1, INTFIL2, DINTEGR,
+           CONUNI FROM ASQRY19F ORDER BY INTFIL1, INTFIL2
+           END-EXEC
+
+           EXEC SQL
+                OPEN C1
+           END-EXEC
+           PERFORM LEER-FETCH-C1
+           PERFORM UNTIL SQLCODE NOT = 0
+                   ADD   1                     TO NREL
+                   MOVE SPACES                 TO DETSFL OF WS01-OO
+                   MOVE ZEROES                 TO CTL001 OF WS01-OO
+                   MOVE ARCHIVO1-SQL           TO ARCHIVO1 OF WS01-OO
+                   MOVE ARCHIVO2-SQL           TO ARCHIVO2 OF WS01-OO
+                   MOVE DINTEGRIDAD-SQL        TO DINTEGRI OF WS01-OO
+                   MOVE UNION-SQL              TO CONDUNIO OF WS01-OO
+                   STRING ARCHIVO1-SQL         DELIMITED SIZE
+                          ' '                  DELIMITED SIZE
+                          ARCHIVO2-SQL         DELIMITED SIZE
+                          ' '                  DELIMITED SIZE
+                          DINTEGRIDAD-SQL      DELIMITED SIZE
+
+                                            INTO DETSFL OF WS01-OO
+               WRITE SUBFILE R-PANTALLA FROM WS01-OO FORMAT 'WS01'
+                     END-WRITE
+
+               PERFORM LEER-FETCH-C1
+           END-PERFORM
+           EXEC SQL
+                CLOSE C1
+           END-EXEC.
+           IF NREL > 0
+              MOVE I-ON           TO IN30 OF WC01-O-INDIC
+                                     IN31 OF WC01-O-INDIC
+              MOVE I-OFF          TO IN32 OF WC01-O-INDIC
+           ELSE
+              MOVE I-ON           TO IN31 OF WC01-O-INDIC
+              MOVE I-OFF          TO IN30 OF WC01-O-INDIC
+                                     IN32 OF WC01-O-INDIC.
+
+      *
+       LEER-FETCH-C1.
+      *--------------
+           EXEC SQL
+                FETCH NEXT FROM C1 INTO :DATOS-SQL-C1
+           END-EXEC.
+      *
+       LIMPIA-WS01.
+      *------------
+           MOVE I-ON            TO IN32 OF WC01-O-INDIC
+           MOVE I-OFF           TO IN30 OF WC01-O-INDIC
+                                   IN31 OF WC01-O-INDIC
+           MOVE ZEROES          TO NREL
+           WRITE R-PANTALLA FROM WC01-II FORMAT "WC01"
+                                 INDICATORS ARE WC01-O-INDIC.

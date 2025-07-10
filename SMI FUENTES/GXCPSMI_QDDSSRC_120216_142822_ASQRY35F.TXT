@@ -1,0 +1,7 @@
+     A                                      UNIQUE
+     A          R RASQRY35F
+     A*
+     A            NOMCON        10A         TEXT('CONCEPTO      ')
+     A            CODGRP        10A         TEXT('GRUPO USUARIOS')
+     A          K NOMCON
+     A          K CODGRP

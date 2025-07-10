@@ -1,0 +1,148 @@
+     A*%%TS  SD  20011116  181008  DUARTEJ     REL-V4R4M0  5769-PW1
+     A*%%EC
+     A                                      DSPSIZ(24 80 *DS3)
+     A                                      INDARA
+     A                                      CF03(03 'Salir')
+     A                                      CF05(05 'Actualizar')
+     A                                      CF07(07 'Regenerar Campos')
+     A                                      CF09(09 'Ingresar')
+     A                                      CF23(23 'Eliminar')
+     A                                      CF13(13 'Inicializa Campos')
+     A                                      CF12(12 'Anterior')
+     A          R WS01                      SFL
+     A*%%TS  SD  20010910  094208  DUARTEJ     REL-V4R4M0  5769-PW1
+     A            NOMFUN        10A  H
+     A            TEXFUN        50A  H
+     A            CTL001         1Y 0H      SFLCHCCTL
+     A            DETSFL        69A  O 15  1
+     A          R WC01                      SFLCTL(WS01)
+     A*%%TS  SD  20011116  181008  DUARTEJ     REL-V4R4M0  5769-PW1
+     A                                      SFLSIZ(0100)
+     A                                      SFLPAG(0005)
+     A                                      WINDOW(2 2 20 74)
+     A                                      OVERLAY
+     A N30                                  ERASE(WS01)
+     A  30                                  SFLDSP
+     A  31                                  SFLDSPCTL
+     A  32                                  SFLCLR
+     A  30                                  SFLEND(*SCRBAR *SCRBAR)
+     A                                      WDWBORDER((*COLOR BLU) (*DSPATR RI)-
+     A                                       (*CHAR '        '))
+     A                                      USRRSTDSP
+     A                                      WDWTITLE((*TEXT 'Ingreso de Funcion-
+     A                                      es de Resumen') (*COLOR WHT))
+     A                                      SFLRTNSEL
+     A                                      SFLSNGCHC
+     A            DATECUR        8Y 0B  1 65
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                      CHECK(RB)
+     A                                      EDTWRD('  /  /    ')
+     A                                  2 67TIME
+     A                                  3 67'ASQRY16 '
+     A                                      DSPATR(HI)
+     A                                  4  1'Función   :'
+     A                                      DSPATR(HI)
+     A            NOMFUN        10A  B  4 13
+     A  50                                  DSPATR(PR)
+     A            TEXFUN        50A  B  4 24CHECK(LC)
+     A                                  5  1'Tipo Campo:'
+     A                                      DSPATR(HI)
+     A            TIPCAM         2Y 0B  5 14SNGCHCFLD(*NORSTCSR *AUTOSLT *SLTIN-
+     A                                      D *NOAUTOENT (*NUMCOL 3))
+     A                                      CHOICE(1 '>Número')
+     A                                      CHOICE(2 '>Alfanumérico')
+     A                                      CHOICE(3 'Am>bos')
+     A                                  6  1'Nro.Campos:'
+     A                                      DSPATR(HI)
+     A            NROCAM         2Y 0B  6 13CHECK(RB)
+     A                                      EDTCDE(Z)
+     A                                  6 17'(Nro.Campos a Solicitar )'
+     A                                  7  1'Pide Grupo:'
+     A                                      DSPATR(HI)
+     A            PIDEGRUPO      2Y 0B  7 14SNGCHCFLD(*NORSTCSR *AUTOSLT *SLTIN-
+     A                                      D *NOAUTOENT (*NUMCOL 2))
+     A                                      CHOICE(1 '>Si')
+     A                                      CHOICE(2 '>No')
+     A            BOTON          2Y 0B 11  1PSHBTNFLD
+     A                                      PSHBTNCHC(1 'F3-Salir' CF03)
+     A                                      PSHBTNCHC(2 'F9-Gra./Mod.' CF09)
+     A                                      PSHBTNCHC(3 'F7-Selecciona' CF07)
+     A                                      PSHBTNCHC(4 'F5-Actualizar' CF05)
+     A                                      PSHBTNCHC(5 'F23-Eliminar' CF23)
+     A                                      PSHBTNCHC(6 'F13-Borrar' CF13)
+     A                                 14  1' Función   Descripción            -
+     A                                                                         -
+     A                                          '
+     A                                      DSPATR(HI)
+     A                                      DSPATR(UL)
+     A          R WS02                      SFL
+     A*%%TS  SD  20010914  092455  DUARTEJ     REL-V4R4M0  5769-PW1
+     A            SECFUN         2Y 0B 12  3
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                      CHECK(RB)
+     A                                      EDTCDE(Z)
+     A            TEXFLD        50A  B 12  7CHECK(LC)
+     A            TIPFLD         1A  B 12 61VALUES('A' 'N')
+     A            VALFLD         1A  B 12 70VALUES('C' 'V')
+     A          R WC02                      SFLCTL(WS02)
+     A*%%TS  SD  20011116  181008  DUARTEJ     REL-V4R4M0  5769-PW1
+     A                                      SFLSIZ(0160)
+     A                                      SFLPAG(0008)
+     A                                      WINDOW(2 2 20 74)
+     A                                      OVERLAY
+     A N30                                  ERASE(WS01)
+     A  30                                  SFLDSP
+     A  31                                  SFLDSPCTL
+     A  32                                  SFLCLR
+     A  30                                  SFLEND(*SCRBAR *SCRBAR)
+     A                                      WDWBORDER((*COLOR BLU) (*DSPATR RI)-
+     A                                       (*CHAR '        '))
+     A                                      USRRSTDSP
+     A                                      WDWTITLE((*TEXT 'Ingreso Descripció-
+     A                                      n Campo de Función') (*COLOR WHT))
+     A            DATECUR        8Y 0B  1 65
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                      CHECK(RB)
+     A                                      EDTWRD('  /  /    ')
+     A                                  2 67TIME
+     A                                  3 67'ASQRY16 '
+     A                                      DSPATR(HI)
+     A                                  4  1'Función   :'
+     A                                      DSPATR(HI)
+     A            NOMFUN        10A  B  4 13DSPATR(PR)
+     A  99                                  DSPATR(UL)
+     A            TEXFUN        50A  B  4 24CHECK(LC)
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A            BOTON          2Y 0B  6  1PSHBTNFLD
+     A                                      PSHBTNCHC(1 'F9-Gra./Mod.' CF09)
+     A                                  8  1'                                  -
+     A                                                             T/Campo  V/C-
+     A                                      ampo'
+     A                                      DSPATR(HI)
+     A                                  9  1' Sec. Texto Descriptivo Campo a So-
+     A                                      licitar                (A o N)  (C -
+     A                                      o V)'
+     A                                      DSPATR(HI)
+     A                                      DSPATR(UL)
+     A          R W01
+     A*%%TS  SD  20011012  173339  DUARTEJ     REL-V4R4M0  5769-PW1
+     A                                      WINDOW(2 2 20 74)
+     A                                      WDWTITLE((*TEXT 'SENTENCIA DE FUNCI-
+     A                                      ON') (*COLOR WHT))
+     A                                      WDWTITLE((*TEXT 'INTRO-PROCESAR')  -
+     A                                      (*COLOR WHT) *BOTTOM)
+     A                                      WDWBORDER((*COLOR BLU) (*DSPATR RI)-
+     A                                       (*CHAR '        '))
+     A                                      USRRSTDSP
+     A            SENTENCIA   1330   B  1  2CHECK(LC)
+     A                                      CNTFLD(070)
+     A          R XX
+     A*%%TS  SD  20010817  175335  DUARTEJ     REL-V4R4M0  5769-PW1
+     A                                      KEEP
+     A                                      ASSUME
+     A                                      OVERLAY
+     A                                  1  3' '

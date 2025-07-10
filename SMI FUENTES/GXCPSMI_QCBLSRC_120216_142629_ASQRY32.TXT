@@ -1,0 +1,85 @@
+       IDENTIFICATION DIVISION.
+      *-----------------------*
+       PROGRAM-ID. ASQRY32.
+       AUTHOR. JORGE DUARTE U.
+       ENVIRONMENT DIVISION.
+      *--------------------*
+       CONFIGURATION SECTION.
+       SOURCE-COMPUTER.      IBM-AS400.
+       OBJECT-COMPUTER.      IBM-AS400.
+       SPECIAL-NAMES.        LOCAL-DATA IS LOCAL-DATA-AREA .
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+
+       DATA DIVISION.
+      *--------------*
+       FILE SECTION.
+      *-------------*
+
+       WORKING-STORAGE SECTION.
+      *------------------------*
+       77 P-ARR                PIC 9(4).
+       77 SEL-C1               PIC X(2000).
+
+           EXEC SQL
+              INCLUDE SQLCA
+           END-EXEC.
+
+       01 DATOS-CURSOR-C1.
+          05 NOMCON-C1         PIC X(10).
+
+       01 ARREGLOS-DE-TRABAJO.
+          05 RR-CONCEPTOS PIC X(2000).
+          05 ARR-CONCE REDEFINES RR-CONCEPTOS  OCCURS 200 TIMES.
+             10 CONCEPTO-ARR      PIC X(10).
+
+      *
+       LINKAGE SECTION.
+      *----------------
+       01 USUARIO-LNK    PIC X(10).
+       01 CONCEPTOS-LNK  PIC X(2000).
+
+       PROCEDURE DIVISION USING USUARIO-LNK, CONCEPTOS-LNK.
+      *----------------------------------------------------
+
+           MOVE 0            TO P-ARR
+           MOVE SPACES       TO SEL-C1
+                                RR-CONCEPTOS
+           STRING 'SELECT DISTINCT '                DELIMITED SIZE
+                  ' A.NOMCON '                      DELIMITED SIZE
+                  'FROM  ASQRY20F A, ASQRY35F B, '  DELIMITED SIZE
+                  'ASQRY34F C '                     DELIMITED SIZE
+                  ' WHERE A.NOMCON = B.NOMCON AND ' DELIMITED SIZE
+                  ' B.CODGRP = C.CODGRP AND '       DELIMITED SIZE
+                  'PERFIL = "'                      DELIMITED SIZE
+                  USUARIO-LNK                       DELIMITED SIZE
+                  '" '                              DELIMITED SIZE
+                  ' ORDER BY NOMCON '              DELIMITED SIZE
+                                              INTO SEL-C1
+           EXEC SQL
+                DECLARE SELC1 STATEMENT
+           END-EXEC
+           EXEC SQL
+                PREPARE SELC1 FROM :SEL-C1
+           END-EXEC
+           EXEC SQL
+                DECLARE C1 CURSOR FOR SELC1
+           END-EXEC.
+
+           EXEC SQL OPEN     C1    END-EXEC
+           PERFORM FETCH-CURSOR-C1
+           PERFORM UNTIL SQLCODE NOT = 0 OR P-ARR = 200
+                 ADD 1   TO P-ARR
+                 MOVE NOMCON-C1      TO CONCEPTO-ARR(P-ARR)
+                 PERFORM FETCH-CURSOR-C1
+
+           END-PERFORM
+           MOVE RR-CONCEPTOS  TO CONCEPTOS-LNK
+           EXEC SQL CLOSE    C1    END-EXEC.
+           GOBACK.
+      *
+       FETCH-CURSOR-C1.
+      *---------------
+           EXEC SQL
+                FETCH NEXT FROM C1 INTO :DATOS-CURSOR-C1
+           END-EXEC.

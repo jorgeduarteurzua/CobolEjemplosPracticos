@@ -1,0 +1,10 @@
+     A                                      UNIQUE
+     A*
+     A          R RASQRY06F
+     A*
+     A            OPCION        05S 0       COLHDG('Correlativo OPCION')
+     A            CODEVE        10A         COLHDG('CODIGO Evento')
+     A            TEXTO         50A         COLHDG('Texto')
+     A            MANDATO       50A         COLHDG('Mandato a ejecutar')
+     A*
+     A          K OPCION

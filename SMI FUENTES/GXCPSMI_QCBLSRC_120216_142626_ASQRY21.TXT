@@ -1,0 +1,507 @@
+       IDENTIFICATION DIVISION.
+      *------------------------
+       PROGRAM-ID.  ASQRY21.
+       AUTHOR. JORGE DUARTE U.
+      *
+       ENVIRONMENT DIVISION.
+       CONFIGURATION SECTION.
+       SOURCE-COMPUTER.  IBM-AS400.
+       OBJECT-COMPUTER.  IBM-AS400.
+       SPECIAL-NAMES. LOCAL-DATA IS LOCAL.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+      *-------------
+
+           SELECT PANTALLA   ASSIGN        TO WORKSTATION-ASQRY17D-SI
+                             ORGANIZATION  IS TRANSACTION
+                             ACCESS MODE   IS DYNAMIC
+                             RELATIVE KEY  IS NREL
+                             FILE STATUS   IS FS-PANTALLA.
+
+           SELECT PANTALLA2  ASSIGN        TO WORKSTATION-ASQRY17D-SI
+                             ORGANIZATION  IS TRANSACTION
+                             ACCESS MODE   IS DYNAMIC
+                             RELATIVE KEY  IS NREL2
+                             FILE STATUS   IS FS-PANTALLA2.
+
+           SELECT PANTALLA3  ASSIGN        TO WORKSTATION-ASQRY17D-SI
+                             ORGANIZATION  IS TRANSACTION
+                             ACCESS MODE   IS DYNAMIC
+                             RELATIVE KEY  IS NREL3
+                             FILE STATUS   IS FS-PANTALLA3.
+
+
+       DATA DIVISION.
+       FILE SECTION.
+      *-------------
+       FD  PANTALLA LABEL RECORD STANDARD.
+       01  R-PANTALLA           PIC X(1920).
+
+       FD  PANTALLA2 LABEL RECORD STANDARD.
+       01  R-PANTALLA2          PIC X(1920).
+
+       FD  PANTALLA3 LABEL RECORD STANDARD.
+       01  R-PANTALLA3          PIC X(1920).
+
+      *
+       WORKING-STORAGE SECTION.
+      *------------------------
+       77 AYUDA-WS              PIC X(10).
+       77 CUENTA-WS             PIC S9(05).
+
+       77 AAAAMMDD              PIC X(8).
+       77 DDMMAAAA              PIC X(8).
+
+       77 I-ON                  PIC 1 VALUE B"1".
+       77 I-OFF                 PIC 1 VALUE B"0".
+
+           EXEC SQL
+              INCLUDE SQLCA
+           END-EXEC.
+
+       01 WS-VARIABLES-DE-TRABAJO.
+          05 INSREG             PIC X(500).
+
+       01 REGISTROS-RELATIVO.
+          05 NREL               PIC 9(04).
+          05 NREL2              PIC 9(04).
+          05 NREL3              PIC 9(04).
+
+       01 WS-ESTADOS.
+          05 FS-PANTALLA        PIC X(02) VALUE "00".
+          05 FS-PANTALLA2       PIC X(02) VALUE "00".
+          05 FS-PANTALLA3       PIC X(02) VALUE "00".
+
+
+       01 DATOS-SQL-C1.
+          05 AYUDA-SQL          PIC X(10).
+          05 TEXTO-SQL          PIC X(25).
+          05 ABASE-SQL          PIC X(10).
+          05 BBASE-SQL          PIC X(10).
+
+
+       01 PARAMETROS-40.
+           05 NOMARC-40          PIC X(10).
+           05 BIBARC-40          PIC X(10).
+           05 TEXTO-40           PIC X(50).
+           05 RET-40             PIC X(01).
+
+       01 ARREGLOS-DE-TRABAJO.
+          05 CTA-MSG              PIC 9(3).
+          05 VARIABLE-3250        PIC X(6500).
+          05 VAR-ARR-3250 REDEFINES VARIABLE-3250 OCCURS 100 TIMES
+                          ASCENDING KEY IS TEXTO-ARR.
+             10 TEXTO-ARR         PIC X(65).
+
+      *
+       01 VARIABLES-CAMBIAR.
+          05 AYUDA-W01          PIC X(10).
+          05 TITULO-W01         PIC X(25).
+          05 ABASE-W01          PIC X(10).
+          05 BBASE-W01          PIC X(10).
+          05 CKEY-W01           PIC X(20).
+          05 LKEY-W01           PIC S9(03).
+          05 CDES-W01           PIC X(20).
+          05 LDES-W01           PIC S9(03).
+          05 KEY500             PIC X(500).
+          05 R-KEY500 REDEFINES KEY500.
+             10 P-250           PIC X(250).
+             10 S-250           PIC X(250).
+          05 DES500             PIC X(500).
+          05 R-DES500 REDEFINES DES500.
+             10 PD-250          PIC X(250).
+             10 SD-250          PIC X(250).
+          05 CONAYUDA-W02       PIC X(500).
+      *
+       01 WC01-II.
+          COPY DDS-WC01-I       OF ASQRY17D.
+
+       01 WC01-IND.
+          COPY DDS-WC01-INDIC   OF ASQRY17D.
+
+       01 WS01-OO.
+          COPY DDS-WS01-O       OF ASQRY17D.
+
+      *
+       01 W01-OO.
+          COPY DDS-W01-O        OF ASQRY17D.
+
+       01 W01-IND.
+          COPY DDS-W01-INDIC    OF ASQRY17D.
+
+      *
+       01 W02-OO.
+          COPY DDS-W02-O        OF ASQRY17D.
+
+       01 W02-IND.
+          COPY DDS-W02-INDIC    OF ASQRY17D.
+
+
+       01 PARA-CCGEC16C.
+          05 NOMAYU-16C          PIC X(10).
+          05 SELECC-16C          PIC X(500).
+          05 RETORNO-16C.
+             10 CODIGO-16C          PIC X(500).
+             10 LARGOKEY-16C        PIC 9(03).
+             10 LARGODES-16C        PIC 9(03).
+
+       PROCEDURE DIVISION.
+      *-------------------
+           PERFORM INICIO
+           MOVE I-OFF      TO IN03 OF WC01-I-INDIC
+           PERFORM PROCESO UNTIL IN03 OF WC01-I-INDIC = I-ON
+           PERFORM TERMINO
+           GOBACK.
+
+      *
+       INICIO.
+      *-------
+           OPEN I-O   PANTALLA.
+           INITIALIZE WC01-I REPLACING
+                      ALPHANUMERIC DATA BY SPACES
+                      NUMERIC      DATA BY ZEROES.
+           CALL   "MRTVDAF1" USING DDMMAAAA
+
+           MOVE DDMMAAAA         TO DATECUR OF WC01-II
+           PERFORM CARGAR-AYUDAS-WS01.
+      *
+       PROCESO.
+      *--------
+           WRITE R-PANTALLA FROM WC01-II FORMAT "WC01"
+                             INDICATORS ARE WC01-O-INDIC END-WRITE
+           READ  PANTALLA   INTO WC01-II FORMAT "WC01"
+                             INDICATORS ARE WC01-I-INDIC END-READ.
+
+           MOVE    SPACES        TO VARIABLE-3250
+           MOVE    ZEROES        TO CTA-MSG
+
+           IF IN04 OF WC01-I-INDIC = I-ON
+              PERFORM MOSTRAR-AYUDA
+              PERFORM CARGAR-AYUDAS-WS01
+           ELSE
+           IF IN05 OF WC01-I-INDIC = I-ON
+              PERFORM CARGAR-AYUDAS-WS01
+           ELSE
+           IF IN07 OF WC01-I-INDIC = I-ON
+              PERFORM MODIFICA-AYUDA
+              PERFORM CARGAR-AYUDAS-WS01
+           ELSE
+           IF IN23 OF WC01-I-INDIC = I-ON
+              PERFORM ELIMINAR-AYUDA
+              PERFORM CARGAR-AYUDAS-WS01
+           ELSE
+           IF IN09 OF WC01-I-INDIC = I-ON
+              PERFORM INSERTAR-AYUDA
+              PERFORM CARGAR-AYUDAS-WS01.
+
+           IF CTA-MSG NOT = ZEROES
+              CALL    "VISERR2"  USING VARIABLE-3250
+              CANCEL  "VISERR2"
+           END-IF.
+      *
+       TERMINO.
+      *-------
+           CLOSE    PANTALLA.
+      *
+       MOSTRAR-AYUDA.
+      *--------------
+           READ SUBFILE PANTALLA NEXT MODIFIED INTO WS01-OO
+                        FORMAT "WS01" END-READ
+           IF FS-PANTALLA = "00"
+              MOVE AYUDA  OF WS01-OO  TO NOMAYU-16C
+              MOVE SPACES             TO SELECC-16C
+              MOVE SPACES             TO CODIGO-16C
+              MOVE ZEROES             TO LARGOKEY-16C
+                                         LARGODES-16C
+
+              CALL   "ASQRY05"  USING NOMAYU-16C
+                                      SELECC-16C
+                                      RETORNO-16C
+
+              CANCEL "ASQRY05"
+           END-IF
+           .
+      *
+       INSERTAR-AYUDA.
+      *-----------------
+           OPEN I-O PANTALLA2
+           MOVE I-OFF               TO IN50 OF W01-O-INDIC
+           MOVE I-OFF               TO IN12 OF W01-I-INDIC
+           MOVE SPACES              TO AYUDA-W01
+                                       ABASE-W01
+                                       TITULO-W01
+                                       BBASE-W01
+                                       KEY500
+                                       CKEY-W01
+                                       DES500
+                                       CDES-W01
+                                       CONAYUDA-W02
+           MOVE ZEROES              TO LKEY-W01
+                                       LDES-W01
+           PERFORM MOVER-VARIABLES-A-W01
+           PERFORM PROCESA-W01 UNTIL IN12 OF W01-I-INDIC = I-ON
+           CLOSE    PANTALLA2.
+
+      *
+       MODIFICA-AYUDA.
+      *-----------------
+           READ SUBFILE PANTALLA NEXT MODIFIED INTO WS01-OO
+                        FORMAT "WS01" END-READ.
+           IF FS-PANTALLA = "00"
+              OPEN I-O PANTALLA2
+              MOVE AYUDA  OF WS01-OO   TO AYUDA-WS
+              PERFORM RESCATAR-VALORES-AYUDA
+              PERFORM MOVER-VARIABLES-A-W01
+              MOVE I-ON                TO IN50 OF W01-O-INDIC
+              MOVE I-OFF               TO IN12 OF W01-I-INDIC
+              PERFORM PROCESA-W01 UNTIL IN12 OF W01-I-INDIC = I-ON
+              CLOSE    PANTALLA2.
+
+      *
+       ELIMINAR-AYUDA.
+      *-----------------
+           READ SUBFILE PANTALLA NEXT MODIFIED INTO WS01-OO
+                        FORMAT "WS01" END-READ.
+           IF FS-PANTALLA = "00"
+              MOVE AYUDA  OF WS01-OO   TO AYUDA-WS
+              EXEC SQL
+                 DELETE FROM ASQRY05F WHERE AYUDA = :AYUDA-WS
+              END-EXEC
+              ADD   1            TO CTA-MSG
+              MOVE SPACES        TO TEXTO-ARR(CTA-MSG)
+              STRING "SE HA ELIMINADO LA AYUDA " DELIMITED SIZE
+                     AYUDA-WS                    DELIMITED SIZE
+                                  INTO TEXTO-ARR(CTA-MSG).
+
+
+      *
+       PROCESA-W01.
+      *------------
+           WRITE R-PANTALLA2 FROM W01-OO FORMAT "W01"
+                             INDICATORS ARE W01-O-INDIC END-WRITE
+           READ  PANTALLA2   INTO W01-OO FORMAT "W01"
+                             INDICATORS ARE W01-I-INDIC END-READ.
+
+           MOVE    SPACES        TO VARIABLE-3250
+           MOVE    ZEROES        TO CTA-MSG
+
+           IF IN09 OF W01-I-INDIC = I-ON
+              IF IN50 OF W01-O-INDIC = I-ON
+                 PERFORM ACTUALIZA-AYUDA
+              ELSE
+                 PERFORM GRABAR-AYUDA
+              END-IF
+           ELSE
+              IF IN05 OF W01-I-INDIC = I-ON
+                 OPEN    I-O   PANTALLA3
+                 INITIALIZE W02-O REPLACING
+                            ALPHANUMERIC DATA BY SPACES
+                                 NUMERIC DATA BY ZEROES
+                 MOVE CORR W01-O    TO W02-O
+                 MOVE CONAYUDA-W02  TO CONDAYUDA OF W02-OO
+                 MOVE I-OFF         TO IN09 OF W02-I-INDIC
+                                       IN12 OF W02-I-INDIC
+                 PERFORM PROCESAR-W02 UNTIL
+                         IN09 OF W02-I-INDIC = I-ON OR
+                         IN12 OF W02-I-INDIC = I-ON
+
+                 IF IN09 OF W02-I-INDIC = I-ON
+                    MOVE CONDAYUDA OF W02-OO TO CONAYUDA-W02
+                 END-IF
+                 CLOSE         PANTALLA3
+              END-IF
+           END-IF
+
+           IF CTA-MSG NOT = ZEROES
+              CALL    "VISERR2"  USING VARIABLE-3250
+              CANCEL  "VISERR2"
+           END-IF.
+      *
+       PROCESAR-W02.
+      *-------------
+           WRITE R-PANTALLA3 FROM W02-OO FORMAT "W02"
+                             INDICATORS ARE W02-O-INDIC END-WRITE
+           READ  PANTALLA3   INTO W02-OO FORMAT "W02"
+                             INDICATORS ARE W02-I-INDIC END-READ.
+
+           MOVE    SPACES        TO VARIABLE-3250
+           MOVE    ZEROES        TO CTA-MSG
+
+           IF IN09 OF W01-I-INDIC = I-ON
+              IF IN50 OF W01-O-INDIC = I-ON
+                 PERFORM ACTUALIZA-AYUDA
+              ELSE
+                 PERFORM GRABAR-AYUDA.
+
+           IF CTA-MSG NOT = ZEROES
+              CALL    "VISERR2"  USING VARIABLE-3250
+              CANCEL  "VISERR2"
+           END-IF.
+      *
+       ACTUALIZA-AYUDA.
+      *----------------
+           PERFORM MOVER-A-VARIABLES-DE-W01
+
+           EXEC SQL
+           UPDATE ASQRY05F SET AYUDA = :AYUDA-W01, ARCHBASE =
+           :ABASE-W01, TITAYUDA = :TITULO-W01, BIBLBASE = :BBASE-W01,
+           NOMKEYCO = :KEY500, COLHDGCO = :CKEY-W01, LARKEYCO =
+           :LKEY-W01, NOMKEYDE = :DES500, COLHDGDE = :CDES-W01,
+           LARKEYDE = :LDES-W01, CONDAYUDA = :CONAYUDA-W02 WHERE AYUDA
+           = :AYUDA-W01
+           END-EXEC
+
+           ADD   1            TO CTA-MSG
+           MOVE SPACES        TO TEXTO-ARR(CTA-MSG)
+           STRING "AYUDA "                    DELIMITED SIZE
+                  AYUDA-W01                   DELIMITED SIZE
+                  " HA SIDO ACTUALIZADA     " DELIMITED SIZE
+                               INTO TEXTO-ARR(CTA-MSG).
+
+      *
+       GRABAR-AYUDA.
+      *-------------
+           MOVE AYUDA OF W01-OO  TO AYUDA-WS
+           MOVE ZEROES   TO CUENTA-WS
+           EXEC SQL
+           SELECT CAST(COUNT(*) AS NUMERIC(5, 0)) INTO :CUENTA-WS FROM
+           ASQRY05F WHERE AYUDA = :AYUDA-WS
+           END-EXEC
+
+           IF CUENTA-WS > 0
+              ADD   1            TO CTA-MSG
+              MOVE SPACES        TO TEXTO-ARR(CTA-MSG)
+              STRING "AYUDA "                     DELIMITED SIZE
+                     AYUDA-W01                    DELIMITED SIZE
+                     " YA SE ENCUENTRA INGRESADA" DELIMITED SIZE
+                                  INTO TEXTO-ARR(CTA-MSG)
+
+           ELSE
+
+           PERFORM MOVER-A-VARIABLES-DE-W01
+
+           EXEC SQL
+           INSERT INTO ASQRY05F VALUES(:AYUDA-W01, :ABASE-W01,
+           :TITULO-W01, :BBASE-W01, :KEY500, :CKEY-W01, :LKEY-W01,
+           :DES500, :CDES-W01, :LDES-W01, :CONAYUDA-W02)
+           END-EXEC.
+      *
+       RESCATAR-VALORES-AYUDA.
+      *-----------------------
+           EXEC SQL
+           SELECT AYUDA, ARCHBASE, TITAYUDA, BIBLBASE, NOMKEYCO,
+           COLHDGCO, LARKEYCO, NOMKEYDE, COLHDGDE, LARKEYDE,CONDAYUDA
+           INTO :AYUDA-W01, :ABASE-W01, :TITULO-W01, :BBASE-W01,
+           :KEY500, :CKEY-W01, :LKEY-W01, :DES500, :CDES-W01,
+           :LDES-W01, :CONAYUDA-W02 FROM ASQRY05F WHERE AYUDA =
+           :AYUDA-WS
+           END-EXEC.
+      *
+       MOVER-VARIABLES-A-W01.
+      *----------------------
+              MOVE AYUDA-W01    TO AYUDA    OF W01-OO
+              MOVE ABASE-W01    TO ARCHBASE OF W01-OO
+              MOVE TITULO-W01   TO TITAYUDA OF W01-OO
+              MOVE BBASE-W01    TO BIBLBASE OF W01-OO
+
+              MOVE KEY500(001:50)  TO NOMKEYCO1 OF W01-OO
+              MOVE KEY500(051:50)  TO NOMKEYCO2 OF W01-OO
+              MOVE KEY500(101:50)  TO NOMKEYCO3 OF W01-OO
+              MOVE KEY500(151:50)  TO NOMKEYCO4 OF W01-OO
+              MOVE KEY500(201:50)  TO NOMKEYCO5 OF W01-OO
+
+              MOVE CKEY-W01     TO COLHDGCO OF W01-OO
+              MOVE LKEY-W01     TO LARKEYCO OF W01-OO
+
+              MOVE DES500(001:50)  TO NOMKEYDE1 OF W01-OO
+              MOVE DES500(051:50)  TO NOMKEYDE2 OF W01-OO
+              MOVE DES500(101:50)  TO NOMKEYDE3 OF W01-OO
+              MOVE DES500(151:50)  TO NOMKEYDE4 OF W01-OO
+              MOVE DES500(201:50)  TO NOMKEYDE5 OF W01-OO
+
+              MOVE CDES-W01     TO COLHDGDE OF W01-OO
+              MOVE LDES-W01     TO LARKEYDE OF W01-OO.
+      *
+       MOVER-A-VARIABLES-DE-W01.
+      *-------------------------
+              MOVE AYUDA    OF W01-OO TO AYUDA-W01
+              MOVE ARCHBASE OF W01-OO TO ABASE-W01
+              MOVE TITAYUDA OF W01-OO TO TITULO-W01
+              MOVE BIBLBASE OF W01-OO TO BBASE-W01
+              MOVE SPACES             TO KEY500 DES500
+              STRING NOMKEYCO1 OF W01-OO DELIMITED SIZE
+                     NOMKEYCO2 OF W01-OO DELIMITED SIZE
+                     NOMKEYCO3 OF W01-OO DELIMITED SIZE
+                     NOMKEYCO4 OF W01-OO DELIMITED SIZE
+                     NOMKEYCO5 OF W01-OO DELIMITED SIZE
+                                    INTO KEY500
+              STRING NOMKEYDE1 OF W01-OO DELIMITED SIZE
+                     NOMKEYDE2 OF W01-OO DELIMITED SIZE
+                     NOMKEYDE3 OF W01-OO DELIMITED SIZE
+                     NOMKEYDE4 OF W01-OO DELIMITED SIZE
+                     NOMKEYDE5 OF W01-OO DELIMITED SIZE
+                                    INTO DES500
+              MOVE COLHDGCO OF W01-OO TO CKEY-W01
+              MOVE LARKEYCO OF W01-OO TO LKEY-W01
+              MOVE COLHDGDE OF W01-OO TO CDES-W01
+              MOVE LARKEYDE OF W01-OO TO LDES-W01.
+      *
+       CARGAR-AYUDAS-WS01.
+      *-------------------
+           PERFORM LIMPIA-WS01
+
+           EXEC SQL
+           DECLARE C1 CURSOR FOR SELECT AYUDA, TITAYUDA, ARCHBASE,
+           BIBLBASE FROM ASQRY05F ORDER BY AYUDA
+           END-EXEC
+
+           EXEC SQL
+                OPEN C1
+           END-EXEC
+           PERFORM LEER-FETCH-C1
+           PERFORM UNTIL SQLCODE NOT = 0
+                   ADD   1                     TO NREL
+                   MOVE SPACES                 TO DETSFL OF WS01-OO
+                   MOVE ZEROES                 TO CTL001 OF WS01-OO
+                   MOVE AYUDA-SQL              TO AYUDA  OF WS01-OO
+                   STRING AYUDA-SQL            DELIMITED SIZE
+                          ' '                  DELIMITED SIZE
+                          TEXTO-SQL            DELIMITED SIZE
+                          '          '         DELIMITED SIZE
+                          ABASE-SQL            DELIMITED SIZE
+                          ' - '                DELIMITED SIZE
+                          BBASE-SQL            DELIMITED SIZE
+
+                                            INTO DETSFL OF WS01-OO
+               WRITE SUBFILE R-PANTALLA FROM WS01-OO FORMAT 'WS01'
+                     END-WRITE
+
+               PERFORM LEER-FETCH-C1
+           END-PERFORM
+           EXEC SQL
+                CLOSE C1
+           END-EXEC.
+           IF NREL > 0
+              MOVE I-ON           TO IN30 OF WC01-O-INDIC
+                                     IN31 OF WC01-O-INDIC
+              MOVE I-OFF          TO IN32 OF WC01-O-INDIC
+           ELSE
+              MOVE I-ON           TO IN31 OF WC01-O-INDIC
+              MOVE I-OFF          TO IN30 OF WC01-O-INDIC
+                                     IN32 OF WC01-O-INDIC.
+
+      *
+       LEER-FETCH-C1.
+      *--------------
+           EXEC SQL
+                FETCH NEXT FROM C1 INTO :DATOS-SQL-C1
+           END-EXEC.
+      *
+       LIMPIA-WS01.
+      *------------
+           MOVE I-ON            TO IN32 OF WC01-O-INDIC
+           MOVE I-OFF           TO IN30 OF WC01-O-INDIC
+                                   IN31 OF WC01-O-INDIC
+           MOVE ZEROES          TO NREL
+           WRITE R-PANTALLA FROM WC01-II FORMAT "WC01"
+                                 INDICATORS ARE WC01-O-INDIC.

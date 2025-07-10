@@ -1,0 +1,5 @@
+     A                                      UNIQUE
+     A          R PEPITOJD
+     A            KEYUNO         1S 0
+     A            DESUNO        40A
+     A          K KEYUNO

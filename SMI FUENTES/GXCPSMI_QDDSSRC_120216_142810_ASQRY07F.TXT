@@ -1,0 +1,8 @@
+     A                                      UNIQUE
+     A          R RASQRY07F
+     A*
+     A            CODEVE        10A         COLHDG('CODIGO DE EVENTO')
+     A            COREVE         5S 0       COLHDG('CORREL. EVENTO')
+     A            NROPRO         5S 0       COLHDG('NUMERO DE PROCESO')
+     A          K CODEVE
+     A          K COREVE

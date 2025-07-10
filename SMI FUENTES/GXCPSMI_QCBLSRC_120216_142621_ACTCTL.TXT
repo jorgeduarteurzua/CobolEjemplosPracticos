@@ -1,0 +1,55 @@
+       IDENTIFICATION DIVISION.
+      *------------------------*
+       PROGRAM-ID. ACTCTL.
+       AUTHOR.     JORGE DUARTE U.
+      *
+       ENVIRONMENT DIVISION.
+      *---------------------*
+       CONFIGURATION SECTION.
+       SOURCE-COMPUTER.      IBM-AS400.
+       OBJECT-COMPUTER.      IBM-AS400.
+       INPUT-OUTPUT SECTION.
+      *--------------------*
+       FILE-CONTROL.
+      *------------*
+
+       DATA DIVISION.
+      *-------------*
+       FILE SECTION.
+      *-------------*
+
+       WORKING-STORAGE SECTION.
+      *------------------------
+       77 WS-ARCHIVO         PIC X(20).
+
+           EXEC SQL
+               INCLUDE SQLCA
+           END-EXEC.
+
+       LINKAGE SECTION.
+       01 CONSULTA-LNK        PIC X(10).
+       01 FECPRO-LNK          PIC S9(8).
+       01 HORPRO-LNK          PIC S9(6).
+       01 SECEJE-LNK          PIC S9(5).
+       01 ARCHIVO-LNK         PIC X(50).
+       01 STATUS-LNK          PIC X(1).
+
+       PROCEDURE DIVISION USING CONSULTA-LNK
+                                FECPRO-LNK
+                                HORPRO-LNK
+                                SECEJE-LNK
+                               ARCHIVO-LNK
+                                STATUS-LNK.
+      *--------------------------------------
+           INSPECT CONSULTA-LNK  CONVERTING ";" TO " "
+           INSPECT ARCHIVO-LNK   CONVERTING ";" TO " "
+           MOVE ARCHIVO-LNK(1:20)  TO WS-ARCHIVO
+
+           EXEC SQL
+           UPDATE GXDBSMI/ASQRY4F SET STAA4F = :STATUS-LNK WHERE NOMC4F
+           = :CONSULTA-LNK AND FECP4F = :FECPRO-LNK AND HORP4F =
+           :HORPRO-LNK AND SECE4F = :SECEJE-LNK AND ARCH4F =
+           :WS-ARCHIVO
+           END-EXEC
+
+           GOBACK.

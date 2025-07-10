@@ -1,0 +1,9 @@
+     A                                      UNIQUE
+     A          R RASQRY36F
+     A*
+     A            NOMCON        10A         TEXT('CONCEPTO      ')
+     A            NOMFIL        10A         TEXT('ARCHIVO       ')
+     A            NOMFLD        10A         TEXT('CAMPO         ')
+     A          K NOMCON
+     A          K NOMFIL
+     A          K NOMFLD

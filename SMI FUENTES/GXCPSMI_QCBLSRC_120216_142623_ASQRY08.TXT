@@ -1,0 +1,321 @@
+       IDENTIFICATION DIVISION.
+      *------------------------*
+       PROGRAM-ID. ASQRY08.
+       AUTHOR.     JORGE DUARTE U.
+      *
+       ENVIRONMENT DIVISION.
+      *---------------------*
+       CONFIGURATION SECTION.
+       SOURCE-COMPUTER.      IBM-AS400.
+       OBJECT-COMPUTER.      IBM-AS400.
+       INPUT-OUTPUT SECTION.
+      *--------------------*
+       FILE-CONTROL.
+      *------------*
+
+       DATA DIVISION.
+      *-------------*
+       FILE SECTION.
+      *-------------*
+
+       WORKING-STORAGE SECTION.
+      *------------------------
+       77 WS-CANCELA-PRO      PIC X(01).
+       77 WS-ARCGEN           PIC X(10).
+       77 WS-SECEJE           PIC S9(5).
+       77 MBR-OTROS-WS        PIC X(4000).
+       77 P-MBR               PIC 9(4).
+
+           EXEC SQL
+               INCLUDE SQLCA
+           END-EXEC.
+
+       01 DATOS-SQL.
+          05 CODEVE-SQL       PIC X(10).
+          05 COREVE-SQL       PIC S9(5).
+          05 DESEVE-SQL       PIC X(50).
+          05 NROPRO-SQL       PIC S9(5).
+          05 NOMPRO-SQL       PIC X(30).
+          05 CORPRO-SQL       PIC S9(5).
+          05 DCOPRO-SQL       PIC X(50).
+          05 UARRUT-SQL       PIC X(01).
+          05 SELECC-SQL       PIC X(10000).
+          05 ARCBAS-SQL       PIC X(10).
+          05 BIBBAS-SQL       PIC X(10).
+          05 ARCGEN-SQL       PIC X(05).
+          05 CORGEN-SQL       PIC S9(4).
+          05 PROREF-SQL       PIC S9(5).
+          05 CPRREF-SQL       PIC S9(5).
+          05 SELCON-SQL       PIC X(10000).
+          05 LARSEL-SQL       PIC S9(5).
+          05 REEARC-SQL       PIC X(1) .
+          05 RETJOB-SQL       PIC X(1) .
+          05 ADDREG-SQL       PIC X(1) .
+          05 REGUNI-SQL       PIC X(1) .
+
+       01 MBROTRO-SQL.
+          05 ARCHIVO-MBR      PIC X(10).
+          05 MIEMBRO-MBR      PIC X(1).
+          05 OTROARC-MBR      PIC X(1).
+
+       01 VARIABLES-DE-TRABAJO.
+          05 AAAAMMDD         PIC X(8).
+          05 AAAAMMDD-9 REDEFINES AAAAMMDD PIC S9(8).
+          05 DDMMAAAA         PIC X(8).
+
+          05 HORA-SISTEMA.
+             10 HORA-SYS      PIC S9(6).
+             10 FILLER        PIC S9(2).
+
+       01 PARA-29C.
+          05 CODEVE-29C       PIC X(10).
+          05 FECPRO-29C       PIC S9(8).
+          05 HORPRO-29C       PIC S9(6).
+          05 SECEJE-29C       PIC S9(5).
+
+       01 PARAMETROS-ASQRY05P.
+          05 CODEVE-19A       PIC X(10).
+          05 NROPRO-19A       PIC S9(5).
+          05 CORPRO-19A       PIC S9(5).
+          05 DESEVE-19A       PIC X(50).
+          05 NOMPRO-19A       PIC X(30).
+          05 DCOPRO-19A       PIC X(50).
+          05 ARCHIV-19A       PIC X(10).
+          05 ARCREF-19A       PIC X(10).
+          05 BIBREF-19A       PIC X(10).
+          05 MIEMBR-19A       PIC X(10).
+
+       01 PARAMETROS-20A.
+          05 CODEVE-20A       PIC X(10).
+          05 FECPRO-20A       PIC S9(8).
+          05 FECPRO-20A-R REDEFINES FECPRO-20A PIC X(8).
+          05 HORPRO-20A       PIC S9(6).
+          05 HORPRO-20A-R REDEFINES HORPRO-20A PIC X(6).
+          05 ARCRUT-20A       PIC X(10).
+          05 BIBRUT-20A       PIC X(10).
+          05 ARCBAS-20A       PIC X(10).
+          05 BIBBAS-20A       PIC X(10).
+          05 ARCGEN-20A       PIC X(10).
+          05 SECEJE-20A       PIC X(05).
+          05 SECTOP-20A       PIC X(05).
+          05 REFABAS-20A      PIC X(10).
+          05 REFAGEN-20A      PIC X(10).
+          05 REFBGEN-20A      PIC X(10).
+          05 REEARC-20A       PIC X(01).
+          05 RETJOB-20A       PIC X(01).
+          05 ADDREG-20A       PIC X(01).
+          05 REGUNI-20A       PIC X(01).
+          05 MIEMBR-20A       PIC X(4000).
+
+       LINKAGE SECTION.
+       01 EVENTO-LNK          PIC X(10).
+       01 USUARIO-LNK         PIC X(10).
+
+       PROCEDURE DIVISION USING EVENTO-LNK
+                                USUARIO-LNK.
+      *-------------------------------------
+           CALL    "MRTVDAF2" USING AAAAMMDD DDMMAAAA
+           CANCEL  "MRTVDAF2"
+           ACCEPT HORA-SISTEMA FROM TIME
+
+           EXEC SQL
+           DECLARE C1 CURSOR FOR SELECT A.CODEVE, B.COREVE ,A.DESEVE,
+           C.NROPRO, C.NOMPRO, D.CORPRO, D.DCOPRO, D.UARRUT, D.SELECC ,
+           D.ARCBAS, D.BIBGEN, D.ARCGEN, D.CORGEN, D.PROREF, D.CPRREF,
+           D.SELCON, D.LARSEL, D.REEARC, D.RETJOB, D.ADDREG, D.REGUNI
+           FROM ASQRY03F A, ASQRY07F B, ASQRY10F C, ASQRY09F D WHERE
+           A.CODEVE = :EVENTO-LNK AND A.CODEVE = B.CODEVE AND B.NROPRO
+           = C.NROPRO AND C.NROPRO = D.NROPRO ORDER BY A.CODEVE,
+           B.COREVE
+           END-EXEC
+
+           MOVE ZEROES   TO WS-SECEJE
+           MOVE "N"      TO WS-CANCELA-PRO
+           PERFORM ABRIR-CURSOR-C1
+           PERFORM LEER-CURSOR-C1
+           PERFORM UNTIL SQLCODE NOT = 0 OR WS-CANCELA-PRO = "S"
+               MOVE CODEVE-SQL    TO CODEVE-19A
+               MOVE DESEVE-SQL    TO DESEVE-19A
+               MOVE NROPRO-SQL    TO NROPRO-19A
+               MOVE NOMPRO-SQL    TO NOMPRO-19A
+               MOVE CORPRO-SQL    TO CORPRO-19A
+               MOVE DCOPRO-SQL    TO DCOPRO-19A
+               PERFORM REVISA-MIEMBRO-OTRO
+
+               PERFORM INSERTAR-EN-CONTROL
+               PERFORM LLAMA-PARAMETROS
+               PERFORM LEER-CURSOR-C1
+           END-PERFORM
+           PERFORM CERRAR-CURSOR-C1
+           IF WS-CANCELA-PRO = "N"
+              PERFORM SOMETER-PRIMER-PROCESO
+           ELSE
+           EXEC SQL
+
+           DELETE FROM  ASQRY04F WHERE CODEVE = :CODEVE-SQL AND
+           FECPRO1 = :AAAAMMDD-9 AND HORPRO1 = :HORA-SYS
+
+           END-EXEC
+           END-IF
+           GOBACK.
+
+      *
+       REVISA-MIEMBRO-OTRO.
+      *--------------------
+           EXEC SQL
+           DECLARE MBROTRO CURSOR FOR SELECT A.NOMARC, B.MIEMBRO,
+           B.OTRARC FROM  ASQRY12F A,  ASQRY02F B WHERE
+           A.NROPRO = :NROPRO-SQL AND A.CORPRO = :CORPRO-SQL AND
+           A.NOMARC = B.WHFILE AND (B.MIEMBRO = "S" OR B.OTRARC = "S" )
+           END-EXEC
+           EXEC SQL OPEN MBROTRO END-EXEC
+
+           MOVE SPACES   TO MBR-OTROS-WS
+           MOVE 1        TO P-MBR
+           PERFORM LEER-FETCH-MBROTRO
+           PERFORM UNTIL SQLCODE NOT = 0
+                  MOVE ARCHIVO-MBR       TO ARCHIV-19A
+                  MOVE SPACES            TO ARCREF-19A
+                                            BIBREF-19A
+                                            MIEMBR-19A
+                  CALL  "ASQRY05P" USING CODEVE-19A
+                                         NROPRO-19A
+                                         CORPRO-19A
+                                         DESEVE-19A
+                                         NOMPRO-19A
+                                         DCOPRO-19A
+                                         ARCHIV-19A
+                                         ARCREF-19A
+                                         BIBREF-19A
+                                         MIEMBR-19A
+                                         WS-CANCELA-PRO
+                                         MIEMBRO-MBR
+                                         OTROARC-MBR
+
+                   MOVE ARCHIV-19A       TO MBR-OTROS-WS(P-MBR:10)
+                   ADD  10 TO P-MBR
+                   MOVE ARCREF-19A       TO MBR-OTROS-WS(P-MBR:10)
+                   ADD  10 TO P-MBR
+                   MOVE BIBREF-19A       TO MBR-OTROS-WS(P-MBR:10)
+                   ADD  10 TO P-MBR
+                   MOVE MIEMBR-19A       TO MBR-OTROS-WS(P-MBR:10)
+                   ADD  10 TO P-MBR
+
+                   PERFORM LEER-FETCH-MBROTRO
+           END-PERFORM
+           EXEC SQL CLOSE MBROTRO END-EXEC.
+      *
+       LEER-FETCH-MBROTRO.
+      *-------------------
+           EXEC SQL
+               FETCH NEXT FROM MBROTRO INTO :MBROTRO-SQL
+           END-EXEC.
+      *
+       INSERTAR-EN-CONTROL.
+      *--------------------
+           ADD  1              TO WS-SECEJE
+           MOVE SPACES         TO WS-ARCGEN
+           STRING ARCGEN-SQL   DELIMITED BY " "
+                  CORGEN-SQL   DELIMITED BY SIZE
+                          INTO WS-ARCGEN
+
+           EXEC SQL
+           INSERT INTO  ASQRY04F (CODEVE, COREVE, NROPRO,
+           CORPRO, USRPRO, FECPRO1, HORPRO1, FECPRO2, HORPRO2, ARCRUT,
+           BIBRUT, SELEJE, CANREG, SELCON, ARCBAS, MIEMBR, BIBBAS,
+           ARCGEN, BIBGEN, ESTPRO, SECEJE, LARSEL, REEARC, RETJOB,
+           ADDREG, REGUNI) VALUES(:CODEVE-SQL, :COREVE-SQL,
+           :NROPRO-SQL, :CORPRO-SQL, :USUARIO-LNK, :AAAAMMDD-9,
+           :HORA-SYS, 0, 0, " ", " ", :SELECC-SQL, 0,
+           :SELCON-SQL, :ARCBAS-SQL, :MBR-OTROS-WS, :BIBBAS-SQL,
+           :WS-ARCGEN, :BIBBAS-SQL, " ", :WS-SECEJE, :LARSEL-SQL,
+           :REEARC-SQL, :RETJOB-SQL, :ADDREG-SQL, :REGUNI-SQL)
+           END-EXEC.
+      *
+      * ACTUALIZA CORRELATIVO DE ARCHIVO A GENERAR
+      *
+           IF REEARC-SQL = "N" AND ADDREG-SQL = "N"
+              EXEC SQL
+              UPDATE  ASQRY09F SET CORGEN = (CORGEN + 1) WHERE
+              NROPRO = :NROPRO-SQL AND CORPRO = :CORPRO-SQL
+              END-EXEC.
+      *
+       LLAMA-PARAMETROS.
+      *-----------------
+           MOVE CODEVE-SQL      TO CODEVE-29C
+           MOVE AAAAMMDD-9      TO FECPRO-29C
+           MOVE HORA-SYS        TO HORPRO-29C
+           MOVE WS-SECEJE       TO SECEJE-29C
+           CALL    "ASQRY18" USING PARA-29C
+           CANCEL  "ASQRY18".
+
+      *
+       SOMETER-PRIMER-PROCESO.
+      *-----------------------
+           IF WS-SECEJE > 0
+              PERFORM RESCATA-VOLORES-A-SOMETER
+           END-IF.
+      *
+       RESCATA-VOLORES-A-SOMETER.
+      *--------------------------
+      *
+      * EL PRIMER PROCESO QUE SE SOMETE NO PUEDE HACER REFERENCIA
+      * A NINGUN PROCESO
+      *
+           MOVE SPACES TO MIEMBR-20A
+
+           EXEC SQL
+           SELECT CODEVE, FECPRO1, HORPRO1, ARCRUT, BIBRUT, ARCBAS,
+           BIBBAS, ARCGEN, REEARC, RETJOB, ADDREG, REGUNI, MIEMBR INTO
+           :CODEVE-20A, :FECPRO-20A, :HORPRO-20A, :ARCRUT-20A,
+           :BIBRUT-20A, :ARCBAS-20A, :BIBBAS-20A, :ARCGEN-20A,
+           :REEARC-20A, :RETJOB-20A, :ADDREG-20A, :REGUNI-20A,
+           :MIEMBR-20A FROM  ASQRY04F WHERE CODEVE = :EVENTO-LNK
+           AND FECPRO1 = :AAAAMMDD-9 AND HORPRO1 = :HORA-SYS AND SECEJE
+           = 1
+           END-EXEC.
+           MOVE WS-SECEJE           TO SECTOP-20A
+           MOVE "00001"             TO SECEJE-20A
+           MOVE SPACES              TO REFABAS-20A
+                                       REFAGEN-20A
+                                       REFBGEN-20A
+           CALL "ASQRY07P" USING CODEVE-20A
+                                 FECPRO-20A-R
+                                 HORPRO-20A-R
+                                 SECEJE-20A
+                                 ARCRUT-20A
+                                 BIBRUT-20A
+                                 ARCBAS-20A
+                                 BIBBAS-20A
+                                 ARCGEN-20A
+                                 USUARIO-LNK
+                                 SECTOP-20A
+                                 REFABAS-20A
+                                 REFAGEN-20A
+                                 REFBGEN-20A
+                                 REEARC-20A
+                                 RETJOB-20A
+                                 ADDREG-20A
+                                 REGUNI-20A
+           CANCEL "ASQRY07P".
+
+      *
+       ABRIR-CURSOR-C1.
+      *----------------
+           EXEC SQL
+               OPEN C1
+           END-EXEC.
+
+      *
+       LEER-CURSOR-C1.
+      *----------------
+           EXEC SQL
+                FETCH NEXT FROM C1 INTO :DATOS-SQL
+           END-EXEC.
+
+      *
+       CERRAR-CURSOR-C1.
+      *-----------------
+           EXEC SQL
+               CLOSE C1
+           END-EXEC.

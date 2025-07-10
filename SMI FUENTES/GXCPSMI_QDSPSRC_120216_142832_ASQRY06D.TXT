@@ -1,0 +1,41 @@
+     A*%%TS  SD  20090825  210016  SMAABD      REL-V5R3M0  5722-WDS
+     A*%%EC
+     A                                      DSPSIZ(24 80 *DS3)
+     A                                      INDARA
+     A                                      CF03(03 'Salir')
+     A                                      CF09(09 'Procesar')
+     A          R WS01                      SFL
+     A*%%TS  SD  20090617  105017  NBKDY9U     REL-V5R3M0  5722-WDS
+     A            CODIGO       125A  H
+     A            CODIGO1      125A  H
+     A            CTL001         1Y 0H      SFLCHCCTL
+     A            DETSFL        66A  O  5  1
+     A          R WC01                      SFLCTL(WS01)
+     A*%%TS  SD  20090825  210016  SMAABD      REL-V5R3M0  5722-WDS
+     A                                      SFLSIZ(0600)
+     A                                      SFLPAG(0006)
+     A                                      WINDOW(8 4 12 72)
+     A  30                                  SFLDSP
+     A  31                                  SFLDSPCTL
+     A  32                                  SFLCLR
+     A  30                                  SFLEND(*SCRBAR *SCRBAR)
+     A                                      USRRSTDSP
+     A                                      WDWTITLE((*TEXT &TITULO))
+     A                                      SFLMLTCHC
+     A                                      SFLRTNSEL
+     A            TITULO        25A  P
+     A            BOTON          2Y 0B  1 43PSHBTNFLD
+     A                                      PSHBTNCHC(1 'ACEPTAR-F9' CF09)
+     A                                      PSHBTNCHC(2 'VOLVER-F3 ' CF03)
+     A                                      PSHBTNCHC(3 '<')
+     A                                      PSHBTNCHC(4 '>>')
+     A            TITCAM        68A  B  3  1DSPATR(HI)
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A            BUSQUEDA      66A  B  4  1
+     A          R XX
+     A*%%TS  SD  20010320  143711  DUARTEJ     REL-V4R4M0  5769-PW1
+     A                                      KEEP
+     A                                      ASSUME
+     A                                      OVERLAY
+     A                                  1  3' '

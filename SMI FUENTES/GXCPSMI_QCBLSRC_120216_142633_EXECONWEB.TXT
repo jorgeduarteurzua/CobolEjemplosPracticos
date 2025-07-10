@@ -1,0 +1,122 @@
+       IDENTIFICATION DIVISION.
+      *------------------------
+       PROGRAM-ID.  EXECONWEB.
+       AUTHOR. JORGE DUARTE.
+       ENVIRONMENT DIVISION.
+       CONFIGURATION SECTION.
+       SOURCE-COMPUTER.  IBM-AS400.
+       OBJECT-COMPUTER.  IBM-AS400.
+       SPECIAL-NAMES. LOCAL-DATA IS LOCAL.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+      *-------------
+       DATA DIVISION.
+       FILE SECTION.
+      *-------------
+      *
+       WORKING-STORAGE SECTION.
+      *------------------------
+
+           EXEC SQL
+              INCLUDE SQLCA
+           END-EXEC.
+
+       01 WS-VARIABLES-DE-TRABAJO.
+          05 AAAAMMDD         PIC X(8).
+          05 AAAAMMDD-9 REDEFINES AAAAMMDD PIC S9(8).
+          05 DDMMAAAA         PIC X(8).
+
+          05 HORA-SISTEMA.
+             10 HORA-SYS      PIC S9(6).
+             10 FILLER        PIC S9(2).
+
+          05 WS-FECPRO          PIC S9(8).
+          05 WS-HORPRO          PIC S9(6).
+          05 WS-SECEJE          PIC S9(5).
+
+       01 PARAMETROS-20A.
+          05 NOMCONS-20A      PIC X(10).
+          05 FECPRO-20A       PIC S9(8).
+          05 FECPRO-20A-R REDEFINES FECPRO-20A PIC X(8).
+          05 HORPRO-20A       PIC S9(6).
+          05 HORPRO-20A-R REDEFINES HORPRO-20A PIC X(6).
+          05 ARCBAS-20A       PIC X(10).
+          05 BIBBAS-20A       PIC X(10).
+          05 ARCGEN-20A       PIC X(10).
+          05 SECEJE-20A       PIC X(05).
+          05 SECTOP-20A       PIC X(05).
+          05 REFABAS-20A      PIC X(10).
+          05 REFAGEN-20A      PIC X(10).
+          05 REFBGEN-20A      PIC X(10).
+          05 REEARC-20A       PIC X(01).
+          05 RETJOB-20A       PIC X(01).
+          05 ADDREG-20A       PIC X(01).
+          05 REGUNI-20A       PIC X(01).
+          05 MIEMBR-20A       PIC X(4000).
+
+       LINKAGE SECTION.
+      *----------------
+      *  PARAMETROS DE INPUT
+      *
+        01 NOMCONS-LNK           PIC X(10).
+        01 USUARIO-LNK           PIC X(10).
+      *
+      *  PARAMETROS DE OUTPUT
+      *
+        01 FECPRO-LNK            PIC 9(8).
+        01 HORPRO-LNK            PIC 9(6).
+        01 SECEJE-LNK            PIC 9(5).
+        01 CODRET-LNK            PIC X(1).
+
+       PROCEDURE DIVISION USING NOMCONS-LNK,
+                                USUARIO-LNK,
+                                FECPRO-LNK,
+                                HORPRO-LNK,
+                                SECEJE-LNK,
+                                CODRET-LNK.
+      *----------------------------------
+      *
+      * EL PRIMER PROCESO QUE SE SOMETE NO PUEDE HACER REFERENCIA
+      * A NINGUN PROCESO
+      *
+           INSPECT USUARIO-LNK CONVERTING "." TO " "
+           INSPECT NOMCONS-LNK CONVERTING "." TO " "
+
+           MOVE SPACES TO MIEMBR-20A
+           MOVE FECPRO-LNK      TO WS-FECPRO
+           MOVE HORPRO-LNK      TO WS-HORPRO
+           MOVE SECEJE-LNK      TO WS-SECEJE
+
+           EXEC SQL
+           SELECT NOMCONS, FECPRO1, HORPRO1, ARCBAS,
+           BIBBAS, ARCGEN, REEARC, RETJOB, ADDREG, REGUNI, MIEMBR INTO
+           :NOMCONS-20A, :FECPRO-20A, :HORPRO-20A,
+           :ARCBAS-20A, :BIBBAS-20A, :ARCGEN-20A,
+           :REEARC-20A, :RETJOB-20A, :ADDREG-20A, :REGUNI-20A,
+           :MIEMBR-20A FROM  ASQRY27F WHERE NOMCONS = :NOMCONS-LNK
+           AND FECPRO1 = :WS-FECPRO  AND HORPRO1 = :WS-HORPRO AND SECEJE
+           = :WS-SECEJE
+           END-EXEC.
+           MOVE WS-SECEJE           TO SECTOP-20A
+           MOVE "00001"             TO SECEJE-20A
+           MOVE SPACES              TO REFABAS-20A
+                                       REFAGEN-20A
+                                       REFBGEN-20A
+           CALL "ASQRY16P" USING NOMCONS-20A
+                                 FECPRO-20A-R
+                                 HORPRO-20A-R
+                                 SECEJE-20A
+                                 ARCBAS-20A
+                                 BIBBAS-20A
+                                 ARCGEN-20A
+                                 USUARIO-LNK
+                                 SECTOP-20A
+                                 REFABAS-20A
+                                 REFAGEN-20A
+                                 REFBGEN-20A
+                                 REEARC-20A
+                                 RETJOB-20A
+                                 ADDREG-20A
+                                 REGUNI-20A
+           CANCEL "ASQRY16P".
+           GOBACK.

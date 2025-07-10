@@ -1,0 +1,7 @@
+     A                                      UNIQUE
+     A          R RASQRY27F                 PFILE(ASQRY27F)
+     A          K USRPRO
+     A          K FECPRO1
+     A          K HORPRO1
+     A          K NOMCONS
+     A          K SECEJE

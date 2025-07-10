@@ -1,0 +1,13 @@
+     A                                      UNIQUE
+     A          R RASQRY23F
+     A*
+     A            NOMCONS       10A         COLHDG('CONSULTA      ')
+     A            DESCONS       50A         COLHDG('DESCRIPCION CONSULTA')
+     A            USRCRE        10A         COLHDG('USUARIO CREACION')
+     A            FECCRE         8S 0       COLHDG('FECHA   CREACION')
+     A            HORCRE         8S 0       COLHDG('HORA    CREACION')
+     A            USRMOD        10A         COLHDG('USUARIO MODIFIC.')
+     A            FECMOD         8S 0       COLHDG('FECHA   MODIFIC.')
+     A            HORMOD         8S 0       COLHDG('HORA    MODIFIC.')
+     A          K NOMCONS
+     A*

@@ -1,0 +1,376 @@
+       IDENTIFICATION DIVISION.
+      *------------------------*
+       PROGRAM-ID. ASQRY05.
+       AUTHOR.     JORGE DUARTE U.
+      *
+       ENVIRONMENT DIVISION.
+      *---------------------*
+       CONFIGURATION SECTION.
+       SOURCE-COMPUTER.      IBM-AS400.
+       OBJECT-COMPUTER.      IBM-AS400.
+       INPUT-OUTPUT SECTION.
+      *--------------------*
+       FILE-CONTROL.
+      *------------*
+
+           SELECT PANTALLA     ASSIGN TO WORKSTATION-ASQRY04D-SI
+                  ORGANIZATION        IS TRANSACTION
+                  ACCESS MODE         IS DYNAMIC
+                  RELATIVE KEY        IS NREL
+                  FILE STATUS         IS FS-PAN.
+
+           SELECT ASQRY05F       ASSIGN TO DATABASE-ASQRY05F
+                  ORGANIZATION        IS INDEXED
+                  ACCESS MODE         IS DYNAMIC
+                  RECORD   KEY        IS EXTERNALLY-DESCRIBED-KEY
+                  FILE STATUS         IS FS-ASQRY05F.
+
+
+       DATA DIVISION.
+      *-------------*
+       FILE SECTION.
+      *-------------*
+
+       FD PANTALLA  LABEL RECORD IS OMITTED.
+       01 R-PANTALLA      PIC X(1920).
+
+       FD ASQRY05F      LABEL RECORD STANDARD.
+       01 R-ASQRY05F.
+           COPY  DDS-ALL-FORMAT OF ASQRY05F.
+
+
+       WORKING-STORAGE SECTION.
+      *------------------------
+       77 I-ON              PIC 1 VALUE B"1".
+       77 I-OFF             PIC 1 VALUE B"0".
+
+       77 NREL              PIC 9(5).
+       77 P-ARR             PIC 9(5).
+       77 BLAN              PIC 9(5).
+       77 P-ID              PIC 9(3).
+       77 P-IDS             PIC 9(3).
+
+       77 FS-PAN            PIC X(2).
+       77 FS-ASQRY05F         PIC X(2).
+       77 WS-TITULO         PIC X(25).
+       77 WS-ARCHIVO        PIC X(10).
+       77 WS-BIBLIOT        PIC X(10).
+       77 SEN-BUSQUEDA      PIC X(1500).
+       77 WS-BUSQUEDA       PIC X(70).
+       77 WS-CODIGO         PIC X(500).
+       77 WS-DESCRIPCION    PIC X(500).
+       77 WS-LARGOKEY       PIC 9(3).
+       77 WS-LARGODES       PIC 9(3).
+       77 TIT-CTL           PIC X(500).
+       77 WS-WHERE          PIC X(500).
+       77 SENTENCIA-SQL     PIC X(5000).
+       77 P-INI             PIC 9(3).
+       77 DETSFL1           PIC X(500).
+       77 CODIGO-SQL-WS     PIC X(500).
+
+       01 DETALLE-SQL.
+          05 CODIGO-SQL      PIC X(500).
+
+       01 ARREGLO-SUBFILE.
+          05 DETALLE-SFL OCCURS  5000 TIMES.
+             10 DET-SFL     PIC X(500).
+       01 ARREGLO-SUBFILE1.
+          05 DETALLE-SFL1 OCCURS 5000 TIMES.
+             10 DET1-SFL    PIC X(500).
+
+       01 WS01-OO.
+          COPY DDS-WS01-O        OF ASQRY04D.
+
+       01 WC01-OO.
+          COPY DDS-WC01-O        OF ASQRY04D.
+
+       01 WC01-II.
+          COPY DDS-WC01-I        OF ASQRY04D.
+
+       01 WC01-IND.
+          COPY DDS-WC01-INDIC    OF ASQRY04D.
+
+           EXEC SQL
+              INCLUDE SQLCA
+           END-EXEC.
+
+       LINKAGE SECTION.
+       01 PARA-ENTRADA.
+          05 AYUDA-LNK           PIC X(10).
+       01 CONDICION-FILTRO       PIC X(500).
+       01 PARA-SALIDA.
+          05 CODIGO-LNK          PIC X(500).
+          05 LARGOKEY-LNK        PIC 9(03).
+          05 LARGODES-LNK        PIC 9(03).
+
+       PROCEDURE DIVISION USING PARA-ENTRADA
+                                CONDICION-FILTRO
+                                PARA-SALIDA.
+      *--------------------------------------------------
+           PERFORM ABRIR-ARCHIVOS
+
+           INITIALIZE WC01-I REPLACING
+                   ALPHANUMERIC DATA BY SPACES
+                   NUMERIC      DATA BY ZEROES
+
+           INITIALIZE WC01-O REPLACING
+                   ALPHANUMERIC DATA BY SPACES
+                   NUMERIC      DATA BY ZEROES
+
+           MOVE SPACES    TO WS-BUSQUEDA
+           PERFORM CARGAR-AYUDA
+
+           MOVE I-OFF    TO IN03 OF WC01-I-INDIC
+                            IN09 OF WC01-I-INDIC
+           PERFORM PROCESO UNTIL IN03 OF WC01-I-INDIC = I-ON
+                              OR IN09 OF WC01-I-INDIC = I-ON
+           PERFORM TERMINO.
+      *
+       ABRIR-ARCHIVOS.
+      *---------------
+           OPEN I-O   PANTALLA
+                INPUT ASQRY05F.
+      *
+       CARGAR-AYUDA.
+      *-------------
+           PERFORM LIMPIA-SFL-01
+           MOVE AYUDA-LNK    TO AYUDA OF ASQRY05F
+           READ ASQRY05F END-READ
+           IF FS-ASQRY05F = "00"
+              MOVE TITAYUDA OF ASQRY05F TO WS-TITULO
+              MOVE ARCHBASE OF ASQRY05F TO WS-ARCHIVO
+              MOVE LARKEYCO OF ASQRY05F TO WS-LARGOKEY
+                                         LARGOKEY-LNK
+              MOVE BIBLBASE OF ASQRY05F TO WS-BIBLIOT
+              MOVE NOMKEYCO OF ASQRY05F TO WS-CODIGO
+              MOVE NOMKEYDE OF ASQRY05F TO WS-DESCRIPCION
+              MOVE LARKEYDE OF ASQRY05F TO WS-LARGODES
+                                         LARGODES-LNK
+              MOVE SPACES             TO TIT-CTL
+              IF WS-LARGOKEY < 21
+                 STRING COLHDGCO      DELIMITED SIZE
+                        " "           DELIMITED SIZE
+                        COLHDGDE      DELIMITED SIZE
+                               INTO   TIT-CTL
+              ELSE
+                 MOVE COLHDGCO        TO TIT-CTL(1:20)
+                 MOVE WS-LARGOKEY     TO BLAN
+                 ADD  1               TO BLAN
+                 MOVE COLHDGDE        TO TIT-CTL(BLAN:20)
+              END-IF
+              PERFORM ARMAR-SQL.
+
+           MOVE 1  TO P-INI
+           PERFORM LLENAR-SFL.
+      *
+       ARMAR-SQL.
+      *----------
+      * SELECT CAST(NOMMAS AS CHAR(05)), CAST(NOMMAS AS CHAR(40)) FROM
+      * BGINBUGT/HTMF00
+      *
+      *
+           MOVE SPACES              TO WS-WHERE
+           IF CONDICION-FILTRO NOT = SPACES
+              STRING ' WHERE '            DELIMITED SIZE
+                      CONDICION-FILTRO    DELIMITED SIZE
+                                     INTO WS-WHERE
+           ELSE
+               IF CONDAYUDA OF ASQRY05F NOT = SPACES
+                  STRING ' WHERE '             DELIMITED SIZE
+                         CONDAYUDA OF ASQRY05F DELIMITED SIZE
+                                          INTO WS-WHERE
+               END-IF
+           END-IF
+
+           MOVE SPACES                 TO SEN-BUSQUEDA
+           IF WS-BUSQUEDA NOT = SPACES
+              IF WS-WHERE NOT = SPACES
+                 MOVE SPACES              TO SEN-BUSQUEDA
+                 STRING ' AND (('            DELIMITED SIZE
+                        WS-CODIGO            DELIMITED SIZE
+                        ') LIKE "%'          DELIMITED SIZE
+                        WS-BUSQUEDA          DELIMITED BY ' '
+                        '%" OR ('            DELIMITED SIZE
+                        WS-DESCRIPCION       DELIMITED SIZE
+                        ') LIKE "%'          DELIMITED SIZE
+                        WS-BUSQUEDA          DELIMITED BY ' '
+                        '%") '              DELIMITED SIZE
+                                        INTO SEN-BUSQUEDA
+              ELSE
+                 MOVE SPACES              TO SEN-BUSQUEDA
+                 STRING ' WHERE (('          DELIMITED SIZE
+                        WS-CODIGO            DELIMITED SIZE
+                        ') LIKE "%'          DELIMITED SIZE
+                        WS-BUSQUEDA          DELIMITED BY ' '
+                        '%" OR ('            DELIMITED SIZE
+                        WS-DESCRIPCION       DELIMITED SIZE
+                        ') LIKE "%'          DELIMITED SIZE
+                        WS-BUSQUEDA          DELIMITED BY ' '
+                        '%") '              DELIMITED SIZE
+                                        INTO SEN-BUSQUEDA
+              END-IF
+           END-IF
+
+           MOVE SPACES                 TO SENTENCIA-SQL
+           IF WS-DESCRIPCION NOT = SPACES
+           STRING 'SELECT CAST(('         DELIMITED SIZE
+                  WS-CODIGO               DELIMITED SIZE
+                  ' || '                  DELIMITED SIZE
+                  WS-DESCRIPCION          DELIMITED SIZE
+                  ') AS CHAR(500))'       DELIMITED SIZE
+                  ' AS DETALLE '          DELIMITED SIZE
+                  ' FROM '                DELIMITED SIZE
+                  WS-BIBLIOT              DELIMITED BY SPACES
+                  '/'                     DELIMITED BY SIZE
+                  WS-ARCHIVO              DELIMITED BY SPACES
+                  WS-WHERE                DELIMITED SIZE
+                  SEN-BUSQUEDA            DELIMITED SIZE
+                  ' ORDER BY DETALLE '    DELIMITED SIZE
+                                     INTO SENTENCIA-SQL
+           ELSE
+           STRING 'SELECT CAST(('         DELIMITED SIZE
+                  WS-CODIGO               DELIMITED SIZE
+                  ') AS CHAR(500))'       DELIMITED SIZE
+                  ' AS DETALLE '          DELIMITED SIZE
+                  ' FROM '                DELIMITED SIZE
+                  WS-BIBLIOT              DELIMITED BY SPACES
+                  '/'                     DELIMITED BY SIZE
+                  WS-ARCHIVO              DELIMITED BY SPACES
+                  WS-WHERE                DELIMITED SIZE
+                  SEN-BUSQUEDA            DELIMITED SIZE
+                  ' ORDER BY DETALLE '    DELIMITED SIZE
+                                     INTO SENTENCIA-SQL.
+
+           EXEC SQL
+             DECLARE DECLARA_C1     STATEMENT
+           END-EXEC
+           EXEC SQL
+           PREPARE DECLARA_C1     FROM :SENTENCIA-SQL
+           END-EXEC
+           EXEC SQL
+              DECLARE C1 CURSOR FOR DECLARA_C1
+           END-EXEC
+           EXEC SQL OPEN  C1 END-EXEC
+           MOVE ZEROES    TO P-ARR
+           PERFORM LEER-FETCH-C1
+           PERFORM UNTIL SQLCODE NOT = 0 OR P-ARR = 5000
+               ADD  1          TO P-ARR
+               MOVE SPACES     TO CODIGO-SQL-WS
+               IF WS-LARGOKEY < 21
+                  MOVE CODIGO-SQL(1:WS-LARGOKEY) TO
+                                                 CODIGO-SQL-WS(1:20)
+                  MOVE WS-LARGOKEY  TO P-ID
+                  ADD  1            TO P-ID
+                  IF WS-LARGODES > 0
+                     MOVE CODIGO-SQL(P-ID:WS-LARGODES) TO
+                                     CODIGO-SQL-WS(22:WS-LARGODES)
+                  END-IF
+               ELSE
+                  MOVE CODIGO-SQL(1:WS-LARGOKEY) TO
+                                     CODIGO-SQL-WS(1:WS-LARGOKEY)
+                  MOVE WS-LARGOKEY  TO P-ID P-IDS
+                  ADD  1            TO P-ID
+                  ADD  2            TO P-IDS
+                  IF WS-LARGODES > 0
+                     MOVE CODIGO-SQL(P-ID:WS-LARGODES) TO
+                                     CODIGO-SQL-WS(P-IDS:WS-LARGODES)
+                  END-IF
+
+               END-IF
+               MOVE CODIGO-SQL-WS TO DET-SFL(P-ARR)
+               MOVE CODIGO-SQL    TO DET1-SFL(P-ARR)
+               PERFORM LEER-FETCH-C1
+           END-PERFORM
+           EXEC SQL CLOSE C1 END-EXEC.
+
+       LEER-FETCH-C1.
+      *--------------
+           EXEC SQL
+              FETCH NEXT FROM C1 INTO : DETALLE-SQL
+           END-EXEC.
+      *
+       PROCESO.
+      *--------
+           MOVE  1            TO NREL
+           MOVE WS-TITULO     TO TITULO OF WC01-OO
+
+           WRITE R-PANTALLA   FROM WC01-OO FORMAT "WC01"
+                              INDICATORS ARE WC01-O-INDIC END-WRITE
+           READ PANTALLA      INTO WC01-II FORMAT "WC01"
+                              INDICATORS ARE WC01-I-INDIC
+                              END-READ.
+
+           IF BOTON OF WC01-II = 3
+              SUBTRACT 1 FROM P-INI
+              IF P-INI < 1
+                 MOVE 1   TO P-INI
+              END-IF
+              PERFORM LLENAR-SFL
+           ELSE
+           IF BOTON OF WC01-II = 4
+              ADD  1   TO P-INI
+              IF P-INI > 434
+                 MOVE 434   TO P-INI
+              END-IF
+              PERFORM LLENAR-SFL
+           ELSE
+           IF IN09 OF WC01-I-INDIC = I-ON
+              READ SUBFILE PANTALLA NEXT MODIFIED
+                                    INTO WS01-OO FORMAT "WS01"
+                   END-READ
+              IF FS-PAN = "00"
+                 MOVE CODIGO1  OF WS01-OO TO CODIGO-LNK
+              END-IF
+           ELSE
+              IF IN03 OF WC01-I-INDIC = I-OFF
+                 MOVE BUSQUEDA OF WC01-II TO WS-BUSQUEDA
+                 PERFORM CARGAR-AYUDA.
+      *
+       LLENAR-SFL.
+      *-----------
+           PERFORM LIMPIA-SFL-01
+           MOVE ZEROES   TO NREL
+           PERFORM UNTIL NREL = P-ARR
+                ADD  1                  TO NREL
+                MOVE DET-SFL (NREL)     TO DETSFL1
+                MOVE SPACES             TO DETSFL OF WS01-OO
+                MOVE DETSFL1 (P-INI:66) TO DETSFL OF WS01-OO
+                MOVE ZEROES             TO CTL001 OF WS01-OO
+                MOVE DET-SFL (NREL)     TO CODIGO OF WS01-OO
+                MOVE DET1-SFL (NREL)    TO CODIGO1 OF WS01-OO
+                WRITE SUBFILE R-PANTALLA FROM WS01-OO FORMAT "WS01"
+                      END-WRITE
+           END-PERFORM
+           MOVE TIT-CTL(P-INI:65)         TO TITCAM OF WC01-OO
+                                             TITCAM OF WC01-OO
+           IF NREL > 0
+              PERFORM ACTIVAR-CONTROL-SFL-01
+           ELSE
+              PERFORM ACTIVAR-CONTROL-01
+           END-IF.
+      *
+       LIMPIA-SFL-01.
+      *--------------
+           MOVE ZEROES              TO NREL
+           MOVE I-OFF               TO IN30 OF WC01-O-INDIC
+                                       IN31 OF WC01-O-INDIC
+           MOVE I-ON                TO IN32 OF WC01-O-INDIC
+           WRITE R-PANTALLA FROM WC01-OO FORMAT "WC01"
+                              INDICATORS ARE WC01-O-INDIC.
+      *
+       ACTIVAR-CONTROL-01.
+      *-------------------
+           MOVE I-ON                TO IN31 OF WC01-O-INDIC
+           MOVE I-OFF               TO IN30 OF WC01-O-INDIC
+                                       IN32 OF WC01-O-INDIC.
+      *
+       ACTIVAR-CONTROL-SFL-01.
+      *-----------------------
+           MOVE I-ON                TO IN31 OF WC01-O-INDIC
+                                       IN30 OF WC01-O-INDIC
+           MOVE I-OFF               TO IN32 OF WC01-O-INDIC.
+      *
+       TERMINO.
+      *---------
+           CLOSE    PANTALLA ASQRY05F.
+           GOBACK.

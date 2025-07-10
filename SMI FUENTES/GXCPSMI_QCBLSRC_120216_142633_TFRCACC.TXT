@@ -1,0 +1,76 @@
+       IDENTIFICATION DIVISION.
+      *-----------------------*
+       PROGRAM-ID. TFRCACC.
+       AUTHOR. JORGE DUARTE U.
+       ENVIRONMENT DIVISION.
+      *--------------------*
+       CONFIGURATION SECTION.
+       SOURCE-COMPUTER.      IBM-AS400.
+       OBJECT-COMPUTER.      IBM-AS400.
+       SPECIAL-NAMES.        LOCAL-DATA IS LOCAL-DATA-AREA .
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+       DATA DIVISION.
+      *--------------*
+       FILE SECTION.
+      *-------------*
+       WORKING-STORAGE SECTION.
+      *------------------------*
+       77 ARCHIVO-TFR       PIC X(70).
+       77 PATH-XLS          PIC X(70).
+       77 PATH-FDF          PIC X(70).
+
+           EXEC SQL
+              INCLUDE SQLCA
+           END-EXEC.
+
+      *
+       LINKAGE SECTION.
+      *----------------
+       01 ARCHIVO-LNK       PIC X(10).
+       01 BIBLIOTECA-LNK    PIC X(10).
+       01 EQUIPO-LNK        PIC X(8).
+       01 PATH-LNK          PIC X(50).
+
+       PROCEDURE DIVISION USING ARCHIVO-LNK,
+                                BIBLIOTECA-LNK,
+                                EQUIPO-LNK,
+                                PATH-LNK.
+      *-------------------------------------
+
+           MOVE SPACES           TO PATH-XLS PATH-FDF
+                                    ARCHIVO-TFR
+
+           STRING "FROM        " DELIMITED SIZE
+                  BIBLIOTECA-LNK DELIMITED BY " "
+                  "/"            DELIMITED BY SIZE
+                  ARCHIVO-LNK    DELIMITED SIZE
+                              INTO ARCHIVO-TFR
+
+           STRING PATH-LNK       DELIMITED BY " "
+                  ARCHIVO-LNK    DELIMITED BY " "
+                  ".XLS "        DELIMITED SIZE
+                              INTO PATH-XLS
+
+           STRING PATH-LNK       DELIMITED BY " "
+                  ARCHIVO-LNK    DELIMITED BY " "
+                  ".FDF "        DELIMITED SIZE
+                              INTO PATH-FDF
+
+           EXEC SQL
+           UPDATE GXDBSMI/SELTFR SET DETTFR = :ARCHIVO-TFR WHERE
+           SUBSTR(DETTFR, 1, 4) = "FROM"
+           END-EXEC
+
+
+           EXEC SQL
+           UPDATE GXDBSMI/SELTFR SET DETTFR = :PATH-XLS    WHERE
+           RRN(SELTFR) = 8
+           END-EXEC
+
+           EXEC SQL
+           UPDATE GXDBSMI/SELTFR SET DETTFR = :PATH-FDF    WHERE
+           RRN(SELTFR) = 11
+           END-EXEC
+
+           GOBACK.

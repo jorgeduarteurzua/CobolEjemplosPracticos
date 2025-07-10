@@ -1,0 +1,81 @@
+             PGM        PARM(&NOMARCH &BIBLIO &TEXTO &OPC &RET &MBR)
+
+             DCL        VAR(&NOMARCH) TYPE(*CHAR) LEN(10)
+             DCL        VAR(&BIBLIO) TYPE(*CHAR) LEN(10)
+             DCL        VAR(&TEXTO)  TYPE(*CHAR) LEN(50)
+             DCL        VAR(&OPC)    TYPE(*CHAR) LEN(01)
+             DCL        VAR(&RET)    TYPE(*CHAR) LEN(01)
+             DCL        VAR(&MBR)    TYPE(*CHAR) LEN(10)
+             DCL        VAR(&UMBR)   TYPE(*CHAR) LEN(10)
+             DCL        VAR(&CORRX)  TYPE(*CHAR) LEN(08)
+             DCL        VAR(&CORR9)  TYPE(*DEC)  LEN(8 0)
+
+ /*------------------------------------------------------------ +
+  | OPC = 1 -> VALIDAR ARCHIVO/BIBLIOTECA                     | +
+  |       2 -> GENERAR CAMPOS ARCHIVO/BIBLIOTECA              | +
+   -------------------------------------------------------------*/
+ /*------------------------------------------------------------ +
+  | RET = 1 -> OK                                             | +
+  |       2 -> NO OK                                          | +
+   -------------------------------------------------------------*/
+             DLTOVR     FILE(*ALL)
+             MONMSG     MSGID(CPF0000)
+
+             CHGVAR VAR(&TEXTO) VALUE(' ')
+
+             IF COND(&OPC *EQ '1') THEN(DO)
+                CHKOBJ     OBJ(&BIBLIO/&NOMARCH) OBJTYPE(*FILE)
+                MONMSG     MSGID(CPF0000) EXEC(GOTO CMDLBL(ERROR))
+                CHGVAR VAR(&RET) VALUE('1')
+                RTVMBRD FILE(&BIBLIO/&NOMARCH) MBR(*FIRST) TEXT(&TEXTO)
+                GOTO CMDLBL(FIN)
+             ENDDO
+
+  CAMPOSFX:
+             IF COND(&OPC *EQ '0') THEN(DO)
+              DSPFFD     FILE(&BIBLIO/&NOMARCH) OUTPUT(*OUTFILE) +
+                         OUTFILE(ASQRY17F) OUTMBR(*FIRST *REPLACE)
+              MONMSG MSGID(CPF0000)
+              GOTO CMDLBL(FIN)
+             ENDDO
+  CAMPOSFILE:
+             IF COND(&OPC *EQ '2') THEN(DO)
+              RTVMBRD FILE(ASQRY17F) MBR(*LAST) RTNMBR(&UMBR)
+              IF COND(&UMBR *EQ 'ASQRY17F') THEN(DO)
+                 CHGVAR VAR(&MBR) VALUE('M00000001 ')
+              ENDDO
+              IF COND(&UMBR *NE 'ASQRY17F') THEN(DO)
+                 CHGVAR VAR(&CORRX) VALUE(%SST(&UMBR 2 8))
+                 CHGVAR VAR(&CORR9) VALUE(&CORRX)
+                 CHGVAR VAR(&CORR9) VALUE(&CORR9 + 1)
+                 CHGVAR VAR(&CORRX) VALUE(&CORR9)
+                 CHGVAR VAR(&MBR)   VALUE('          ')
+                 CHGVAR VAR(%SST(&MBR 1 1)) VALUE('M')
+                 CHGVAR VAR(%SST(&MBR 2 8)) VALUE(&CORRX)
+              ENDDO
+              DSPFFD     FILE(&BIBLIO/&NOMARCH) OUTPUT(*OUTFILE) +
+                         OUTFILE(ASQRY17F) OUTMBR(&MBR *REPLACE)
+              MONMSG MSGID(CPF3067) EXEC(CHGVAR VAR(&TEXTO) +
+                       VALUE('ASQRY17F'))
+
+              GOTO CMDLBL(FIN)
+              ENDDO
+
+   TAMANO:
+             IF COND(&OPC *EQ '3') THEN(DO)
+                CHGPF FILE(&BIBLIO/&NOMARCH) SIZE(1000000 0 0)
+                GOTO CMDLBL(FIN)
+             ENDDO
+
+   BORMBR:
+             IF COND(&OPC *EQ '4') THEN(DO)
+                RMVM FILE(ASQRY17F) MBR(&MBR)
+                MONMSG     MSGID(CPF0000)
+                GOTO CMDLBL(FIN)
+             ENDDO
+
+ ERROR:      CHGVAR VAR(&RET) VALUE('2')
+             GOTO CMDLBL(FIN)
+
+ FIN:        RETURN
+             ENDPGM

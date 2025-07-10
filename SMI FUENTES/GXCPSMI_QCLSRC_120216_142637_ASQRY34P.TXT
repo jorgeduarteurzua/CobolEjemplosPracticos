@@ -1,0 +1,17 @@
+    PGM  PARM(&CONSC &CONSN &TXT &USR)
+         DCL VAR(&CONSC)   TYPE(*CHAR) LEN(10)
+         DCL VAR(&CONSN)   TYPE(*CHAR) LEN(10)
+         DCL VAR(&TXT)     TYPE(*CHAR) LEN(50)
+         DCL VAR(&USR)     TYPE(*CHAR) LEN(10)
+
+
+         ADDLIBLE   LIB(GXCPSMI)
+         MONMSG     MSGID(CPF0000)
+         ADDLIBLE   LIB(GXDBSMI)
+         MONMSG     MSGID(CPF0000)
+
+         SBMJOB  CMD(CALL PGM(ASQRY34) PARM(&CONSC &CONSN &TXT &USR)) +
+                 JOB(CPYCONS) LOG(4 0 *MSG) +
+                 LOGCLPGM(*YES) JOBMSGQFL(*WRAP)
+
+    FIN: ENDPGM

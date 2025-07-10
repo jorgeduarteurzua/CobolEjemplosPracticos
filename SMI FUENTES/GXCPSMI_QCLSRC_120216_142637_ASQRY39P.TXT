@@ -1,0 +1,13 @@
+    PGM  PARM(&CONS)
+         DCL VAR(&CONS)    TYPE(*CHAR) LEN(10)
+
+         ADDLIBLE   LIB(GXCPSMI)
+         MONMSG     MSGID(CPF0000)
+         ADDLIBLE   LIB(GXDBSMI)
+         MONMSG     MSGID(CPF0000)
+
+         SBMJOB  CMD(CALL PGM(ASQRY39) PARM(&CONS)) +
+                 JOB(DLTCONS) LOG(4 0 *MSG) +
+                 LOGCLPGM(*YES) JOBMSGQFL(*WRAP)
+
+    FIN: ENDPGM

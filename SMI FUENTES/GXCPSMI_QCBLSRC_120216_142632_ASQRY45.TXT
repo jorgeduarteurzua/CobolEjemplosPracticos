@@ -1,0 +1,410 @@
+       IDENTIFICATION DIVISION.
+      *************************
+       PROGRAM-ID. ASQRY45.
+       AUTHOR. JORGE DUARTE U.
+       ENVIRONMENT DIVISION.
+      ***********************
+       CONFIGURATION SECTION.
+       SOURCE-COMPUTER.  IBM-AS400.
+       OBJECT-COMPUTER.  IBM-AS400.
+       SPECIAL-NAMES.    LOCAL-DATA IS LOCAL.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+      *-------------
+           SELECT PANTALLA01 ASSIGN       TO WORKSTATION-ASQRY45D-SI
+                             ORGANIZATION  IS TRANSACTION
+                             ACCESS MODE   IS DYNAMIC
+                             RELATIVE KEY  IS NREL01
+                             CONTROL-AREA  IS AREA-CONTROL
+                             FILE STATUS   IS FS-PANTALLA01.
+
+       DATA DIVISION.
+      ***************
+       FILE SECTION.
+      *-------------
+       FD  PANTALLA01.
+       01  R-PANTALLA01    PIC X(1920).
+
+       WORKING-STORAGE SECTION.
+      *-------------------------*
+       77 USR-1                   PIC X(10).
+       77 USR-2                   PIC X(10).
+       77 PATH-TFR                PIC X(50).
+       77 ARC-TFR                 PIC X(10).
+       77 BIB-TFR                 PIC X(10).
+
+       77 I-ON                    PIC 1 VALUE B"1".
+       77 I-OFF                   PIC 1 VALUE B"0".
+       77 FECPRO-X                PIC X(8).
+       77 P-ARR                   PIC S9(3).
+       77 WS-DATECUR              PIC S9(8).
+       77 WS-LARSEL               PIC S9(5).
+       77 WS-RET                  PIC X(01).
+       77 WS-ARCBAS               PIC X(10).
+       77 WS-ARCGEN               PIC X(10).
+       77 WS-BIBGEN               PIC X(10).
+       77 WS-CODEVE               PIC X(10).
+       77 WS-FECPRO               PIC S9(8).
+       77 WS-HORPRO               PIC S9(6).
+       77 WS-SECEJE               PIC S9(5).
+       77 WS-DESEVE               PIC X(70).
+
+       77 P-HEAD                  PIC S9(5).
+       77 HEAD-INFORME-1          PIC X(10000).
+       77 HEAD-INFORME-2          PIC X(10000).
+       77 HEAD-INFORME-3          PIC X(10000).
+       77 HEAD-INFORME-L          PIC X(10000).
+       77 WS-SELCON               PIC X(10000).
+       77 SEN-EJECUTAR            PIC X(13000).
+       77 SEN-INFORME             PIC X(20000).
+       77 ORDENAR-INF             PIC X(100).
+       77 REGREL-WS               PIC 9(5).
+
+       77 COL-AVANZA              PIC S9(5).
+       77 COL-RETROCEDER          PIC S9(5).
+
+       77 P-ORD                   PIC 9(4).
+       77 P-RUP                   PIC 9(4).
+       77 P-INICIAL-SEL           PIC 9(7).
+       77 SEL-COMPARAR            PIC X(5000).
+       77 PS-COMP                 PIC 9(5).
+       77 P-RES                   PIC 9(3).
+       77 P-I-SEL                 PIC 9(7).
+       77 COMPARAR-WS             PIC X(5000).
+       77 PINF                    PIC 9(5).
+       77 TEXTO-132               PIC X(132).
+       77 PINF-D                  PIC 9(5).
+       77 TEXTO-132-D             PIC X(132).
+       77 LIMP                    PIC 9(5).
+       77 R-IMP-CORTE             PIC 9(7).
+       77 R-IMP-TOTAL             PIC 9(7).
+
+       77 FDDMMAAAA               PIC X(8).
+       77 FAAAAMMDD               PIC X(8).
+
+            EXEC SQL
+                INCLUDE SQLCA
+            END-EXEC.
+
+       01 ESTATUS-ARCHIVOS.
+           05 FS-PANTALLA01     PIC X(2).
+
+       01 REGISTROS-RELATIVOS.
+           05 NREL01            PIC 9(4).
+           05 NREL02            PIC 9(4).
+           05 NREL03            PIC 9(4).
+           05 NREL04            PIC 9(4).
+
+       01 ARREGLOS-DE-TRABAJO.
+          05 CTA-MSG              PIC 9(3).
+          05 VARIABLE-3250        PIC X(6500).
+          05 VAR-ARR-3250 REDEFINES VARIABLE-3250 OCCURS 100 TIMES
+                          ASCENDING KEY IS TEXTO-ARR.
+             10 TEXTO-ARR         PIC X(65).
+
+          05 ORDEN-RUPTURA OCCURS 999 TIMES.
+             10 ORDEN-RUP-N         PIC 9(3).
+             10 ORDEN-INF-N         PIC 9(3).
+             10 TCAMPO-INF-N        PIC X(1).
+             10 CAMPO-INF-N         PIC X(10).
+
+          05 POSICION-SELECCION OCCURS 999 TIMES.
+             10 PI-SEL              PIC 9(7).
+
+          05 WX-FECPRO              PIC 9(8).
+          05 WX-FECAMD.
+             10 WX-ANO              PIC 9(04).
+             10 WX-MES              PIC 9(02).
+             10 WX-DIA              PIC 9(02).
+          05 WX-FECAMD-R  REDEFINES WX-FECAMD PIC S9(08).
+          05 WX-FECDMA.
+             10 WX-DIA              PIC 9(02).
+             10 WX-MES              PIC 9(02).
+             10 WX-ANO              PIC 9(04).
+          05 WX-FECDMA-R  REDEFINES WX-FECDMA PIC S9(08).
+
+       01 OVRPRTF-QSYSPRT.
+           05 FILLER PIC X(22) VALUE "OVRPRTF FILE(ASQRY01Z)".
+           05 FILLER PIC X(18) VALUE " TOFILE(ASQRY01L) ".
+           05 FILLER PIC X(09) VALUE "PAGESIZE(".
+           05 LONGITUD-PRT PIC X(3).
+           05 FILLER PIC X VALUE " ".
+           05 ANCHURA-PRT  PIC X(3) VALUE "132".
+           05 FILLER PIC X(06) VALUE ") LPI(".
+           05 LINPULGADA-PRT PIC X(4).
+           05 FILLER PIC X(06) VALUE ") CPI(".
+           05 CARPULGADA-PRT PIC X(4).
+           05 FILLER PIC X(06) VALUE ")     ".
+           05 FILLER PIC X(07) VALUE "OVRFLW(".
+           05 OVRFLW-PRT PIC X(3).
+           05 FILLER PIC X(06) VALUE ")     ".
+           05 FILLER PIC X(12) VALUE " FOLD(*YES) ".
+           05 FILLER PIC X(15) VALUE "PRTTXT(*BLANK) ".
+
+       01  DLTOVR-QSYSPRT.
+           05 FILLER PIC X(21) VALUE "DLTOVR FILE(*ALL)    ".
+       01  PARAM-MSG.
+           05 PARAM1     PIC X(200).
+           05 PARAM2     PIC S9(10)V9(5) USAGE IS COMP VALUE 200.
+
+       01 DATOS-SQL.
+          05 CODEVE-SQL    PIC X(10).
+          05 FECPRO-SQL    PIC S9(8).
+          05 HORPRO-SQL    PIC S9(6).
+          05 SECEJE-SQL    PIC S9(5).
+          05 BIBARC-SQL    PIC X(21).
+          05 REGGRA-SQL    PIC S9(8).
+          05 ESTPRO-SQL    PIC X.
+          05 USUARIO-SQL   PIC X(10).
+          05 BIBGEN-SQL    PIC X(10).
+          05 ARCGEN-SQL    PIC X(10).
+
+       01 DATOS-SQL-C2.
+          05 DETALLE-C2    PIC X(10000).
+
+       01 DATOS-SQL-C20.
+          05 DETALLE-C20   PIC X(10000).
+          05 COMPARAR-C20  PIC X(5000).
+
+       01 DATOS-SQL-RES.
+          05 FECHA-RES     PIC S9(8).
+          05 SECRES-RES    PIC S9(7).
+          05 DETALLE-RES   PIC X(10000).
+
+       01 DATOS-SQL-INFRES.
+          05 FECHA-RES-INF     PIC S9(8).
+          05 SECRES-RES-INF    PIC S9(7).
+          05 DETALLE-RES-INF   PIC X(10000).
+
+       01 DATOS-SQL-C3.
+          05 CAMPO-C3      PIC X(10).
+          05 LARGO-C3      PIC S9(5).
+          05 DIGIT-C3      PIC S9(5).
+          05 TIPO-C3       PIC X(01).
+
+       01 DATOS-SQL-C4.
+          05 CAMPO-SQL     PIC X(10).
+          05 TEXTO-SQL     PIC X(50).
+          05 TCAMPO-SQL    PIC X(01).
+
+       01 AREA-CONTROL.
+          05 MDTO               PIC 9(02).
+             88 INTRO           VALUE 00.
+             88 F3              VALUE 03.
+             88 F5              VALUE 05.
+             88 F6              VALUE 06.
+             88 F9              VALUE 09.
+             88 F8              VALUE 08.
+             88 F15             VALUE 15.
+             88 F21             VALUE 21.
+             88 F23             VALUE 23.
+
+       01 PARA-28C.
+          05 ARCHIVO-28C           PIC X(10).
+          05 BIBLIOTECA-28C        PIC X(10).
+          05 ARCHIVO-BASE-28C      PIC X(10).
+          05 CODEVE-28C            PIC X(10).
+          05 FECPRO-28C            PIC S9(8).
+          05 HORPRO-28C            PIC S9(6).
+          05 SECEJE-28C            PIC S9(5).
+
+       01 WS01-OO.
+          COPY DDS-WS01-O       OF ASQRY45D.
+
+       01 WC01-II.
+          COPY DDS-WC01-I       OF ASQRY45D.
+
+       01 WC01-IND.
+          COPY DDS-WC01-INDIC   OF ASQRY45D.
+
+      *
+       LINKAGE SECTION.
+       01 USUARIO-LNK   PIC X(10).
+
+       PROCEDURE DIVISION USING USUARIO-LNK.
+      *------------------------------
+       PROGRAMA-PRICIPAL SECTION.
+      *--------------------------*
+       PRINCIPAL.
+      *-------------*
+           PERFORM INICIO
+           PERFORM PROCESO UNTIL F3
+           PERFORM TERMINO
+           GOBACK.
+
+       INICIO.
+      *-------*
+           OPEN I-O   PANTALLA01
+           INITIALIZE WC01-I REPLACING
+                      ALPHANUMERIC DATA BY SPACES
+                      NUMERIC      DATA BY ZEROES
+
+           CALL "MRTVDAF1" USING WS-DATECUR
+           MOVE WS-DATECUR       TO DATECUR OF WC01-II
+           MOVE USUARIO-LNK      TO USUARIO OF WC01-II
+           MOVE I-OFF            TO IN30    OF WC01-O-INDIC
+                                    IN32    OF WC01-O-INDIC
+           MOVE I-ON             TO IN31    OF WC01-O-INDIC
+           MOVE ZEROES           TO MDTO
+
+           MOVE 15               TO P-INICIAL-SEL
+           PERFORM VARYING P-ORD FROM 1 BY 1 UNTIL P-ORD > 999
+               MOVE P-INICIAL-SEL  TO PI-SEL(P-ORD)
+               ADD  51             TO P-INICIAL-SEL
+           END-PERFORM.
+
+       PROCESO.
+      *---------
+           WRITE R-PANTALLA01 FROM WC01-II FORMAT "WC01"
+                              INDICATORS ARE WC01-O-INDIC END-WRITE
+           READ  PANTALLA01   INTO WC01-II FORMAT "WC01"
+                              INDICATORS ARE WC01-I-INDIC END-READ.
+
+           MOVE    SPACES        TO VARIABLE-3250
+           MOVE    ZEROES        TO CTA-MSG
+
+           IF INTRO
+              PERFORM CARGAR-WS01
+           ELSE
+           IF F8
+              PERFORM DESCARGAR-ARCHIVO
+              PERFORM CARGAR-WS01
+           ELSE
+           IF F5
+              PERFORM VALIDA-PANTALLA
+              IF CTA-MSG = 0
+                 PERFORM CARGAR-WS01.
+
+           IF CTA-MSG NOT = ZEROES
+              CALL    "VISERR2" USING VARIABLE-3250
+              CANCEL  "VISERR2"
+           END-IF.
+
+
+       VALIDA-PANTALLA.
+      *-----------------
+           MOVE 0      TO WX-FECPRO
+           IF FECPRO OF WC01-II NOT = 0
+              MOVE FECPRO OF WC01-II TO FDDMMAAAA
+              PERFORM VALIDA-FECHA
+              IF FAAAAMMDD = SPACES
+                  ADD  1                TO CTA-MSG
+                  MOVE "Fecha ingresada no válida"
+                         TO TEXTO-ARR(CTA-MSG)
+              ELSE
+                  MOVE FECPRO OF WC01-II TO WX-FECDMA
+                  MOVE FAAAAMMDD         TO WX-FECAMD
+                  MOVE WX-FECAMD         TO WX-FECPRO
+              END-IF
+           END-IF.
+
+
+      *
+       VALIDA-FECHA.
+      *-------------
+           MOVE SPACES  TO FAAAAMMDD
+           CALL   "MRTVDAF3" USING FDDMMAAAA FAAAAMMDD
+           CANCEL "MRTVDAF3".
+
+       CARGAR-WS01.
+      *------------
+           PERFORM LIMPIA-WS01
+
+           IF WX-FECAMD IS NOT NUMERIC
+              MOVE WS-DATECUR TO WX-FECAMD
+           END-IF
+
+           IF USUARIO OF WC01-II = SPACES
+              MOVE "          "   TO USR-1
+              MOVE "ZZZZZZZZZZ"   TO USR-2
+           ELSE
+              MOVE USUARIO OF WC01-II  TO USR-1
+                                          USR-2
+           END-IF
+
+           EXEC SQL
+           DECLARE C1 CURSOR FOR SELECT NOMCONS, FECPRO1, HORPRO1,
+           SECEJE, (BIBGEN || "/" || ARCGEN), CANREG , ESTPRO, USRPRO ,
+           BIBGEN, ARCGEN FROM ASQRY27F WHERE FECPRO1 >= :WX-FECAMD-R
+           AND ESTPRO = "T" AND USRPRO = :USUARIO-LNK ORDER BY NOMCONS,
+           FECPRO1, HORPRO1, SECEJE
+           END-EXEC
+
+           EXEC SQL
+              OPEN C1
+           END-EXEC
+           PERFORM LEER-FETCH-C1
+           MOVE ZEROES   TO NREL01
+           PERFORM CARGA-SFL UNTIL SQLCODE NOT = 0
+           EXEC SQL
+              CLOSE C1
+           END-EXEC
+
+           IF NREL01 = 0
+              MOVE I-OFF TO IN30 OF WC01-O-INDIC
+                            IN32 OF WC01-O-INDIC
+              MOVE I-ON  TO IN31 OF WC01-O-INDIC
+           ELSE
+              MOVE I-ON  TO IN30 OF WC01-O-INDIC
+              MOVE I-OFF TO IN32 OF WC01-O-INDIC
+              MOVE I-ON  TO IN31 OF WC01-O-INDIC.
+
+      *
+       CARGA-SFL.
+      *-----------
+           ADD      1                  TO NREL01
+           MOVE CODEVE-SQL             TO CODEVE OF WS01-OO
+           MOVE BIBGEN-SQL             TO BIB    OF WS01-OO
+           MOVE ARCGEN-SQL             TO ARC    OF WS01-OO
+           MOVE FECPRO-SQL             TO FECPRO OF WS01-OO
+                                          FECPRO-X
+           MOVE HORPRO-SQL             TO HORPRO OF WS01-OO
+           MOVE SECEJE-SQL             TO SECPRO OF WS01-OO
+           MOVE ZEROES                 TO CTL001 OF WS01-OO
+           MOVE SPACES                 TO DETSFL OF WS01-OO
+           STRING CODEVE-SQL              DELIMITED SIZE
+                  "             "         DELIMITED SIZE
+                  FECPRO-X(7:2)           DELIMITED SIZE
+                  "/"                     DELIMITED SIZE
+                  FECPRO-X(5:2)           DELIMITED SIZE
+                  "/"                     DELIMITED SIZE
+                  FECPRO-X(1:4)           DELIMITED SIZE
+                  " "                     DELIMITED SIZE
+                  REGGRA-SQL              DELIMITED SIZE
+                  "   "                   DELIMITED SIZE
+                  BIBARC-SQL              DELIMITED SIZE
+                                     INTO DETSFL OF WS01-OO
+           WRITE SUBFILE R-PANTALLA01 FROM WS01-OO FORMAT "WS01"
+                 END-WRITE
+           PERFORM LEER-FETCH-C1.
+      *
+       LEER-FETCH-C1.
+      *--------------
+           EXEC SQL
+              FETCH NEXT FROM C1 INTO :DATOS-SQL
+           END-EXEC.
+      *
+       LIMPIA-WS01.
+      *------------
+           MOVE I-ON            TO IN32 OF WC01-O-INDIC
+           MOVE I-OFF           TO IN30 OF WC01-O-INDIC
+                                   IN31 OF WC01-O-INDIC
+           MOVE ZEROES          TO NREL01
+           WRITE R-PANTALLA01 FROM WC01-II FORMAT "WC01"
+                                 INDICATORS ARE WC01-O-INDIC.
+      *
+       DESCARGAR-ARCHIVO.
+      *------------------
+           READ SUBFILE PANTALLA01 NEXT MODIFIED INTO WS01-OO
+                        FORMAT "WS01" END-READ
+           IF FS-PANTALLA01 = "00"
+              MOVE "C:\SELMUL\"    TO PATH-TFR
+              MOVE BIB OF WS01-OO  TO BIB-TFR
+              MOVE ARC OF WS01-OO  TO ARC-TFR
+              CALL "TFRPC" USING ARC-TFR BIB-TFR PATH-TFR
+           END-IF.
+      *
+       TERMINO.
+      *---------
+           CLOSE  PANTALLA01.
+

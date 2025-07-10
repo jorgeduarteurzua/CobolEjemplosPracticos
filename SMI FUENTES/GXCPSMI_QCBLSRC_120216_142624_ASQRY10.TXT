@@ -1,0 +1,354 @@
+       IDENTIFICATION DIVISION.
+      *************************
+       PROGRAM-ID. ASQRY10.
+       AUTHOR. JORGE DUARTE U.
+      *
+       ENVIRONMENT DIVISION.
+      ***********************
+       CONFIGURATION SECTION.
+       SOURCE-COMPUTER.  IBM-AS400.
+       OBJECT-COMPUTER.  IBM-AS400.
+       SPECIAL-NAMES.    LOCAL-DATA IS LOCAL.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+      *-------------
+           SELECT PANTALLA   ASSIGN       TO WORKSTATION-ASQRY08D
+                             ORGANIZATION IS TRANSACTION
+                             ACCESS MODE  IS SEQUENTIAL
+                             FILE STATUS  IS MULTIPLE-FS1, MULTIPLE-FS2
+                             CONTROL-AREA IS MULTIPLE-CONTROL-AREA.
+
+       DATA DIVISION.
+      ***************
+       FILE SECTION.
+      *-------------
+      *
+       FD  PANTALLA.
+       01  R-PANTALLA.
+           COPY DDS-W01-I  OF ASQRY08D.
+           05 W01-R REDEFINES W01-I.
+              06 FECSYS-W01       PIC S9(8).
+              06 HORSYS-W01       PIC S9(6).
+              06 FECPRO-W01       PIC S9(8).
+              06 USUARIO-W01      PIC X(10).
+              06 ARR-DET-W01 OCCURS 8 TIMES.
+                 10 TIPPRO-W01-D  PIC X(22).
+                 10 FECPRO-W01-D  PIC S9(8).
+                 10 BIBARC-W01-D  PIC X(21).
+                 10 REGGRA-W01-D  PIC S9(8).
+                 10 ESTADO-W01-D  PIC X(08).
+              06 MASFIN-W01       PIC X(8).
+
+       WORKING-STORAGE SECTION.
+      *-------------------------*
+       77 P-ARR                   PIC S9(3).
+       77 USR-1                   PIC X(10).
+       77 USR-2                   PIC X(10).
+
+            EXEC SQL
+                INCLUDE SQLCA
+            END-EXEC.
+
+       01 MULTIPLE-FS1            PIC X(2) VALUE SPACES.
+       01 MULTIPLE-FS2.
+           05 MULTIPLE-MAJOR      PIC X(2) VALUE SPACES.
+           05 MULTIPLE-MINOR      PIC X(2) VALUE SPACES.
+
+       01 STATION-ATTR.
+            05 STATION-TYPE       PIC X.
+            05 STATION-SIZE       PIC X.
+            05 STATION-LOC        PIC X.
+            05 FILLER             PIC X.
+            05 STATION-ACQUIRE    PIC X.
+            05 STATION-INVITE     PIC X.
+            05 STATION-DATA       PIC X.
+            05 STATION-STATUS     PIC X.
+            05 STATION-DISPLAY    PIC X.
+            05 STATION-KEYBOARD   PIC X.
+            05 STATION-SIGNON     PIC X.
+            05 FILLER             PIC X(5).
+
+       01 MULTIPLE-CONTROL-AREA.
+            05 MULTIPLE-KEY-FEEDBACK  PIC X(2) VALUE SPACES.
+            05 MULTIPLE-DEVICE-NAME   PIC X(10) VALUE SPACES.
+            05 MULTIPLE-FORMAT-NAME   PIC X(10) VALUE SPACES.
+
+       01 ARREGLOS-DE-TRABAJO.
+          05 VARIABLE-3250        PIC X(6500).
+          05 VAR-ARR-3250 REDEFINES VARIABLE-3250 OCCURS 100 TIMES
+                          ASCENDING KEY IS TEXTO-ARR.
+             10 TEXTO-ARR         PIC X(65).
+
+
+       01 ARREGLO-DE-PROCESOS.
+           05 ARR-PROC OCCURS 240 TIMES.
+              10 TIPPRO-W01-D  PIC X(22).
+              10 FECPRO-W01-D  PIC S9(8).
+              10 BIBARC-W01-D  PIC X(21).
+              10 REGGRA-W01-D  PIC S9(8).
+              10 ESTADO-W01-D  PIC X(08).
+
+
+       01 VARIABLES-GENERALES.
+          05 NREL               PIC 9(4) VALUE 0.
+          05 CTA-MSG            PIC 9(2) VALUE 0.
+          05 I-ON               PIC 1 VALUE B"1".
+          05 I-OFF              PIC 1 VALUE B"0".
+          05 AAAAMMDD           PIC X(08).
+          05 DDMMAAAA           PIC X(08).
+          05 FAAAAMMDD          PIC X(08).
+          05 FDDMMAAAA          PIC X(08).
+          05 SALIR-PAN          PIC X.
+          05 HORA-JOB.
+             10 HHMMSS          PIC 9(6).
+             10 MILISG          PIC 9(2).
+
+          05 WX-FECPRO          PIC S9(08)  VALUE 0.
+          05 WX-FECAMD.
+             10 WX-ANO              PIC 9(04).
+             10 WX-MES              PIC 9(02).
+             10 WX-DIA              PIC 9(02).
+          05 WX-FECAMD-R  REDEFINES WX-FECAMD PIC S9(08).
+          05 WX-FECDMA.
+             10 WX-DIA              PIC 9(02).
+             10 WX-MES              PIC 9(02).
+             10 WX-ANO              PIC 9(04).
+          05 WX-FECDMA-R  REDEFINES WX-FECDMA PIC S9(08).
+
+       01 DATOS-SQL.
+          05 TIPPRO-SQL    PIC X(22).
+          05 CODEVE-SQL    PIC X(10).
+          05 FECPRO-SQL    PIC S9(8).
+          05 HORPRO-SQL    PIC S9(6).
+          05 SECEJE-SQL    PIC S9(5).
+          05 BIBARC-SQL    PIC X(21).
+          05 REGGRA-SQL    PIC S9(8).
+          05 ESTPRO-SQL    PIC X.
+      *
+       LINKAGE SECTION.
+       01 PARA-DEV          PIC X(10).
+       PROCEDURE DIVISION USING PARA-DEV.
+      *-------------------*
+       PROGRAMA-PRICIPAL SECTION.
+      *--------------------------*
+       PRINCIPAL.
+      *-------------*
+           PERFORM INICIO
+           PERFORM PROCESO UNTIL SALIR-PAN = "S"
+           DROP PARA-DEV FROM PANTALLA
+           PERFORM TERMINO
+           GOBACK.
+
+       INICIO.
+      *-------*
+           OPEN I-O   PANTALLA.
+
+           ACQUIRE PARA-DEV FOR PANTALLA.
+           INITIALIZE W01-I REPLACING
+                      ALPHANUMERIC DATA BY SPACES
+                      NUMERIC      DATA BY ZEROES
+
+           CALL "MRTVDAF2" USING AAAAMMDD DDMMAAAA
+           MOVE DDMMAAAA         TO FECSYS-W01 FECPRO-W01
+           ACCEPT HORA-JOB   FROM TIME
+           MOVE "N"              TO SALIR-PAN
+           ACQUIRE PARA-DEV FOR PANTALLA
+           ACCEPT HORA-JOB   FROM TIME
+
+           MOVE ZEROES   TO NREL
+           PERFORM UNTIL NREL = 240
+                ADD  1      TO  NREL
+                MOVE SPACES TO  TIPPRO-W01-D OF ARR-PROC(NREL)
+                MOVE ZEROES TO  FECPRO-W01-D OF ARR-PROC(NREL)
+                MOVE SPACES TO  BIBARC-W01-D OF ARR-PROC(NREL)
+                MOVE ZEROES TO  REGGRA-W01-D OF ARR-PROC(NREL)
+                MOVE SPACES TO  ESTADO-W01-D OF ARR-PROC(NREL)
+           END-PERFORM
+
+           MOVE  1               TO P-ARR
+           MOVE HHMMSS           TO HORSYS-W01
+           WRITE R-PANTALLA
+                     FORMAT IS "W01"
+                     TERMINAL IS PARA-DEV
+           END-WRITE.
+
+       PROCESO.
+      *---------
+           READ PANTALLA RECORD END-READ
+           MOVE ZEROES     TO NREL
+           IF MULTIPLE-FS2 NOT = "0310"
+              IF MULTIPLE-KEY-FEEDBACK = "12"
+                 MOVE "S"           TO SALIR-PAN
+              ELSE
+              IF MULTIPLE-KEY-FEEDBACK = "91"
+                 PERFORM LLENA-ARREGLO
+                 SUBTRACT 8 FROM P-ARR
+                 IF P-ARR < 1
+                    MOVE 1  TO P-ARR
+                 END-IF
+              ELSE
+              IF MULTIPLE-KEY-FEEDBACK = "90"
+                 PERFORM LLENA-ARREGLO
+                 ADD 8 TO  P-ARR
+                 IF P-ARR > 240
+                    MOVE 233 TO P-ARR
+                 END-IF
+              ELSE
+                 MOVE    SPACES        TO VARIABLE-3250
+                 MOVE    ZEROES        TO CTA-MSG
+                 IF FECPRO-W01        = ZEROES AND
+                    WX-FECPRO     NOT = ZEROES
+                    PERFORM LLENA-ARREGLO
+                 END-IF
+                 IF FECPRO-W01        NOT = ZEROES
+                    PERFORM VALIDA-PANTALLA
+                 END-IF
+             END-IF
+              IF CTA-MSG NOT = ZEROES
+                 CALL    "VISERR2" USING VARIABLE-3250
+                 CANCEL  "VISERR2"
+              END-IF
+           ELSE
+              PERFORM LLENA-ARREGLO
+           END-IF.
+
+           PERFORM MUEVE-VALORES
+           ACCEPT HORA-JOB   FROM TIME
+           MOVE HHMMSS         TO HORSYS-W01
+           MOVE "  "           TO MULTIPLE-KEY-FEEDBACK
+           IF TIPPRO-W01-D OF ARR-PROC(P-ARR + 8) NOT = " "
+              MOVE "Mßs....."    TO MASFIN-W01
+           ELSE
+              MOVE "Final..."    TO MASFIN-W01
+           END-IF
+           WRITE R-PANTALLA
+                     FORMAT IS "W01"
+                     TERMINAL IS PARA-DEV
+           END-WRITE.
+
+
+       VALIDA-PANTALLA.
+      *-----------------
+           MOVE 0      TO WX-FECPRO
+           IF FECPRO-W01 NOT = 0
+              MOVE FECPRO-W01 TO FDDMMAAAA
+              PERFORM VALIDA-FECHA
+              IF FAAAAMMDD = SPACES
+                  ADD  1                TO CTA-MSG
+                  MOVE "Fecha ingresada no vßlida"
+                         TO TEXTO-ARR(CTA-MSG)
+              ELSE
+                  MOVE FECPRO-W01        TO WX-FECDMA
+                  MOVE FAAAAMMDD         TO WX-FECAMD
+                  MOVE WX-FECAMD         TO WX-FECPRO
+                  PERFORM LLENA-ARREGLO
+              END-IF
+           END-IF.
+
+
+       VALIDA-FECHA.
+      *-------------
+           MOVE SPACES       TO FAAAAMMDD
+           CALL   "MRTVDAF3" USING FDDMMAAAA FAAAAMMDD
+           CANCEL "MRTVDAF3".
+
+       LLENA-ARREGLO.
+      *-------------------
+           MOVE ZEROES   TO NREL
+           PERFORM UNTIL NREL = 240
+                ADD  1      TO  NREL
+                MOVE SPACES TO  TIPPRO-W01-D OF ARR-PROC(NREL)
+                MOVE ZEROES TO  FECPRO-W01-D OF ARR-PROC(NREL)
+                MOVE SPACES TO  BIBARC-W01-D OF ARR-PROC(NREL)
+                MOVE ZEROES TO  REGGRA-W01-D OF ARR-PROC(NREL)
+                MOVE SPACES TO  ESTADO-W01-D OF ARR-PROC(NREL)
+
+
+           END-PERFORM
+           IF WX-FECPRO = 0
+              MOVE AAAAMMDD    TO WX-FECPRO
+           END-IF
+
+           MOVE WX-FECPRO      TO WX-FECAMD
+           IF WX-FECAMD IS NOT NUMERIC
+              MOVE AAAAMMDD    TO WX-FECAMD
+           END-IF
+
+           IF USUARIO-W01 = SPACES
+              MOVE "          "  TO USR-1
+              MOVE "ZZZZZZZZZZ"  TO USR-2
+           ELSE
+              MOVE USUARIO-W01   TO USR-1
+                                    USR-2
+           END-IF
+           EXEC SQL
+           DECLARE C1 CURSOR FOR SELECT (CODEVE || "/" ||
+           DIGITS(NROPRO) || "/" || DIGITS(CORPRO)) AS ORDEN, CODEVE,
+           FECPRO1, HORPRO1, SECEJE, (BIBGEN || "/" || ARCGEN), CANREG
+           , ESTPRO FROM  ASQRY04F WHERE FECPRO1 >= :WX-FECAMD-R
+           AND USRPRO BETWEEN :USR-1 AND :USR-2 ORDER BY CODEVE,
+           FECPRO1, HORPRO1, SECEJE
+           END-EXEC
+
+           EXEC SQL
+              OPEN C1
+           END-EXEC
+           PERFORM LEER-FETCH-C1
+           MOVE ZEROES   TO NREL
+           PERFORM CARGA-ARR UNTIL SQLCODE NOT = 0  OR
+                   NREL > 240
+           EXEC SQL
+              CLOSE C1
+           END-EXEC
+
+           IF NREL = 0
+              ADD  1     TO CTA-MSG
+              MOVE "No existen Procesos"
+                    TO TEXTO-ARR(CTA-MSG).
+
+      *
+       CARGA-ARR.
+      *-----------
+           ADD      1                  TO NREL
+           MOVE TIPPRO-SQL             TO TIPPRO-W01-D OF ARR-PROC(NREL)
+           MOVE FECPRO-SQL             TO WX-FECAMD
+           MOVE CORR WX-FECAMD         TO WX-FECDMA
+           MOVE WX-FECDMA              TO FECPRO-W01-D OF ARR-PROC(NREL)
+           IF ESTPRO-SQL = "T"
+              MOVE BIBARC-SQL       TO BIBARC-W01-D OF ARR-PROC(NREL)
+           ELSE
+              MOVE SPACES           TO BIBARC-W01-D OF ARR-PROC(NREL)
+           END-IF
+           MOVE REGGRA-SQL             TO REGGRA-W01-D OF ARR-PROC(NREL)
+           EVALUATE ESTPRO-SQL
+             WHEN " "  MOVE "ESPERA  " TO ESTADO-W01-D OF ARR-PROC(NREL)
+             WHEN "P"  MOVE "PROCESO " TO ESTADO-W01-D OF ARR-PROC(NREL)
+             WHEN "D"  MOVE "DEPURADO" TO ESTADO-W01-D OF ARR-PROC(NREL)
+             WHEN "T"  MOVE "TERMINAD" TO ESTADO-W01-D OF ARR-PROC(NREL)
+             WHEN "B"  MOVE "BLOQUEO " TO ESTADO-W01-D OF ARR-PROC(NREL)
+           END-EVALUATE.
+           PERFORM LEER-FETCH-C1.
+
+      *
+       MUEVE-VALORES.
+      *--------------
+           MOVE CORR ARR-PROC(P-ARR)        TO ARR-DET-W01(1)
+           MOVE CORR ARR-PROC(P-ARR + 1)    TO ARR-DET-W01(2)
+           MOVE CORR ARR-PROC(P-ARR + 2)    TO ARR-DET-W01(3)
+           MOVE CORR ARR-PROC(P-ARR + 3)    TO ARR-DET-W01(4)
+           MOVE CORR ARR-PROC(P-ARR + 4)    TO ARR-DET-W01(5)
+           MOVE CORR ARR-PROC(P-ARR + 5)    TO ARR-DET-W01(6)
+           MOVE CORR ARR-PROC(P-ARR + 6)    TO ARR-DET-W01(7)
+           MOVE CORR ARR-PROC(P-ARR + 7)    TO ARR-DET-W01(8).
+
+      *
+       LEER-FETCH-C1.
+      *--------------
+           EXEC SQL
+              FETCH NEXT FROM C1 INTO :DATOS-SQL
+           END-EXEC.
+      *
+       TERMINO.
+      *---------
+           CLOSE  PANTALLA.
+

@@ -1,0 +1,1252 @@
+       IDENTIFICATION DIVISION.
+      *************************
+       PROGRAM-ID. ASQRY14.
+       AUTHOR. JORGE DUARTE U.
+       ENVIRONMENT DIVISION.
+      ***********************
+       CONFIGURATION SECTION.
+       SOURCE-COMPUTER.  IBM-AS400.
+       OBJECT-COMPUTER.  IBM-AS400.
+       SPECIAL-NAMES.    LOCAL-DATA IS LOCAL.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+      *-------------
+           SELECT ASQRY13F    ASSIGN       TO DATABASE-ASQRY13F
+                             ORGANIZATION IS INDEXED
+                             ACCESS MODE  IS DYNAMIC
+                             RECORD KEY   IS EXTERNALLY-DESCRIBED-KEY
+                             FILE STATUS  IS FS-ASQRY13F.
+
+           SELECT PANTALLA01 ASSIGN       TO WORKSTATION-ASQRY12D-SI
+                             ORGANIZATION  IS TRANSACTION
+                             ACCESS MODE   IS DYNAMIC
+                             RELATIVE KEY  IS NREL01
+                             CONTROL-AREA  IS AREA-CONTROL
+                             FILE STATUS   IS FS-PANTALLA01.
+
+           SELECT PANTALLA02 ASSIGN       TO WORKSTATION-ASQRY12D-SI
+                             ORGANIZATION  IS TRANSACTION
+                             ACCESS MODE   IS DYNAMIC
+                             RELATIVE KEY  IS NREL02
+                             CONTROL-AREA  IS AREA-CONTROL
+                             FILE STATUS   IS FS-PANTALLA02.
+
+           SELECT PANTALLA03 ASSIGN       TO WORKSTATION-ASQRY12D-SI
+                             ORGANIZATION  IS TRANSACTION
+                             ACCESS MODE   IS DYNAMIC
+                             RELATIVE KEY  IS NREL03
+                             CONTROL-AREA  IS AREA-CONTROL
+                             FILE STATUS   IS FS-PANTALLA03.
+
+           SELECT PANTALLA04 ASSIGN       TO WORKSTATION-ASQRY12D-SI
+                             ORGANIZATION  IS TRANSACTION
+                             ACCESS MODE   IS DYNAMIC
+                             RELATIVE KEY  IS NREL04
+                             CONTROL-AREA  IS AREA-CONTROL
+                             FILE STATUS   IS FS-PANTALLA04.
+
+           SELECT INFORME    ASSIGN TO FORMATFILE-ASQRY01Z.
+
+       DATA DIVISION.
+      ***************
+       FILE SECTION.
+      *-------------
+       FD  ASQRY13F  LABEL RECORD STANDARD.
+       01  R-ASQRY13F.
+           COPY  DDS-ALL-FORMAT OF ASQRY13F.
+
+       FD  PANTALLA01.
+       01  R-PANTALLA01    PIC X(1920).
+
+       FD  PANTALLA02.
+       01  R-PANTALLA02    PIC X(9000).
+
+       FD  PANTALLA03.
+       01  R-PANTALLA03    PIC X(1920).
+
+       FD  PANTALLA04.
+       01  R-PANTALLA04    PIC X(1920).
+
+       FD  INFORME.
+       01  R-INFORME       PIC X(132).
+
+       WORKING-STORAGE SECTION.
+      *-------------------------*
+       77 USR-1                   PIC X(10).
+       77 USR-2                   PIC X(10).
+
+       77 I-ON                    PIC 1 VALUE B"1".
+       77 I-OFF                   PIC 1 VALUE B"0".
+       77 FECPRO-X                PIC X(8).
+       77 P-ARR                   PIC S9(3).
+       77 WS-DATECUR              PIC S9(8).
+       77 WS-LARSEL               PIC S9(5).
+       77 WS-RET                  PIC X(01).
+       77 WS-ARCBAS               PIC X(10).
+       77 WS-ARCGEN               PIC X(10).
+       77 WS-BIBGEN               PIC X(10).
+       77 WS-CODEVE               PIC X(10).
+       77 WS-FECPRO               PIC S9(8).
+       77 WS-HORPRO               PIC S9(6).
+       77 WS-SECEJE               PIC S9(5).
+       77 WS-DESEVE               PIC X(70).
+
+       77 P-HEAD                  PIC S9(5).
+       77 HEAD-INFORME-1          PIC X(10000).
+       77 HEAD-INFORME-2          PIC X(10000).
+       77 HEAD-INFORME-3          PIC X(10000).
+       77 HEAD-INFORME-L          PIC X(10000).
+       77 WS-SELCON               PIC X(10000).
+       77 SEN-EJECUTAR            PIC X(13000).
+       77 SEN-INFORME             PIC X(20000).
+       77 ORDENAR-INF             PIC X(100).
+       77 REGREL-WS               PIC 9(5).
+
+       77 COL-AVANZA              PIC S9(5).
+       77 COL-RETROCEDER          PIC S9(5).
+
+       77 P-ORD                   PIC 9(4).
+       77 P-RUP                   PIC 9(4).
+       77 P-INICIAL-SEL           PIC 9(7).
+       77 SEL-COMPARAR            PIC X(5000).
+       77 PS-COMP                 PIC 9(5).
+       77 P-RES                   PIC 9(3).
+       77 P-I-SEL                 PIC 9(7).
+       77 COMPARAR-WS             PIC X(5000).
+       77 PINF                    PIC 9(5).
+       77 TEXTO-132               PIC X(132).
+       77 PINF-D                  PIC 9(5).
+       77 TEXTO-132-D             PIC X(132).
+       77 LIMP                    PIC 9(5).
+       77 R-IMP-CORTE             PIC 9(7).
+       77 R-IMP-TOTAL             PIC 9(7).
+
+       77 FDDMMAAAA               PIC X(8).
+       77 FAAAAMMDD               PIC X(8).
+
+            EXEC SQL
+                INCLUDE SQLCA
+            END-EXEC.
+
+       01 ESTATUS-ARCHIVOS.
+           05 FS-ASQRY13F        PIC X(2).
+           05 FS-PANTALLA01     PIC X(2).
+           05 FS-PANTALLA02     PIC X(2).
+           05 FS-PANTALLA03     PIC X(2).
+           05 FS-PANTALLA04     PIC X(2).
+
+       01 REGISTROS-RELATIVOS.
+           05 NREL01            PIC 9(4).
+           05 NREL02            PIC 9(4).
+           05 NREL03            PIC 9(4).
+           05 NREL04            PIC 9(4).
+
+       01 ARREGLOS-DE-TRABAJO.
+          05 CTA-MSG              PIC 9(3).
+          05 VARIABLE-3250        PIC X(6500).
+          05 VAR-ARR-3250 REDEFINES VARIABLE-3250 OCCURS 100 TIMES
+                          ASCENDING KEY IS TEXTO-ARR.
+             10 TEXTO-ARR         PIC X(65).
+
+          05 ORDEN-RUPTURA OCCURS 999 TIMES.
+             10 ORDEN-RUP-N         PIC 9(3).
+             10 ORDEN-INF-N         PIC 9(3).
+             10 TCAMPO-INF-N        PIC X(1).
+             10 CAMPO-INF-N         PIC X(10).
+
+          05 POSICION-SELECCION OCCURS 999 TIMES.
+             10 PI-SEL              PIC 9(7).
+
+          05 WX-FECPRO              PIC 9(8).
+          05 WX-FECAMD.
+             10 WX-ANO              PIC 9(04).
+             10 WX-MES              PIC 9(02).
+             10 WX-DIA              PIC 9(02).
+          05 WX-FECAMD-R  REDEFINES WX-FECAMD PIC S9(08).
+          05 WX-FECDMA.
+             10 WX-DIA              PIC 9(02).
+             10 WX-MES              PIC 9(02).
+             10 WX-ANO              PIC 9(04).
+          05 WX-FECDMA-R  REDEFINES WX-FECDMA PIC S9(08).
+
+       01 OVRPRTF-QSYSPRT.
+           05 FILLER PIC X(22) VALUE "OVRPRTF FILE(ASQRY01Z)".
+           05 FILLER PIC X(18) VALUE " TOFILE(ASQRY01Z) ".
+           05 FILLER PIC X(09) VALUE "PAGESIZE(".
+           05 LONGITUD-PRT PIC X(3).
+           05 FILLER PIC X VALUE " ".
+           05 ANCHURA-PRT  PIC X(3) VALUE "132".
+           05 FILLER PIC X(06) VALUE ") LPI(".
+           05 LINPULGADA-PRT PIC X(4).
+           05 FILLER PIC X(06) VALUE ") CPI(".
+           05 CARPULGADA-PRT PIC X(4).
+           05 FILLER PIC X(06) VALUE ")     ".
+           05 FILLER PIC X(07) VALUE "OVRFLW(".
+           05 OVRFLW-PRT PIC X(3).
+           05 FILLER PIC X(06) VALUE ")     ".
+           05 FILLER PIC X(12) VALUE " FOLD(*YES) ".
+           05 FILLER PIC X(15) VALUE "PRTTXT(*BLANK) ".
+
+       01  DLTOVR-QSYSPRT.
+           05 FILLER PIC X(21) VALUE "DLTOVR FILE(*ALL)    ".
+       01  PARAM-MSG.
+           05 PARAM1     PIC X(200).
+           05 PARAM2     PIC S9(10)V9(5) USAGE IS COMP VALUE 200.
+
+       01 DATOS-SQL.
+          05 TIPPRO-SQL    PIC X(22).
+          05 CODEVE-SQL    PIC X(10).
+          05 FECPRO-SQL    PIC S9(8).
+          05 HORPRO-SQL    PIC S9(6).
+          05 SECEJE-SQL    PIC S9(5).
+          05 BIBARC-SQL    PIC X(21).
+          05 REGGRA-SQL    PIC S9(8).
+          05 ESTPRO-SQL    PIC X.
+          05 USUARIO-SQL   PIC X(10).
+
+       01 DATOS-SQL-C2.
+          05 DETALLE-C2    PIC X(10000).
+
+       01 DATOS-SQL-C20.
+          05 DETALLE-C20   PIC X(10000).
+          05 COMPARAR-C20  PIC X(5000).
+
+       01 DATOS-SQL-RES.
+          05 FECHA-RES     PIC S9(8).
+          05 SECRES-RES    PIC S9(7).
+          05 DETALLE-RES   PIC X(10000).
+
+       01 DATOS-SQL-INFRES.
+          05 FECHA-RES-INF     PIC S9(8).
+          05 SECRES-RES-INF    PIC S9(7).
+          05 DETALLE-RES-INF   PIC X(10000).
+
+       01 DATOS-SQL-C3.
+          05 CAMPO-C3      PIC X(10).
+          05 LARGO-C3      PIC S9(5).
+          05 DIGIT-C3      PIC S9(5).
+          05 TIPO-C3       PIC X(01).
+
+       01 DATOS-SQL-C4.
+          05 CAMPO-SQL     PIC X(10).
+          05 TEXTO-SQL     PIC X(50).
+          05 TCAMPO-SQL    PIC X(01).
+
+       01 AREA-CONTROL.
+          05 MDTO               PIC 9(02).
+             88 INTRO           VALUE 00.
+             88 F3              VALUE 03.
+             88 F5              VALUE 05.
+             88 F6              VALUE 06.
+             88 F9              VALUE 09.
+             88 F15             VALUE 15.
+             88 F21             VALUE 21.
+             88 F23             VALUE 23.
+
+       01 PARA-28C.
+          05 ARCHIVO-28C           PIC X(10).
+          05 BIBLIOTECA-28C        PIC X(10).
+          05 ARCHIVO-BASE-28C      PIC X(10).
+          05 CODEVE-28C            PIC X(10).
+          05 FECPRO-28C            PIC S9(8).
+          05 HORPRO-28C            PIC S9(6).
+          05 SECEJE-28C            PIC S9(5).
+
+       01 WS01-OO.
+          COPY DDS-WS01-O       OF ASQRY12D.
+
+       01 WC01-II.
+          COPY DDS-WC01-I       OF ASQRY12D.
+
+       01 WC01-IND.
+          COPY DDS-WC01-INDIC   OF ASQRY12D.
+
+       01 WS02-OO.
+          COPY DDS-WS02-O       OF ASQRY12D.
+
+       01 WC02-II.
+          COPY DDS-WC02-I       OF ASQRY12D.
+
+       01 WC02-IND.
+          COPY DDS-WC02-INDIC   OF ASQRY12D.
+
+       01 WS03-OO.
+          COPY DDS-WS03-O       OF ASQRY12D.
+
+       01 WC03-II.
+          COPY DDS-WC03-I       OF ASQRY12D.
+
+       01 WC03-IND.
+          COPY DDS-WC03-INDIC   OF ASQRY12D.
+
+       01 W01-II.
+          COPY DDS-W01-I        OF ASQRY12D.
+
+       01 W01-IND.
+          COPY DDS-W01-INDIC    OF ASQRY12D.
+
+       01 DETALLE-OO.
+          COPY DDS-DETALLE-O    OF ASQRY01Z.
+      *
+       PROCEDURE DIVISION.
+      *-------------------*
+       PROGRAMA-PRICIPAL SECTION.
+      *--------------------------*
+       PRINCIPAL.
+      *-------------*
+           PERFORM INICIO
+           PERFORM PROCESO UNTIL F3
+           PERFORM TERMINO
+           GOBACK.
+
+       INICIO.
+      *-------*
+           OPEN I-O   PANTALLA01 PANTALLA02 PANTALLA03 PANTALLA04
+                INPUT ASQRY13F.
+           INITIALIZE WC01-I REPLACING
+                      ALPHANUMERIC DATA BY SPACES
+                      NUMERIC      DATA BY ZEROES
+
+           CALL "MRTVDAF1" USING WS-DATECUR
+           MOVE WS-DATECUR       TO DATECUR OF WC01-II
+           MOVE I-OFF            TO IN30    OF WC01-O-INDIC
+                                    IN32    OF WC01-O-INDIC
+           MOVE I-ON             TO IN31    OF WC01-O-INDIC
+           MOVE ZEROES           TO MDTO
+
+           MOVE 15               TO P-INICIAL-SEL
+           PERFORM VARYING P-ORD FROM 1 BY 1 UNTIL P-ORD > 999
+               MOVE P-INICIAL-SEL  TO PI-SEL(P-ORD)
+               ADD  51             TO P-INICIAL-SEL
+           END-PERFORM.
+
+       PROCESO.
+      *---------
+           WRITE R-PANTALLA01 FROM WC01-II FORMAT "WC01"
+                              INDICATORS ARE WC01-O-INDIC END-WRITE
+           READ  PANTALLA01   INTO WC01-II FORMAT "WC01"
+                              INDICATORS ARE WC01-I-INDIC END-READ.
+
+           MOVE    SPACES        TO VARIABLE-3250
+           MOVE    ZEROES        TO CTA-MSG
+
+           IF INTRO
+              PERFORM CARGAR-WS01
+           ELSE
+           IF F5
+              PERFORM VISUALIZAR-ARCHIVO
+              PERFORM CARGAR-WS01
+           ELSE
+           IF F23
+              PERFORM DEPURAR-ARCHIVO
+              PERFORM CARGAR-WS01
+           ELSE
+           IF F9
+              PERFORM VALIDA-PANTALLA
+              IF CTA-MSG = 0
+                 PERFORM CARGAR-WS01.
+
+           IF CTA-MSG NOT = ZEROES
+              CALL    "VISERR2" USING VARIABLE-3250
+              CANCEL  "VISERR2"
+           END-IF.
+
+
+       VALIDA-PANTALLA.
+      *-----------------
+           MOVE 0      TO WX-FECPRO
+           IF FECPRO OF WC01-II NOT = 0
+              MOVE FECPRO OF WC01-II TO FDDMMAAAA
+              PERFORM VALIDA-FECHA
+              IF FAAAAMMDD = SPACES
+                  ADD  1                TO CTA-MSG
+                  MOVE "Fecha ingresada no válida"
+                         TO TEXTO-ARR(CTA-MSG)
+              ELSE
+                  MOVE FECPRO OF WC01-II TO WX-FECDMA
+                  MOVE FAAAAMMDD         TO WX-FECAMD
+                  MOVE WX-FECAMD         TO WX-FECPRO
+              END-IF
+           END-IF.
+
+
+      *
+       DEPURAR-ARCHIVO.
+      *----------------
+           READ SUBFILE PANTALLA01 NEXT MODIFIED INTO WS01-OO
+                        FORMAT "WS01" END-READ
+           IF FS-PANTALLA01 = "00"
+              MOVE CODEVE OF WS01-OO  TO WS-CODEVE
+              MOVE FECPRO OF WS01-OO  TO WS-FECPRO
+              MOVE HORPRO OF WS01-OO  TO WS-HORPRO
+              MOVE SECPRO OF WS01-OO  TO WS-SECEJE
+           EXEC SQL
+           SELECT ARCGEN, BIBGEN INTO :WS-ARCGEN, :WS-BIBGEN FROM
+            ASQRY04F WHERE CODEVE = :WS-CODEVE AND FECPRO1 =
+           :WS-FECPRO AND HORPRO1 = :WS-HORPRO AND SECEJE = :WS-SECEJE
+           END-EXEC
+
+           MOVE SPACES    TO    PARAM1
+           CALL   "ASQRY14P" USING WS-BIBGEN WS-ARCGEN WS-RET
+           CANCEL "ASQRY14P"
+
+           IF WS-RET = "1"
+              ADD   1     TO    CTA-MSG
+              MOVE SPACES TO    TEXTO-ARR(CTA-MSG)
+              STRING "NO SE PUDO DEPURAR "      DELIMITED SIZE
+                     WS-BIBGEN                  DELIMITED BY " "
+                     "/"                        DELIMITED SIZE
+                     WS-ARCGEN                  DELIMITED BY " "
+                     " POR ESTAR BLOQUEADO "    DELIMITED SIZE
+                                 INTO TEXTO-ARR(CTA-MSG)
+           ELSE
+              ADD   1     TO    CTA-MSG
+              MOVE SPACES TO    TEXTO-ARR(CTA-MSG)
+              STRING "SE DEPURO "               DELIMITED SIZE
+                     WS-BIBGEN                  DELIMITED BY " "
+                     "/"                        DELIMITED SIZE
+                     WS-ARCGEN                  DELIMITED BY " "
+                                 INTO TEXTO-ARR(CTA-MSG)
+           EXEC SQL
+           UPDATE  ASQRY04F SET ESTPRO = "D" WHERE ARCGEN =
+           :WS-ARCGEN AND BIBGEN = :WS-BIBGEN
+           END-EXEC.
+      *
+       VISUALIZAR-ARCHIVO.
+      *-------------------
+           READ SUBFILE PANTALLA01 NEXT MODIFIED INTO WS01-OO
+                        FORMAT "WS01" END-READ
+           IF FS-PANTALLA01 = "00"
+              PERFORM MUESTRA-DATOS.
+      *
+       MUESTRA-DATOS.
+      *--------------
+           MOVE 1  TO COL-AVANZA
+           MOVE 0  TO COL-RETROCEDER
+           PERFORM CARGAR-WS02
+           MOVE 1         TO POSCUR     OF WC02-II
+                             REGREL     OF WC02-II
+                             REGREL-WS
+           MOVE WS-ARCGEN TO ARCHIVO    OF WC02-II
+           MOVE WS-BIBGEN TO BIBLIOTECA OF WC02-II
+           MOVE ZEROES    TO MDTO
+           PERFORM PROCESA-WC02 UNTIL F3
+           MOVE ZEROES    TO MDTO.
+
+      *
+       PROCESA-WC02.
+      *--------------
+           MOVE ZEROES    TO AVACOL     OF WC02-II
+                             RETCOL     OF WC02-II
+           WRITE R-PANTALLA02 FROM WC02-II FORMAT "WC02"
+                              INDICATORS ARE WC02-O-INDIC END-WRITE
+           READ  PANTALLA02   INTO WC02-II FORMAT "WC02"
+                              INDICATORS ARE WC02-I-INDIC END-READ.
+
+           IF F21
+              INITIALIZE W01-I REPLACING
+                               ALPHANUMERIC DATA BY SPACES
+                               NUMERIC DATA      BY ZEROES
+              MOVE 60          TO LONPAG OF W01-II
+              MOVE WS-LARSEL   TO ANCPAG OF W01-II
+              MOVE 3           TO LINPUL OF W01-II
+              MOVE 2           TO CARPUL OF W01-II
+              PERFORM PARAMETROS-INFORME
+              PERFORM CARGAR-WS02
+           ELSE
+           IF F6
+              MOVE REGREL OF WC02-II TO REGREL-WS
+           ELSE
+           IF F15
+              PERFORM LLAMA-RESUMENES
+              PERFORM CARGAR-WS02
+           ELSE
+           IF INTRO
+              IF AVACOL OF WC02-II NOT = ZEROES
+                 ADD AVACOL OF WC02-II TO COL-AVANZA
+                 IF COL-AVANZA > 10000
+                    MOVE 9931 TO COL-AVANZA
+                 END-IF
+                 PERFORM CARGAR-WS02
+              ELSE
+                IF RETCOL OF WC02-II NOT = ZEROES
+                   SUBTRACT RETCOL OF WC02-II FROM COL-AVANZA
+                   IF COL-AVANZA < 0
+                      MOVE 1    TO COL-AVANZA
+                   END-IF
+                   PERFORM CARGAR-WS02
+                END-IF
+              END-IF.
+
+           MOVE REGREL-WS TO POSCUR OF WC02-II.
+      *
+       LLAMA-RESUMENES.
+      *----------------
+           MOVE WS-ARCGEN    TO ARCHIVO-28C
+           MOVE WS-BIBGEN    TO BIBLIOTECA-28C
+           MOVE WS-ARCBAS    TO ARCHIVO-BASE-28C
+           MOVE WS-CODEVE    TO CODEVE-28C
+           MOVE WS-FECPRO    TO FECPRO-28C
+           MOVE WS-HORPRO    TO HORPRO-28C
+           MOVE WS-SECEJE    TO SECEJE-28C
+           CALL   "ASQRY17" USING PARA-28C
+           CANCEL "ASQRY17".
+      *
+       PARAMETROS-INFORME.
+      *-------------------
+           WRITE R-PANTALLA03 FROM W01-II FORMAT "W01"
+                              END-WRITE
+           READ  PANTALLA03   INTO W01-II FORMAT "W01"
+                              INDICATORS ARE W01-I-INDIC END-READ.
+
+           IF INTRO
+              MOVE LONPAG OF W01-II   TO LONGITUD-PRT
+                                         OVRFLW-PRT
+      *       MOVE ANCPAG OF W01-II   TO ANCHURA-PRT
+              EVALUATE LINPUL OF W01-II
+                WHEN 1  MOVE "3   "   TO LINPULGADA-PRT
+                WHEN 2  MOVE "4   "   TO LINPULGADA-PRT
+                WHEN 3  MOVE "6   "   TO LINPULGADA-PRT
+                WHEN 4  MOVE "7.5 "   TO LINPULGADA-PRT
+                WHEN 5  MOVE "7,5 "   TO LINPULGADA-PRT
+                WHEN 6  MOVE "8   "   TO LINPULGADA-PRT
+                WHEN 7  MOVE "9   "   TO LINPULGADA-PRT
+                WHEN 8  MOVE "12  "   TO LINPULGADA-PRT
+              END-EVALUATE
+              EVALUATE CARPUL OF W01-II
+                WHEN 1  MOVE "5   "   TO CARPULGADA-PRT
+                WHEN 2  MOVE "10  "   TO CARPULGADA-PRT
+                WHEN 3  MOVE "12  "   TO CARPULGADA-PRT
+                WHEN 4  MOVE "13.3"   TO CARPULGADA-PRT
+                WHEN 5  MOVE "13,3"   TO CARPULGADA-PRT
+                WHEN 6  MOVE "15  "   TO CARPULGADA-PRT
+                WHEN 7  MOVE "16.7"   TO CARPULGADA-PRT
+                WHEN 8  MOVE "16,7"   TO CARPULGADA-PRT
+                WHEN 9  MOVE "18  "   TO CARPULGADA-PRT
+                WHEN 10 MOVE "20  "   TO CARPULGADA-PRT
+              END-EVALUATE.
+              MOVE SPACES  TO PARAM1
+              MOVE OVRPRTF-QSYSPRT    TO PARAM1
+              CALL "QCMDEXC" USING PARAM1 PARAM2
+              OPEN OUTPUT INFORME
+
+              PERFORM CARGAR-WS03
+              MOVE ZEROES      TO MDTO
+              MOVE WS-ARCGEN TO ARCHIVO    OF WC03-II
+              MOVE WS-BIBGEN TO BIBLIOTECA OF WC03-II
+              PERFORM PROCESA-WC03 UNTIL F9
+
+
+              CLOSE       INFORME
+
+              MOVE SPACES  TO PARAM1
+              MOVE DLTOVR-QSYSPRT     TO PARAM1
+              CALL "QCMDEXC" USING PARAM1 PARAM2.
+
+      *
+       PROCESA-WC03.
+      *--------------
+           WRITE R-PANTALLA04 FROM WC03-II FORMAT "WC03"
+                              INDICATORS ARE WC03-O-INDIC END-WRITE
+           READ  PANTALLA04   INTO WC03-II FORMAT "WC03"
+                              INDICATORS ARE WC03-I-INDIC END-READ.
+
+           MOVE    SPACES        TO VARIABLE-3250
+           MOVE    ZEROES        TO CTA-MSG
+
+           IF F9
+              PERFORM RECORRER-WS03
+              IF CTA-MSG = 0
+                 PERFORM IMPRIME-DETALLE
+              END-IF
+           END-IF
+
+           IF CTA-MSG NOT = ZEROES
+              CALL    "VISERR2" USING VARIABLE-3250
+              CANCEL  "VISERR2"
+           END-IF.
+
+
+      *
+       RECORRER-WS03.
+      *--------------
+           PERFORM VARYING P-RUP FROM 1 BY 1 UNTIL P-RUP > 999
+               MOVE ZEROES   TO ORDEN-RUP-N(P-RUP)
+                                ORDEN-INF-N(P-RUP)
+               MOVE SPACES   TO TCAMPO-INF-N(P-RUP)
+               MOVE SPACES   TO CAMPO-INF-N(P-RUP)
+           END-PERFORM
+
+           PERFORM VARYING NREL04 FROM 1 BY 1 UNTIL NREL04 > 1000 OR
+                   FS-PANTALLA04 NOT = "00"
+               PERFORM LEER-NEXT-WS04
+               IF FS-PANTALLA04 = "00"
+                  PERFORM ACUMULA-RUPTURA
+               END-IF
+           END-PERFORM
+
+           PERFORM VARYING P-RUP FROM 1 BY 1 UNTIL P-RUP > 999
+               IF ORDEN-RUP-N(P-RUP) > 1
+                  ADD   1     TO    CTA-MSG
+                  MOVE SPACES TO    TEXTO-ARR(CTA-MSG)
+                  STRING "NUMERO DE RUPTURA "       DELIMITED SIZE
+                         P-RUP                      DELIMITED BY " "
+                         " SE ENCUENTRA REPETIDO "  DELIMITED SIZE
+                                 INTO TEXTO-ARR(CTA-MSG)
+               END-IF
+           END-PERFORM.
+
+           MOVE SPACES     TO    ORDENAR-INF
+           MOVE SPACES     TO    SEL-COMPARAR
+           IF CTA-MSG = 0
+              MOVE '('           TO SEL-COMPARAR(1:1)
+              MOVE 2             TO PS-COMP
+
+              PERFORM VARYING P-RUP FROM 1 BY 1 UNTIL P-RUP > 999
+               IF ORDEN-RUP-N(P-RUP) = 1
+                  IF TCAMPO-INF-N(P-RUP) = 'S' OR 'P'
+                     MOVE ' DIGITS( '        TO SEL-COMPARAR
+                                                (PS-COMP:9)
+                     ADD 9                   TO PS-COMP
+                     MOVE CAMPO-INF-N(P-RUP) TO SEL-COMPARAR
+                                                (PS-COMP:10)
+                     ADD 10                  TO PS-COMP
+                     MOVE ') '               TO SEL-COMPARAR
+                                                (PS-COMP:2)
+                     ADD 2                   TO PS-COMP
+                  ELSE
+                     MOVE CAMPO-INF-N(P-RUP) TO SEL-COMPARAR
+                                                (PS-COMP:10)
+                     ADD 10                  TO PS-COMP
+
+                  END-IF
+                  MOVE ' || " " || '        TO SEL-COMPARAR
+                                               (PS-COMP:11)
+                  ADD 11                    TO PS-COMP
+               END-IF
+              END-PERFORM
+
+              SUBTRACT 11 FROM PS-COMP
+              MOVE ')          '       TO SEL-COMPARAR(PS-COMP:11).
+      *
+       ACUMULA-RUPTURA.
+      *----------------
+           IF ORDENRUP OF WS03-OO > 0
+              ADD  1          TO ORDEN-RUP-N(ORDENRUP OF WS03-OO)
+              MOVE ORDENINF OF WS03-OO
+                              TO ORDEN-INF-N(ORDENRUP OF WS03-OO)
+              MOVE CAMPO  OF WS03-OO
+                               TO CAMPO-INF-N(ORDENRUP OF WS03-OO)
+              MOVE TCAMPO  OF WS03-OO
+                               TO TCAMPO-INF-N(ORDENRUP OF WS03-OO)
+           END-IF.
+      *
+       LEER-NEXT-WS04.
+      *---------------
+           READ SUBFILE PANTALLA04 INTO WS03-OO FORMAT "WS03"
+                END-READ.
+      *
+       IMPRIME-DETALLE.
+      *----------------
+           PERFORM ARMAR-ENCABEZADO
+
+           IF SEL-COMPARAR = SPACES
+              MOVE ' ( "SIN-COMPARAR" ) '   TO SEL-COMPARAR
+           END-IF
+
+           STRING WS-SELCON                  DELIMITED SIZE
+                  ', '                       DELIMITED SIZE
+                  SEL-COMPARAR               DELIMITED SIZE
+                  ' AS DOS '                 DELIMITED SIZE
+                  ' FROM '                   DELIMITED SIZE
+                  WS-BIBGEN                  DELIMITED BY ' '
+                  '/'                        DELIMITED SIZE
+                  WS-ARCGEN                  DELIMITED BY ' '
+                  ' '                        DELIMITED SIZE
+                  ' ORDER BY DOS '           DELIMITED SIZE
+                                        INTO SEN-INFORME.
+
+           EXEC SQL
+               DECLARE SENINFORME STATEMENT
+           END-EXEC.
+           EXEC SQL
+               PREPARE SENINFORME FROM :SEN-INFORME
+           END-EXEC
+           EXEC SQL
+           DECLARE C20 CURSOR FOR SENINFORME
+           END-EXEC
+           EXEC SQL
+               OPEN C20
+           END-EXEC
+           PERFORM LEER-FETCH-C20
+           IF SQLCODE = 0
+              MOVE COMPARAR-C20  TO COMPARAR-WS
+              PERFORM PRINT-HEAD
+              MOVE ZEROES     TO R-IMP-CORTE
+                                 R-IMP-TOTAL
+              PERFORM IMPRIME-DET-INF UNTIL SQLCODE NOT = 0
+              PERFORM IMPRIME-R-CORTE
+              PERFORM IMPRIME-R-TOTALES
+           END-IF
+           EXEC SQL
+               CLOSE C20
+           END-EXEC
+           PERFORM IMPRIME-DET-RESUMEN.
+
+      *
+       IMPRIME-DET-RESUMEN.
+      *--------------------
+           EXEC SQL
+           DECLARE INFRES CURSOR FOR SELECT FECRES, SECRES, SELRES
+           FROM ASQRY15F WHERE CODEVE = :WS-CODEVE AND FECPRO1 =
+           :WS-FECPRO AND HORPRO1 = :WS-HORPRO AND SECEJE = :WS-SECEJE
+           ORDER BY 1, 2
+           END-EXEC.
+           EXEC SQL OPEN INFRES END-EXEC
+           PERFORM LEER-FETCH-INFRES
+           IF SQLCODE = 0
+              PERFORM PRINT-HEAD-RES
+              PERFORM IMPRIME-DET-INF-RES UNTIL SQLCODE NOT = 0
+           END-IF
+           EXEC SQL CLOSE INFRES END-EXEC.
+
+      *
+       IMPRIME-DET-INF.
+      *----------------
+           IF COMPARAR-WS NOT = COMPARAR-C20
+              PERFORM IMPRIME-R-CORTE
+              PERFORM PRINT-HEAD
+              MOVE COMPARAR-C20 TO COMPARAR-WS
+              MOVE ZEROES       TO R-IMP-CORTE
+           END-IF
+
+           ADD  1                       TO R-IMP-CORTE
+                                           R-IMP-TOTAL
+           MOVE 0                       TO LIMP
+           MOVE 1                       TO PINF-D
+           MOVE DETALLE-C20(PINF-D:132) TO TEXTO-132-D
+           PERFORM UNTIL TEXTO-132-D = SPACES OR PINF-D = 9900
+              ADD  1                    TO LIMP
+              MOVE DETALLE-C20(PINF-D:132)  TO DETINF OF DETALLE-OO
+              WRITE R-INFORME FROM DETALLE-OO FORMAT "DETALLE"
+                    AT END-OF-PAGE PERFORM PRINT-HEAD
+                    END-WRITE
+              ADD  132                     TO PINF-D
+              MOVE DETALLE-C20(PINF-D:132) TO TEXTO-132-D
+           END-PERFORM
+
+      *
+      * GENERA UNA LINEA EN BLANCO
+      *
+           IF LIMP > 1
+              MOVE SPACES                   TO DETINF OF DETALLE-OO
+              WRITE R-INFORME FROM DETALLE-OO FORMAT "DETALLE"
+                    AT END-OF-PAGE PERFORM PRINT-HEAD
+                    END-WRITE
+           END-IF
+
+           PERFORM LEER-FETCH-C20.
+      *
+       IMPRIME-DET-INF-RES.
+      *--------------------
+           MOVE DETALLE-RES-INF TO DETINF OF DETALLE-OO
+           WRITE R-INFORME FROM DETALLE-OO FORMAT "DETALLE"
+                 AT END-OF-PAGE PERFORM PRINT-HEAD-RES
+                 END-WRITE
+
+           PERFORM LEER-FETCH-INFRES.
+      *
+       IMPRIME-R-TOTALES.
+      *------------------
+           MOVE SPACES TO DETINF OF DETALLE-OO
+           WRITE R-INFORME FROM DETALLE-OO FORMAT "DETALLE"
+                 AT END-OF-PAGE PERFORM PRINT-HEAD
+                 END-WRITE
+
+           MOVE SPACES TO DETINF OF DETALLE-OO
+           STRING "                                " DELIMITED SIZE
+                  "TOTAL DE REGISTROS IMPRESOS --> " DELIMITED SIZE
+                  R-IMP-TOTAL                        DELIMITED SIZE
+                                              INTO DETINF OF DETALLE-OO
+           WRITE R-INFORME FROM DETALLE-OO FORMAT "DETALLE"
+                 AT END-OF-PAGE PERFORM PRINT-HEAD
+                 END-WRITE.
+
+      *
+       IMPRIME-R-CORTE.
+      *----------------
+           MOVE SPACES TO DETINF OF DETALLE-OO
+           WRITE R-INFORME FROM DETALLE-OO FORMAT "DETALLE"
+                 AT END-OF-PAGE PERFORM PRINT-HEAD
+                 END-WRITE
+
+           MOVE SPACES TO DETINF OF DETALLE-OO
+           STRING "                                " DELIMITED SIZE
+                  "REGISTROS IMPRESOS AL CORTE --> " DELIMITED SIZE
+                  R-IMP-CORTE                        DELIMITED SIZE
+                                              INTO DETINF OF DETALLE-OO
+           WRITE R-INFORME FROM DETALLE-OO FORMAT "DETALLE"
+                 AT END-OF-PAGE PERFORM PRINT-HEAD
+                 END-WRITE.
+
+      *
+       PRINT-HEAD-RES.
+      *---------------
+           WRITE R-INFORME                 FORMAT "TITULO"
+                 END-WRITE
+
+           MOVE SPACES                   TO DETINF OF DETALLE-OO
+           STRING "                    " DELIMITED SIZE
+                  "EVENTO IMPRESO ---> " DELIMITED SIZE
+                  WS-DESEVE              DELIMITED SIZE
+                                         INTO DETINF OF DETALLE-OO
+           WRITE R-INFORME FROM  DETALLE-OO FORMAT "DETALLE"
+                 END-WRITE.
+
+      *
+       PRINT-HEAD.
+      *-----------
+           WRITE R-INFORME                 FORMAT "TITULO"
+                 END-WRITE
+
+           MOVE SPACES                   TO DETINF OF DETALLE-OO
+           STRING "                    " DELIMITED SIZE
+                  "EVENTO IMPRESO ---> " DELIMITED SIZE
+                  WS-DESEVE              DELIMITED SIZE
+                                         INTO DETINF OF DETALLE-OO
+           WRITE R-INFORME FROM  DETALLE-OO FORMAT "DETALLE"
+                 END-WRITE
+
+           MOVE SPACES                   TO DETINF OF DETALLE-OO
+           WRITE R-INFORME FROM  DETALLE-OO FORMAT "DETALLE"
+                 END-WRITE
+
+           MOVE 1                        TO PINF
+           MOVE HEAD-INFORME-1(PINF:132) TO TEXTO-132
+           PERFORM UNTIL TEXTO-132 = SPACES OR PINF = 9900
+
+              MOVE HEAD-INFORME-1(PINF:132) TO DETINF OF DETALLE-OO
+              WRITE R-INFORME FROM  DETALLE-OO FORMAT "DETALLE"
+                    END-WRITE
+
+              IF HEAD-INFORME-2(PINF:132) NOT = SPACES
+                 MOVE HEAD-INFORME-2(PINF:132) TO DETINF OF DETALLE-OO
+                 WRITE R-INFORME FROM  DETALLE-OO FORMAT "DETALLE"
+                 END-WRITE
+              END-IF
+              IF HEAD-INFORME-3(PINF:132) NOT = SPACES
+                 MOVE HEAD-INFORME-3(PINF:132) TO DETINF OF DETALLE-OO
+                 WRITE R-INFORME FROM  DETALLE-OO FORMAT "DETALLE"
+                 END-WRITE
+              END-IF
+              MOVE HEAD-INFORME-L(1:132) TO DETINF OF DETALLE-OO
+              WRITE R-INFORME FROM DETALLE-OO FORMAT "DETALLE"
+                    END-WRITE
+
+               ADD  132                      TO PINF
+               MOVE HEAD-INFORME-1(PINF:132) TO TEXTO-132
+           END-PERFORM.
+      *
+       CARGAR-WS02.
+      *------------
+           PERFORM LIMPIA-WS02
+           MOVE CODEVE OF WS01-OO  TO WS-CODEVE
+           MOVE FECPRO OF WS01-OO  TO WS-FECPRO
+           MOVE HORPRO OF WS01-OO  TO WS-HORPRO
+           MOVE SECPRO OF WS01-OO  TO WS-SECEJE
+
+           EXEC SQL
+           SELECT SELCON, BIBGEN, ARCGEN, ARCBAS, LARSEL INTO
+           :WS-SELCON, :WS-BIBGEN, :WS-ARCGEN, :WS-ARCBAS, :WS-LARSEL
+           FROM  ASQRY04F WHERE CODEVE = :WS-CODEVE AND FECPRO1
+           = :WS-FECPRO AND HORPRO1 = :WS-HORPRO AND SECEJE = :WS-SECEJE
+            END-EXEC
+
+           MOVE SPACES     TO WS-DESEVE
+           EXEC SQL
+           SELECT DESEVE INTO :WS-DESEVE FROM  ASQRY03F WHERE
+           CODEVE = :WS-CODEVE
+           END-EXEC
+
+           PERFORM ARMAR-ENCABEZADO
+
+           STRING WS-SELCON                  DELIMITED SIZE
+                  ' FROM '                   DELIMITED SIZE
+                  WS-BIBGEN                  DELIMITED BY ' '
+                  '/'                        DELIMITED SIZE
+                  WS-ARCGEN                  DELIMITED BY ' '
+                  ' OPTIMIZE FOR 1000 ROWS ' DELIMITED SIZE
+                                        INTO SEN-EJECUTAR.
+
+           EXEC SQL
+               DECLARE SENEJECUTAR STATEMENT
+           END-EXEC.
+           EXEC SQL
+               PREPARE SENEJECUTAR FROM :SEN-EJECUTAR
+           END-EXEC
+           EXEC SQL
+               DECLARE C2 CURSOR FOR SENEJECUTAR
+           END-EXEC
+           EXEC SQL
+               OPEN C2
+           END-EXEC
+           PERFORM LEER-FETCH-C2
+           PERFORM LLENA-WS02 UNTIL SQLCODE NOT = 0 OR NREL02 > 1000
+           EXEC SQL
+               CLOSE C2
+           END-EXEC
+
+           PERFORM AGREGAR-RESUMENES
+
+           IF NREL02 = 0
+              MOVE I-OFF TO IN30 OF WC02-O-INDIC
+                            IN32 OF WC02-O-INDIC
+              MOVE I-ON  TO IN31 OF WC02-O-INDIC
+           ELSE
+              MOVE I-ON  TO IN30 OF WC02-O-INDIC
+              MOVE I-OFF TO IN32 OF WC02-O-INDIC
+              MOVE I-ON  TO IN31 OF WC02-O-INDIC.
+
+      *
+       CARGAR-WS03.
+      *------------
+           PERFORM LIMPIA-WS03
+           EXEC SQL
+           DECLARE C4 CURSOR FOR SELECT WHFLDI, WHFTXT, WHFLDT FROM
+            ASQRY01F WHERE WHFILE = :WS-ARCBAS
+           END-EXEC
+
+           EXEC SQL
+               OPEN C4
+           END-EXEC
+           PERFORM LEER-FETCH-C4
+           PERFORM LLENA-WS03 UNTIL SQLCODE NOT = 0 OR NREL04 > 1000
+           EXEC SQL
+               CLOSE C4
+           END-EXEC
+
+           MOVE I-ON  TO IN30 OF WC03-O-INDIC
+           MOVE I-OFF TO IN32 OF WC03-O-INDIC
+           MOVE I-ON  TO IN31 OF WC03-O-INDIC.
+
+      *
+       AGREGAR-RESUMENES.
+      *------------------
+           EXEC SQL
+           DECLARE RESUMEN CURSOR FOR SELECT FECRES, SECRES, SELRES
+           FROM ASQRY15F WHERE CODEVE = :WS-CODEVE AND FECPRO1 =
+           :WS-FECPRO AND HORPRO1 = :WS-HORPRO AND SECEJE = :WS-SECEJE
+           ORDER BY 1, 2
+           END-EXEC.
+           EXEC SQL OPEN RESUMEN END-EXEC
+           PERFORM LEER-FETCH-RESUMEN
+           PERFORM LLENA-WS02-R UNTIL SQLCODE NOT = 0
+           EXEC SQL CLOSE RESUMEN END-EXEC.
+
+      *
+       ARMAR-ENCABEZADO.
+      *-----------------
+           EXEC SQL
+           DECLARE C3 CURSOR FOR SELECT WHFLDI, WHFLDB, WHFLDD, WHFLDT
+           FROM  ASQRY01F WHERE WHFILE = :WS-ARCBAS
+           END-EXEC
+           EXEC SQL
+               OPEN C3
+           END-EXEC
+           PERFORM LEER-FETCH-C3
+           MOVE SPACES  TO HEAD-INFORME-1
+                           HEAD-INFORME-2
+                           HEAD-INFORME-3
+                           HEAD-INFORME-L
+
+           INSPECT HEAD-INFORME-L
+                     REPLACING ALL " " BY "-"
+
+           MOVE 1       TO P-HEAD
+           PERFORM ARMA-FMTO-HEAD UNTIL SQLCODE NOT = 0
+           EXEC SQL
+               CLOSE C3
+           END-EXEC
+      *
+      * SE IMPRIMEN LINEAS DE ENCABEZADO
+      *
+           ADD  1                TO NREL02
+           MOVE HEAD-INFORME-1(COL-AVANZA:70) TO DETALLE  OF WS02-OO
+           WRITE SUBFILE R-PANTALLA02 FROM WS02-OO FORMAT "WS02"
+                 END-WRITE
+           IF HEAD-INFORME-2 NOT = SPACES
+              ADD  1                TO NREL02
+              MOVE HEAD-INFORME-2(COL-AVANZA:70) TO DETALLE  OF WS02-OO
+              WRITE SUBFILE R-PANTALLA02 FROM WS02-OO FORMAT "WS02"
+                    END-WRITE
+           END-IF
+           IF HEAD-INFORME-2 NOT = SPACES
+              ADD  1                TO NREL02
+              MOVE HEAD-INFORME-3(COL-AVANZA:70) TO DETALLE  OF WS02-OO
+              WRITE SUBFILE R-PANTALLA02 FROM WS02-OO FORMAT "WS02"
+                    END-WRITE
+           END-IF
+           ADD  1                TO NREL02
+           MOVE HEAD-INFORME-L(COL-AVANZA:70) TO DETALLE OF WS02-OO
+           WRITE SUBFILE R-PANTALLA02 FROM WS02-OO FORMAT "WS02"
+                 END-WRITE.
+      *
+      * FIN SE IMPRIMEN LINEAS DE ENCABEZADO
+      *
+      *
+       ARMA-FMTO-HEAD.
+      *---------------
+      *  A = CHARACTER
+      *  S = NUMERICO
+      *  F = FLOAT
+      *  P = DECIMAL
+      *  L = DATE
+      *  T = TIME
+      *  G = GRAPHIC
+           MOVE CAMPO-C3   TO CAMPO OF ASQRY13F
+           READ ASQRY13F END-READ
+           IF FS-ASQRY13F  = '23'
+              MOVE CAMPO-C3     TO CABEC1 OF ASQRY13F
+              MOVE SPACES       TO CABEC2 OF ASQRY13F
+                                   CABEC3 OF ASQRY13F
+           END-IF
+
+           EVALUATE TIPO-C3
+             WHEN 'A'
+                 IF LARGO-C3  < 10
+                    MOVE CABEC1 OF ASQRY13F TO HEAD-INFORME-1(P-HEAD:10)
+                    MOVE CABEC2 OF ASQRY13F TO HEAD-INFORME-2(P-HEAD:10)
+                    MOVE CABEC3 OF ASQRY13F TO HEAD-INFORME-3(P-HEAD:10)
+                    ADD  10        TO P-HEAD
+                 ELSE
+                    MOVE CABEC1 OF ASQRY13F TO
+                                   HEAD-INFORME-1(P-HEAD:LARGO-C3)
+                    MOVE CABEC2 OF ASQRY13F TO
+                                   HEAD-INFORME-2(P-HEAD:LARGO-C3)
+                    MOVE CABEC3 OF ASQRY13F TO
+                                   HEAD-INFORME-3(P-HEAD:LARGO-C3)
+                    ADD  LARGO-C3  TO P-HEAD
+                 END-IF
+
+             WHEN 'P'
+                 IF DIGIT-C3  < 10
+                    MOVE CABEC1 OF ASQRY13F TO HEAD-INFORME-1(P-HEAD:10)
+                    MOVE CABEC2 OF ASQRY13F TO HEAD-INFORME-2(P-HEAD:10)
+                    MOVE CABEC3 OF ASQRY13F TO HEAD-INFORME-3(P-HEAD:10)
+                    ADD  10        TO P-HEAD
+                 ELSE
+                    MOVE CABEC1 OF ASQRY13F TO
+                                   HEAD-INFORME-1(P-HEAD:LARGO-C3)
+                    MOVE CABEC2 OF ASQRY13F TO
+                                   HEAD-INFORME-2(P-HEAD:LARGO-C3)
+                    MOVE CABEC3 OF ASQRY13F TO
+                                   HEAD-INFORME-3(P-HEAD:LARGO-C3)
+                    ADD  DIGIT-C3  TO P-HEAD
+                 END-IF
+             WHEN 'S'
+                 IF DIGIT-C3  < 10
+                    MOVE CABEC1 OF ASQRY13F TO HEAD-INFORME-1(P-HEAD:10)
+                    MOVE CABEC2 OF ASQRY13F TO HEAD-INFORME-2(P-HEAD:10)
+                    MOVE CABEC3 OF ASQRY13F TO HEAD-INFORME-3(P-HEAD:10)
+                    ADD  10        TO P-HEAD
+                 ELSE
+                    MOVE CABEC1 OF ASQRY13F TO
+                                   HEAD-INFORME-1(P-HEAD:LARGO-C3)
+                    MOVE CABEC2 OF ASQRY13F TO
+                                   HEAD-INFORME-2(P-HEAD:LARGO-C3)
+                    MOVE CABEC3 OF ASQRY13F TO
+                                   HEAD-INFORME-3(P-HEAD:LARGO-C3)
+                    ADD  DIGIT-C3  TO P-HEAD
+                 END-IF
+             WHEN 'L'
+                  MOVE CABEC1 OF ASQRY13F TO HEAD-INFORME-1(P-HEAD:10)
+                  MOVE CABEC2 OF ASQRY13F TO HEAD-INFORME-2(P-HEAD:10)
+                  MOVE CABEC3 OF ASQRY13F TO HEAD-INFORME-3(P-HEAD:10)
+                  ADD  10        TO P-HEAD
+             WHEN 'T'
+                  MOVE CABEC1 OF ASQRY13F TO HEAD-INFORME-1(P-HEAD:10)
+                  MOVE CABEC2 OF ASQRY13F TO HEAD-INFORME-2(P-HEAD:10)
+                  MOVE CABEC3 OF ASQRY13F TO HEAD-INFORME-3(P-HEAD:10)
+                  ADD  10        TO P-HEAD
+           END-EVALUATE.
+           ADD 1                 TO P-HEAD
+           PERFORM LEER-FETCH-C3.
+      *
+       VALIDA-FECHA.
+      *-------------
+           MOVE SPACES  TO FAAAAMMDD
+           CALL   "MRTVDAF3" USING FDDMMAAAA FAAAAMMDD
+           CANCEL "MRTVDAF3".
+
+       CARGAR-WS01.
+      *------------
+           PERFORM LIMPIA-WS01
+
+           IF WX-FECAMD IS NOT NUMERIC
+              MOVE WS-DATECUR TO WX-FECAMD
+           END-IF
+
+           IF USUARIO OF WC01-II = SPACES
+              MOVE "          "   TO USR-1
+              MOVE "ZZZZZZZZZZ"   TO USR-2
+           ELSE
+              MOVE USUARIO OF WC01-II  TO USR-1
+                                          USR-2
+           END-IF
+
+           EXEC SQL
+           DECLARE C1 CURSOR FOR SELECT (CODEVE || "/" ||
+           DIGITS(NROPRO) || "/" || DIGITS(CORPRO)) AS ORDEN, CODEVE,
+           FECPRO1, HORPRO1, SECEJE, (BIBGEN || "/" || ARCGEN), CANREG
+           , ESTPRO, USRPRO FROM  ASQRY04F WHERE FECPRO1 >=
+           :WX-FECAMD-R AND ESTPRO = "T" AND USRPRO BETWEEN :USR-1 AND
+           :USR-2 ORDER BY CODEVE, FECPRO1, HORPRO1, SECEJE
+           END-EXEC
+
+           EXEC SQL
+              OPEN C1
+           END-EXEC
+           PERFORM LEER-FETCH-C1
+           MOVE ZEROES   TO NREL01
+           PERFORM CARGA-SFL UNTIL SQLCODE NOT = 0
+           EXEC SQL
+              CLOSE C1
+           END-EXEC
+
+           IF NREL01 = 0
+              MOVE I-OFF TO IN30 OF WC01-O-INDIC
+                            IN32 OF WC01-O-INDIC
+              MOVE I-ON  TO IN31 OF WC01-O-INDIC
+           ELSE
+              MOVE I-ON  TO IN30 OF WC01-O-INDIC
+              MOVE I-OFF TO IN32 OF WC01-O-INDIC
+              MOVE I-ON  TO IN31 OF WC01-O-INDIC.
+
+      *
+       CARGA-SFL.
+      *-----------
+           ADD      1                  TO NREL01
+           MOVE CODEVE-SQL             TO CODEVE OF WS01-OO
+           MOVE FECPRO-SQL             TO FECPRO OF WS01-OO
+                                          FECPRO-X
+           MOVE HORPRO-SQL             TO HORPRO OF WS01-OO
+           MOVE SECEJE-SQL             TO SECPRO OF WS01-OO
+           MOVE ZEROES                 TO CTL001 OF WS01-OO
+           MOVE SPACES                 TO DETSFL OF WS01-OO
+           STRING TIPPRO-SQL              DELIMITED SIZE
+                  " "                     DELIMITED SIZE
+                  FECPRO-X(7:2)           DELIMITED SIZE
+                  "/"                     DELIMITED SIZE
+                  FECPRO-X(5:2)           DELIMITED SIZE
+                  "/"                     DELIMITED SIZE
+                  FECPRO-X(1:4)           DELIMITED SIZE
+                  " "                     DELIMITED SIZE
+                  REGGRA-SQL              DELIMITED SIZE
+                  "   "                   DELIMITED SIZE
+                  BIBARC-SQL              DELIMITED SIZE
+                                     INTO DETSFL OF WS01-OO
+           WRITE SUBFILE R-PANTALLA01 FROM WS01-OO FORMAT "WS01"
+                 END-WRITE
+           PERFORM LEER-FETCH-C1.
+      *
+       LLENA-WS02.
+      *-----------
+           ADD  1                TO NREL02
+           MOVE DETALLE-C2(COL-AVANZA:70) TO DETALLE  OF WS02-OO
+           WRITE SUBFILE R-PANTALLA02 FROM WS02-OO FORMAT "WS02"
+                 END-WRITE
+           PERFORM LEER-FETCH-C2.
+      *
+       LLENA-WS03.
+      *-----------
+           ADD  1                TO NREL04
+           MOVE CAMPO-SQL        TO CAMPO  OF WS03-OO
+           MOVE TEXTO-SQL        TO TEXTO  OF WS03-OO
+           MOVE TCAMPO-SQL       TO TCAMPO OF WS03-OO
+           MOVE NREL04           TO ORDENINF OF WS03-OO
+           MOVE ZEROES           TO ORDENRUP OF WS03-OO
+           WRITE SUBFILE R-PANTALLA04 FROM WS03-OO FORMAT "WS03"
+                 END-WRITE
+           PERFORM LEER-FETCH-C4.
+      *
+       LLENA-WS02-R.
+      *--------------
+           ADD  1                TO NREL02
+           MOVE DETALLE-RES(COL-AVANZA:70) TO DETALLE  OF WS02-OO
+           WRITE SUBFILE R-PANTALLA02 FROM WS02-OO FORMAT "WS02"
+                 END-WRITE
+           PERFORM LEER-FETCH-RESUMEN.
+      *
+       LEER-FETCH-C1.
+      *--------------
+           EXEC SQL
+              FETCH NEXT FROM C1 INTO :DATOS-SQL
+           END-EXEC.
+      *
+       LEER-FETCH-C2.
+      *--------------
+           EXEC SQL
+              FETCH NEXT FROM C2 INTO :DATOS-SQL-C2
+           END-EXEC.
+      *
+       LEER-FETCH-RESUMEN.
+      *-------------------
+           EXEC SQL
+              FETCH NEXT FROM RESUMEN INTO :DATOS-SQL-RES
+           END-EXEC.
+      *
+       LEER-FETCH-INFRES.
+      *------------------
+           EXEC SQL
+              FETCH NEXT FROM INFRES  INTO :DATOS-SQL-INFRES
+           END-EXEC.
+      *
+       LEER-FETCH-C20.
+      *--------------
+           EXEC SQL
+              FETCH NEXT FROM C20 INTO :DATOS-SQL-C20
+           END-EXEC.
+      *
+       LEER-FETCH-C3.
+      *--------------
+           EXEC SQL
+              FETCH NEXT FROM C3 INTO :DATOS-SQL-C3
+           END-EXEC.
+      *
+       LEER-FETCH-C4.
+      *--------------
+           EXEC SQL
+              FETCH NEXT FROM C4 INTO :DATOS-SQL-C4
+           END-EXEC.
+      *
+       LIMPIA-WS01.
+      *------------
+           MOVE I-ON            TO IN32 OF WC01-O-INDIC
+           MOVE I-OFF           TO IN30 OF WC01-O-INDIC
+                                   IN31 OF WC01-O-INDIC
+           MOVE ZEROES          TO NREL01
+           WRITE R-PANTALLA01 FROM WC01-II FORMAT "WC01"
+                                 INDICATORS ARE WC01-O-INDIC.
+      *
+       LIMPIA-WS02.
+      *------------
+           MOVE I-ON            TO IN32 OF WC02-O-INDIC
+           MOVE I-OFF           TO IN30 OF WC02-O-INDIC
+                                   IN31 OF WC02-O-INDIC
+           MOVE ZEROES          TO NREL02
+           WRITE R-PANTALLA02 FROM WC02-II FORMAT "WC02"
+                                 INDICATORS ARE WC02-O-INDIC.
+      *
+       LIMPIA-WS03.
+      *------------
+           MOVE I-ON            TO IN32 OF WC03-O-INDIC
+           MOVE I-OFF           TO IN30 OF WC03-O-INDIC
+                                   IN31 OF WC03-O-INDIC
+           MOVE ZEROES          TO NREL04
+           WRITE R-PANTALLA04 FROM WC03-II FORMAT "WC03"
+                                 INDICATORS ARE WC03-O-INDIC.
+      *
+       TERMINO.
+      *---------
+           CLOSE  PANTALLA01 PANTALLA02 PANTALLA03 PANTALLA04 ASQRY13F.
+

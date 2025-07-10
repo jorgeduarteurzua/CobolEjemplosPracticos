@@ -1,0 +1,58 @@
+       IDENTIFICATION DIVISION.
+      *-----------------------*
+       PROGRAM-ID. ASQRY31.
+       AUTHOR. JORGE DUARTE U.
+       ENVIRONMENT DIVISION.
+      *--------------------*
+       CONFIGURATION SECTION.
+       SOURCE-COMPUTER.      IBM-AS400.
+       OBJECT-COMPUTER.      IBM-AS400.
+       SPECIAL-NAMES.        LOCAL-DATA IS LOCAL-DATA-AREA .
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+           SELECT ASQRY23F   ASSIGN        TO DATABASE-ASQRY23F
+                             ORGANIZATION  IS INDEXED
+                             ACCESS MODE   IS DYNAMIC
+                             RECORD KEY    IS EXTERNALLY-DESCRIBED-KEY
+                             FILE STATUS   IS FS-ASQRY23F.
+
+       DATA DIVISION.
+      *--------------*
+       FILE SECTION.
+      *-------------*
+       FD  ASQRY23F  LABEL   RECORD STANDARD.
+       01  R-ASQRY23F.
+           COPY  DDS-ALL-FORMAT  OF ASQRY23F.
+
+       WORKING-STORAGE SECTION.
+      *------------------------*
+       01 ARREGLOS-DE-ARCHIVOS.
+          05 VAR-ARR-FILE OCCURS 50  TIMES.
+             10 FILE-ARR          PIC X(10).
+      *
+       01 VARIABLES-DE-STATUS.
+          05 FS-ASQRY23F    PIC XX VALUE "00".
+
+
+       LINKAGE SECTION.
+      *----------------
+       01 CONSULTA-LNK   PIC X(10).
+       01 COD-RETORNO    PIC X(01).
+
+       PROCEDURE DIVISION USING CONSULTA-LNK,
+                                COD-RETORNO.
+      *-------------------------------------------
+           INSPECT CONSULTA-LNK  CONVERTING "." TO " "
+           INSPECT COD-RETORNO   CONVERTING "." TO " "
+
+           OPEN  INPUT ASQRY23F.
+           MOVE CONSULTA-LNK    TO NOMCONS OF ASQRY23F
+
+           READ ASQRY23F END-READ
+           IF FS-ASQRY23F = "23"
+              MOVE "S"         TO COD-RETORNO
+           ELSE
+              MOVE "N"         TO COD-RETORNO
+           END-IF
+           CLOSE  ASQRY23F.
+           GOBACK.
