@@ -1,0 +1,2 @@
+1;9:UNO;RAYA;NUEVE;+5612345678;correo@gmail.com;H;01-01-1973;Chileno;Alameda;Santiago
+2;7:DOS;RAYA;SIETE;+5698765432;dos_raya_siete@hotmail.com;M;25-08-1940;Argentino;Providencia;Santiago
