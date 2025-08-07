@@ -1,0 +1,25 @@
+     A*%%TS  SD  20250724  074206  IG0JDUEX    REL-V7R2M0  5770-WDS
+     A*%%EC
+     A                                      DSPSIZ(24 80 *DS3)
+     A                                      INDARA
+     A                                      CF03(03 'SALIR')
+     A          R P01
+     A*%%TS  SD  20250724  074206  IG0JDUEX    REL-V7R2M0  5770-WDS
+     A                                      ENTFLDATR
+     A                                      PULLDOWN(*RSTCSR)
+     A            OPCP01         2Y 0B  1  2SNGCHCFLD(*RSTCSR *AUTOSLT *SLTIND -
+     A                                      *AUTOENT (*NUMCOL 1))
+     A                                      CHOICE(1 '>Listado Clientes')
+     A                                      CHOICE(2 '>Calendario')
+     A                                      CHOICE(3 '>Ventana Confirmación')
+     A                                      CHOICE(4 '>WRKSPLF')
+     A                                      CHOICE(5 'WRK>USRJOB')
+     A                                      CHOICE(6 'WRK>JOB')
+     A                                      CHOICE(7 '>Salir')
+     A          R M01
+     A*%%TS  SD  20250715  144142  IG0JDUEX    REL-V7R2M0  5770-WDS
+     A                                      OVERLAY
+     A                                      MNUBAR
+     A                                      MNUBARDSP
+     A            MNB001         2Y 0B  1  2MNUBARCHC(1 P01 'Opciones Principal-
+     A                                      es')

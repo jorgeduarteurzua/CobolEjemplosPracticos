@@ -1,0 +1,32 @@
+     A*%%TS  SD  20250715  072628  IG0JDUEX    REL-V7R2M0  5770-WDS
+     A*%%EC
+     A                                      DSPSIZ(24 80 *DS3)
+     A                                      INDARA
+     A                                      CF03(03 'Salir')
+     A          R WS01                      SFL
+     A*%%TS  SD  20250715  071721  IG0JDUEX    REL-V7R2M0  5770-WDS
+     A            MENSAJE       50   B  2  6
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A          R WC01                      SFLCTL(WS01)
+     A*%%TS  SD  20250715  072628  IG0JDUEX    REL-V7R2M0  5770-WDS
+     A                                      SFLCSRRRN(&REGREL)
+     A  30                                  SFLDSP
+     A  31                                  SFLDSPCTL
+     A  32                                  SFLCLR
+     A  30                                  SFLEND(*SCRBAR *SCRBAR)
+     A                                      SFLSIZ(0050)
+     A                                      SFLPAG(0003)
+     A                                      WINDOW(10 10 5 60)
+     A                                      WDWTITLE((*TEXT &WDWTIT)           -
+     A                                      (*COLOR WHT))
+     A                                      WDWTITLE((*TEXT 'F3-SALIR') (*COLOR-
+     A                                       WHT) *BOTTOM)
+     A            REGREL         5S 0H
+     A            WDWTIT        30A  P
+     A          R XX
+     A*%%TS  SD  20250714  165020  IG0JDUEX    REL-V7R2M0  5770-WDS
+     A                                      KEEP
+     A                                      ASSUME
+     A                                      OVERLAY
+     A                                  1  3' '

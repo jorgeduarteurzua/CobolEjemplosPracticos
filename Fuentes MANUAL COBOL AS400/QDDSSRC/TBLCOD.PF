@@ -1,0 +1,9 @@
+     A                                      UNIQUE
+     A          R RTBLCOD
+     A            NOMTBL        10A         COLHDG('TABLA AYUDA')
+     A            FLDCOD        10A         COLHDG('CODIGO')
+     A            FLDDESC       20A         COLHDG('DESCRIPCION CORTA')
+     A            FLDDESL       50A         COLHDG('DESCRIPCION LARGA')
+     A            FLDLEN         3S 0       COLHDG('LARGO CODIGO')
+     A          K NOMTBL
+     A          K FLDCOD

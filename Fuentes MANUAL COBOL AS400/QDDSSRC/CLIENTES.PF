@@ -1,0 +1,17 @@
+     A
+     A                                      UNIQUE
+     A          R CLIREG
+     A            RUT           10S 0       COLHDG('RUT DEL CLIENTE')
+     A            DV             1A         COLHDG('DV RUT')
+     A            NOMBRE        30A         COLHDG('NOMBRE CLIENTE')
+     A            APEPAT        30A         COLHDG('APE PATERNO')
+     A            APEMAT        30A         COLHDG('APE MATERNO')
+     A            FECNAC         8S 0       COLHDG('FECHA NACIMIENTO')
+     A            GENERO         1A         COLHDG('H=HOMBRE;M=MUJER')
+     A            DIRECC        50A         COLHDG('DIRECCION')
+     A            CIUDAD        50A         COLHDG('CIUDAD')
+     A            TELEFONO1     15A         COLHDG('TELEFONO 1')
+     A            TELEFONO2     15A         COLHDG('TELEFONO 2')
+     A            EMAIL        100A         COLHDG('EMAIL CLIENTE')
+     A            FECCRE         8S         COLHDG('FECHA CREACION')
+     A          K RUT

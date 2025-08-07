@@ -1,0 +1,56 @@
+     A*%%TS  SD  20250715  134442  IG0JDUEX    REL-V7R2M0  5770-WDS
+     A*%%EC
+     A                                      DSPSIZ(24 80 *DS3)
+     A                                      INDARA
+     A                                      CF03(03 'Salir')
+     A                                      CF06(06 'Crear Nuevo Cliente')
+     A          R S01                       SFL
+     A*%%TS  SD  20250714  170856  IG0JDUEX    REL-V7R2M0  5770-WDS
+     A                                      SFLNXTCHG
+     A            OPCS01         1   B  9  3
+     A            RUTS01        10Y 0B  9  6
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                      EDTCDE(Z)
+     A                                  9 17'-'
+     A            DVS01          1   B  9 19
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A            NOMS01        50   B  9 22
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A          R C01                       SFLCTL(S01)
+     A*%%TS  SD  20250715  134442  IG0JDUEX    REL-V7R2M0  5770-WDS
+     A                                      OVERLAY
+     A  30                                  SFLDSP
+     A  31                                  SFLDSPCTL
+     A  32                                  SFLCLR
+     A  30                                  SFLEND(*SCRBAR *SCRBAR)
+     A                                      SFLSIZ(0100)
+     A                                      SFLPAG(0012)
+     A                                  1 65DATE
+     A                                      EDTCDE(Y)
+     A                                  2 65TIME
+     A                                  3 63USER
+     A                                  2 31'Listado de Clientes'
+     A                                      DSPATR(RI)
+     A                                      DSPATR(HI)
+     A                                  5  4'Posicionar Rut : '
+     A                                      DSPATR(HI)
+     A            RUTPOS        10Y 0B  5 23EDTCDE(Z)
+     A                                  8  2'Opc Rut             Nombre        -
+     A                                                                         -
+     A                                       '
+     A                                      DSPATR(UL)
+     A                                      DSPATR(HI)
+     A                                  5 39'Opción : C=Consultar B=Borrar'
+     A                                      DSPATR(HI)
+     A          R R01
+     A*%%TS  SD  20250715  131637  IG0JDUEX    REL-V7R2M0  5770-WDS
+     A                                      OVERLAY
+     A                                 22  2'                                  -
+     A                                                                         -
+     A                                               '
+     A                                      DSPATR(UL)
+     A                                 23  2'F3-Salir'
+     A                                 23 18'F6-Crear Cliente'

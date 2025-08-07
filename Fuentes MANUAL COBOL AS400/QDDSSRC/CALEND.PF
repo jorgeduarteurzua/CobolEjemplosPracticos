@@ -1,0 +1,7 @@
+     A                                      UNIQUE
+     A          R RCALEN
+     A            FECHA          8S 0       COLHDG('FECHA')
+     A            DIASEMANA      1S 0       COLHDG('DIA SEMANA')
+     A            ISFERIADO      1A         COLHDG('ES FERIADO')
+     A            NUMDIA         6S 0       COLHDG('NUMERO DIA')
+     A          K FECHA

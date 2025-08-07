@@ -1,0 +1,50 @@
+     A*%%TS  SD  20250722  120904  IG0JDUEX    REL-V7R2M0  5770-WDS
+     A*%%EC
+     A                                      DSPSIZ(24 80 *DS3)
+     A                                      INDARA
+     A                                      CF03(03 'Salir')
+     A          R WS01                      SFL
+     A*%%TS  SD  20250722  120904  IG0JDUEX    REL-V7R2M0  5770-WDS
+     A            CODIGO        20A  H
+     A            DESCORTA      20A  H
+     A            DESLARGA      50A  H
+     A            LARGOFLD       3Y 0H
+     A            CTL001         1Y 0H      SFLCHCCTL
+     A            W01DESC       20A  O  5  4
+     A          R WC01                      SFLCTL(WS01)
+     A*%%TS  SD  20250722  120904  IG0JDUEX    REL-V7R2M0  5770-WDS
+     A                                      OVERLAY
+     A                                      SFLCSRRRN(&REGREL)
+     A  30                                  SFLDSP
+     A  31                                  SFLDSPCTL
+     A  32                                  SFLCLR
+     A  30                                  SFLEND(*SCRBAR *SCRBAR)
+     A                                      SFLSIZ(0100)
+     A                                      SFLPAG(0008)
+     A                                      WINDOW(7 45 13 28 *NORSTCSR)
+     A                                      WDWBORDER((*DSPATR RI) (*CHAR '    -
+     A                                          '))
+     A                                      RMVWDW
+     A                                      USRRSTDSP
+     A                                      WDWTITLE((*TEXT &TITULO) (*COLOR WH-
+     A                                      T))
+     A                                      WDWTITLE((*TEXT 'F3-SALIR') (*COLOR-
+     A                                       WHT) *BOTTOM)
+     A                                      SFLSNGCHC
+     A                                      SFLRTNSEL
+     A            REGREL         5S 0H
+     A            TITULO        10A  P
+     A            BTNSEL         2Y 0B  1 15PSHBTNFLD
+     A                                      PSHBTNCHC(1 'SELECCIONAR')
+     A                                  3  1'==>'
+     A                                      DSPATR(HI)
+     A            BUSQUEDA      20   B  3  6DSPATR(HI)
+     A                                  4  2'     Descripción         '
+     A                                      DSPATR(HI)
+     A                                      DSPATR(UL)
+     A          R XX
+     A*%%TS  SD  20250714  165020  IG0JDUEX    REL-V7R2M0  5770-WDS
+     A                                      KEEP
+     A                                      ASSUME
+     A                                      OVERLAY
+     A                                  1  3' '

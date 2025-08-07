@@ -1,0 +1,62 @@
+     A*%%TS  SD  20250714  164905  IG0JDUEX    REL-V7R2M0  5770-WDS
+     A*%%EC
+     A                                      DSPSIZ(24 80 *DS3)
+     A                                      INDARA
+     A                                      CF03(03 'Salir')
+     A  50                                  CF07(07 'Grabar')
+     A          R R01
+     A*%%TS  SD  20250711  084135  IG0JDUEX    REL-V7R2M0  5770-WDS
+     A                                  1 59DATE
+     A                                      EDTCDE(Y)
+     A                                  2 59TIME
+     A                                  3 57USER
+     A                                  2 31'Ingreso de Clientes'
+     A                                      DSPATR(HI)
+     A                                  6 10'Rut Cliente  :'
+     A                                      DSPATR(HI)
+     A            RUT       R        B  6 26REFFLD(CLIREG/RUT LIBJDU/CLIENTES)
+     A                                      EDTCDE(Z)
+     A                                  6 37'-'
+     A            DV        R        B  6 39REFFLD(CLIREG/DV LIBJDU/CLIENTES)
+     A                                  7  8'Nombre Cliente :'
+     A                                      DSPATR(HI)
+     A            NOMBRE    R        B  7 25REFFLD(CLIREG/NOMBRE LIBJDU/CLIENTE-
+     A                                      S)
+     A                                  8  7'Apellido Paterno:'
+     A                                      DSPATR(HI)
+     A                                  9  7'Apellido Materno:'
+     A                                      DSPATR(HI)
+     A            APEPAT    R        B  8 25REFFLD(CLIREG/APEPAT LIBJDU/CLIENTE-
+     A                                      S)
+     A            APEMAT    R        B  9 25REFFLD(CLIREG/APEMAT LIBJDU/CLIENTE-
+     A                                      S)
+     A                                 10  7'Fecha Nacimiento:'
+     A                                      DSPATR(HI)
+     A            FECNAC    R        B 10 25REFFLD(CLIREG/FECNAC LIBJDU/CLIENTE-
+     A                                      S)
+     A                                      EDTCDE(Y)
+     A                                 11 16'Género :'
+     A                                      DSPATR(HI)
+     A            GENERO    R        B 11 25REFFLD(CLIREG/GENERO LIBJDU/CLIENTE-
+     A                                      S)
+     A                                 11 28'(H=Hombre; M=Mujer)'
+     A                                 12 13'Dirección :'
+     A                                      DSPATR(HI)
+     A            DIRECC    R        B 12 25REFFLD(CLIREG/DIRECC LIBJDU/CLIENTE-
+     A                                      S)
+     A                                 13 13'Ciudad    :'
+     A                                      DSPATR(HI)
+     A            CIUDAD    R        B 13 25REFFLD(CLIREG/CIUDAD LIBJDU/CLIENTE-
+     A                                      S)
+     A                                 14 13'Teléfonos :'
+     A                                      DSPATR(HI)
+     A            TELEFONO1 R        B 14 25REFFLD(CLIREG/TELEFONO1 LIBJDU/CLIE-
+     A                                      NTES)
+     A            TELEFONO2 R        B 14 42REFFLD(CLIREG/TELEFONO2 LIBJDU/CLIE-
+     A                                      NTES)
+     A                                 15 13'Email     :'
+     A                                      DSPATR(HI)
+     A            EMAIL     R        B 15 25REFFLD(CLIREG/EMAIL LIBJDU/CLIENTES)
+     A            BOTONES        2Y 0B 22  5PSHBTNFLD
+     A                                      PSHBTNCHC(1 'F3-Salir' CF03)
+     A  50                                  PSHBTNCHC(2 'F7-Grabar' CF07)

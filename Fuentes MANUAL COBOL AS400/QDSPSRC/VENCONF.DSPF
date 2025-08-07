@@ -1,0 +1,25 @@
+     A*%%TS  SD  20250724  084027  IG0JDUEX    REL-V7R2M0  5770-WDS
+     A*%%EC
+     A                                      DSPSIZ(24 80 *DS3)
+     A                                      INDARA
+     A                                      CF03(03 'Salir')
+     A          R W01
+     A*%%TS  SD  20250724  084027  IG0JDUEX    REL-V7R2M0  5770-WDS
+     A                                      WINDOW(10 15 7 45)
+     A                                      WDWBORDER((*COLOR YLW) (*DSPATR RI)-
+     A                                       (*CHAR '        '))
+     A                                      WDWTITLE((*TEXT &TITULO))
+     A            TITULO        30A  P
+     A            MENSAJE      120A  B  1  3
+     A  99                                  DSPATR(UL)
+     A                                      DSPATR(PR)
+     A                                      CNTFLD(040)
+     A            BOTONCNF       2Y 0B  5 12PSHBTNFLD
+     A                                      PSHBTNCHC(1 'Aceptar')
+     A                                      PSHBTNCHC(2 'Cancelar')
+     A          R XX
+     A*%%TS  SD  20250714  165020  IG0JDUEX    REL-V7R2M0  5770-WDS
+     A                                      KEEP
+     A                                      ASSUME
+     A                                      OVERLAY
+     A                                  1  3' '

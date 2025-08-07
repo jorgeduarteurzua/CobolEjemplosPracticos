@@ -1,0 +1,156 @@
+     A*%%TS  SD  20250722  145503  IG0JDUEX    REL-V7R2M0  5770-WDS
+     A*%%EC
+     A                                      DSPSIZ(24 80 *DS3)
+     A                                      INDARA
+     A                                      CF03(03 'Salir')
+     A                                      CF04(04 'Ayuda')
+     A          R W01
+     A*%%TS  SD  20250722  145503  IG0JDUEX    REL-V7R2M0  5770-WDS
+     A                                      KEEP
+     A                                      RTNCSRLOC(*RECNAME &REGCURSOR &CAMC-
+     A                                      URSOR &POSCURSOR)
+     A                                      WINDOW(5 5 15 70)
+     A                                      RMVWDW
+     A                                      WDWTITLE((*TEXT 'CALENDARIO') (*COL-
+     A                                      OR WHT))
+     A                                      WDWTITLE((*TEXT 'F3-Salir F4-Ayuda -
+     A                                      Para Día Seleccione Botón      ') (-
+     A                                      *COLOR WHT) *BOTTOM)
+     A            REGCURSOR     10A  H
+     A            CAMCURSOR     10A  H
+     A            POSCURSOR      4S 0H
+     A            TBTNL1C1       4A  P
+     A            TBTNL1C2       4A  P
+     A            TBTNL1C3       4A  P
+     A            TBTNL1C4       4A  P
+     A            TBTNL1C5       4A  P
+     A            TBTNL1C6       4A  P
+     A            TBTNL1C7       4A  P
+     A            TBTNL2C1       4A  P
+     A            TBTNL2C2       4A  P
+     A            TBTNL2C3       4A  P
+     A            TBTNL2C4       4A  P
+     A            TBTNL2C5       4A  P
+     A            TBTNL2C6       4A  P
+     A            TBTNL2C7       4A  P
+     A            TBTNL3C1       4A  P
+     A            TBTNL3C2       4A  P
+     A            TBTNL3C3       4A  P
+     A            TBTNL3C4       4A  P
+     A            TBTNL3C5       4A  P
+     A            TBTNL3C6       4A  P
+     A            TBTNL3C7       4A  P
+     A            TBTNL4C1       4A  P
+     A            TBTNL4C2       4A  P
+     A            TBTNL4C3       4A  P
+     A            TBTNL4C4       4A  P
+     A            TBTNL4C5       4A  P
+     A            TBTNL4C6       4A  P
+     A            TBTNL4C7       4A  P
+     A            TBTNL5C1       4A  P
+     A            TBTNL5C2       4A  P
+     A            TBTNL5C3       4A  P
+     A            TBTNL5C4       4A  P
+     A            TBTNL5C5       4A  P
+     A            TBTNL5C6       4A  P
+     A            TBTNL5C7       4A  P
+     A            BTNPREV        2Y 0B  2  8PSHBTNFLD
+     A                                      PSHBTNCHC(1 'PRV')
+     A                                  2 19'Mes :'
+     A                                      DSPATR(HI)
+     A            MES            2Y 0B  2 26EDTCDE(Z)
+     A                                  2 34'A¦o :'
+     A                                      DSPATR(HI)
+     A            ANO            4Y 0B  2 41EDTCDE(Z)
+     A            BTNNEXT        2Y 0B  2 60PSHBTNFLD
+     A                                      PSHBTNCHC(1 'NXT')
+     A                                  4  5'-L-'
+     A                                      DSPATR(HI)
+     A                                  4 14'-M-'
+     A                                      DSPATR(HI)
+     A                                  4 23'-M-'
+     A                                      DSPATR(HI)
+     A                                  4 32'-J-'
+     A                                      DSPATR(HI)
+     A                                  4 41'-V-'
+     A                                      DSPATR(HI)
+     A                                  4 50'-S-'
+     A                                      DSPATR(HI)
+     A                                  4 60'-D-'
+     A                                      DSPATR(HI)
+     A  50        BTNL1C1        2Y 0B  6  4PSHBTNFLD
+     A                                      PSHBTNCHC(1 &TBTNL1C1)
+     A  51        BTNL1C2        2Y 0B  6 13PSHBTNFLD
+     A                                      PSHBTNCHC(1 &TBTNL1C2)
+     A  52        BTNL1C3        2Y 0B  6 22PSHBTNFLD
+     A                                      PSHBTNCHC(1 &TBTNL1C3)
+     A  53        BTNL1C4        2Y 0B  6 31PSHBTNFLD
+     A                                      PSHBTNCHC(1 &TBTNL1C4)
+     A  54        BTNL1C5        2Y 0B  6 40PSHBTNFLD
+     A                                      PSHBTNCHC(1 &TBTNL1C5)
+     A  55        BTNL1C6        2Y 0B  6 49PSHBTNFLD
+     A                                      PSHBTNCHC(1 &TBTNL1C6)
+     A  56        BTNL1C7        2Y 0B  6 59PSHBTNFLD
+     A                                      PSHBTNCHC(1 &TBTNL1C7)
+     A  60        BTNL2C1        2Y 0B  8  4PSHBTNFLD
+     A                                      PSHBTNCHC(1 &TBTNL2C1)
+     A  61        BTNL2C2        2Y 0B  8 13PSHBTNFLD
+     A                                      PSHBTNCHC(1 &TBTNL2C2)
+     A  62        BTNL2C3        2Y 0B  8 22PSHBTNFLD
+     A                                      PSHBTNCHC(1 &TBTNL2C3)
+     A  63        BTNL2C4        2Y 0B  8 31PSHBTNFLD
+     A                                      PSHBTNCHC(1 &TBTNL2C4)
+     A  64        BTNL2C5        2Y 0B  8 40PSHBTNFLD
+     A                                      PSHBTNCHC(1 &TBTNL2C5)
+     A  65        BTNL2C6        2Y 0B  8 49PSHBTNFLD
+     A                                      PSHBTNCHC(1 &TBTNL2C6)
+     A  66        BTNL2C7        2Y 0B  8 59PSHBTNFLD
+     A                                      PSHBTNCHC(1 &TBTNL2C7)
+     A  70        BTNL3C1        2Y 0B 10  4PSHBTNFLD
+     A                                      PSHBTNCHC(1 &TBTNL3C1)
+     A  71        BTNL3C2        2Y 0B 10 13PSHBTNFLD
+     A                                      PSHBTNCHC(1 &TBTNL3C2)
+     A  72        BTNL3C3        2Y 0B 10 22PSHBTNFLD
+     A                                      PSHBTNCHC(1 &TBTNL3C3)
+     A  73        BTNL3C4        2Y 0B 10 31PSHBTNFLD
+     A                                      PSHBTNCHC(1 &TBTNL3C4)
+     A  74        BTNL3C5        2Y 0B 10 40PSHBTNFLD
+     A                                      PSHBTNCHC(1 &TBTNL3C5)
+     A  75        BTNL3C6        2Y 0B 10 49PSHBTNFLD
+     A                                      PSHBTNCHC(1 &TBTNL3C6)
+     A  76        BTNL3C7        2Y 0B 10 59PSHBTNFLD
+     A                                      PSHBTNCHC(1 &TBTNL3C7)
+     A  80        BTNL4C1        2Y 0B 12  4PSHBTNFLD
+     A                                      PSHBTNCHC(1 &TBTNL4C1)
+     A  81        BTNL4C2        2Y 0B 12 13PSHBTNFLD
+     A                                      PSHBTNCHC(1 &TBTNL4C2)
+     A  82        BTNL4C3        2Y 0B 12 22PSHBTNFLD
+     A                                      PSHBTNCHC(1 &TBTNL4C3)
+     A  83        BTNL4C4        2Y 0B 12 31PSHBTNFLD
+     A                                      PSHBTNCHC(1 &TBTNL4C4)
+     A  84        BTNL4C5        2Y 0B 12 40PSHBTNFLD
+     A                                      PSHBTNCHC(1 &TBTNL4C5)
+     A  85        BTNL4C6        2Y 0B 12 49PSHBTNFLD
+     A                                      PSHBTNCHC(1 &TBTNL4C6)
+     A  86        BTNL4C7        2Y 0B 12 59PSHBTNFLD
+     A                                      PSHBTNCHC(1 &TBTNL4C7)
+     A  90        BTNL5C1        2Y 0B 14  4PSHBTNFLD
+     A                                      PSHBTNCHC(1 &TBTNL5C1)
+     A  91        BTNL5C2        2Y 0B 14 13PSHBTNFLD
+     A                                      PSHBTNCHC(1 &TBTNL5C2)
+     A  92        BTNL5C3        2Y 0B 14 22PSHBTNFLD
+     A                                      PSHBTNCHC(1 &TBTNL5C3)
+     A  93        BTNL5C4        2Y 0B 14 31PSHBTNFLD
+     A                                      PSHBTNCHC(1 &TBTNL5C4)
+     A  94        BTNL5C5        2Y 0B 14 40PSHBTNFLD
+     A                                      PSHBTNCHC(1 &TBTNL5C5)
+     A  95        BTNL5C6        2Y 0B 14 49PSHBTNFLD
+     A                                      PSHBTNCHC(1 &TBTNL5C6)
+     A  96        BTNL5C7        2Y 0B 14 59PSHBTNFLD
+     A                                      PSHBTNCHC(1 &TBTNL5C7)
+     A          R XX
+     A*%%TS  SD  20250722  145401  IG0JDUEX    REL-V7R2M0  5770-WDS
+     A                                      KEEP
+     A                                      ASSUME
+     A                                      OVERLAY
+     A                                  1  3' '
