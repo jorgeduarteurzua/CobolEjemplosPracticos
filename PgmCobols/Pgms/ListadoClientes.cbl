@@ -21,7 +21,7 @@
        DATA DIVISION.
        FILE SECTION.
        FD  datos-usuarios.
-           copy "C:\PgmCobols\FD\FDCliente.cbl".
+           copy "C:\PgmCobols\FD\FDCliente.cpy".
 
        WORKING-STORAGE SECTION.
        01  fin-de-archivo      PIC X VALUE 'N'.

@@ -15,3 +15,4 @@
            05  calendario-feriado PIC X.
       *        N = No
       *        S = Si
+	       05  calendario-numdia  PIC 9(06).

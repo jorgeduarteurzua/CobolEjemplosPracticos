@@ -1,0 +1,16 @@
+Para usar el Comando se debe:
+
+1.- Crear Archivo DTLSPOOLF, con CRTPF FILE(QGPL/DTLSPOOLF) RCDLEN(200)
+
+2.- Coompilar los fuentes:
+
+	2.1.- CRTCLPGM PGM(QGPL/DLTSPOOLF) SRCFILE(BIBFTE/QCLSRC) SRCMBR(DLTSPOOLF) REPLACE(*YES)
+	2.2.- CRTCMD CMD(QGPL/DLTSPOOLF) PGM(QGPL/DLTSPOOLF) SRCFILE(BIBFTE/QCMDRC) SRCMBR(DLTSPLFUSR)
+	
+	
+3.- Para ejecutar solo poner los valores requeridos.
+
+	DLTSPOOLF USER(IG0JDUEX) FILE(*ALL) JOB(*ALL)
+
+4.- El comando Borra Todo el Spool, esto es muy util cuando se han ido generando SPOOL y hay 
+    demasiadas paginas.	

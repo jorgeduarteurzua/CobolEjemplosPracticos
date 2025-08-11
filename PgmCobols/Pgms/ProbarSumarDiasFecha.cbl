@@ -1,7 +1,7 @@
       ******************************************************************
-      * Author:
-      * Date:
-      * Purpose:
+      * Author: JORGE DUARTE URZUA
+      * Date: 07-07-2025
+      * Purpose: ENSEÑANZA
       * Tectonics: cobc
       ******************************************************************
        IDENTIFICATION DIVISION.
@@ -15,6 +15,7 @@
        01 SUMARDIAS-ENTRADA.
            05 FECHA-YYYYMMDD PIC X(08).
            05 SUM-RES-DIAS   PIC S9(03).
+           05 SUM-RES-SIGNO  PIC X.
        01 SUMARDIAS-SALIDA.
            05 FECHA-VALIDA         PIC X(01).
            05 NUEVA-FECHA-YYYYMMDD PIC X(08).
@@ -26,6 +27,8 @@
 
            MOVE ZEROES           TO SUM-RES-DIAS
            ADD 5                 TO SUM-RES-DIAS
+           MOVE "+"              TO SUM-RES-SIGNO
+
            MOVE SPACES           TO FECHA-VALIDA
                                     NUEVA-FECHA-YYYYMMDD
 
@@ -37,7 +40,8 @@
            DISPLAY "NUEVA FECHA    : " NUEVA-FECHA-YYYYMMDD
 
            MOVE ZEROES           TO SUM-RES-DIAS
-           SUBTRACT 20         FROM SUM-RES-DIAS
+           MOVE 20               TO SUM-RES-DIAS
+           MOVE "-"              TO SUM-RES-SIGNO
            MOVE SPACES           TO FECHA-VALIDA
                                     NUEVA-FECHA-YYYYMMDD
            CALL "SumarDiasFecha" USING SUMARDIAS-ENTRADA
@@ -49,7 +53,8 @@
            MOVE "19250131"        TO FECHA-YYYYMMDD
 
            MOVE ZEROES           TO SUM-RES-DIAS
-           ADD 1                 TO SUM-RES-DIAS
+           MOVE 1                TO SUM-RES-DIAS
+           MOVE "+"              TO SUM-RES-SIGNO
            MOVE SPACES           TO FECHA-VALIDA
                                     NUEVA-FECHA-YYYYMMDD
 

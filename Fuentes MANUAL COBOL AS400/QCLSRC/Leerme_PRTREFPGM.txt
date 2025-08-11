@@ -1,0 +1,62 @@
+Para dejar Operativo el Comando se debe:
+
+1.- Se debe dejar Sometido el siguiente comando como trabajo Planificado, idealmente tipo 5:00 o 6:00 de la mañana.
+
+DSPPGMREF PGM(*ALL/*ALL) OUTPUT(*OUTFILE) OBJTYPE(*ALL) OUTFILE(QGPL/REFPGM)                                              
+
+2.- Compilar los programas:
+
+	2.1.- CRTSQLCBL PGM(QGPL/PGMREF ) SRCFILE(BIBFTE/QCBLSRC) OPTION(*SRC *XREF *APOSTSQL *LSTDBG) REPLACE(*YES)  
+    2.2.- CRTPRTF FILE(QGPL/PRTREF) SRCFILE(BIBFTE/QPRTSRC) SRCMBR(PRTREF)
+    2.3.- CRTCLPGM PGM(QGPL/CLREFPGM) SRCFILE(BIBFTE/QCLSRC) SRCMBR(CLREFPGM) REPLACE(*YES)
+	2.4.- CRTCLPGM PGM(QGPL/RTVDESC) SRCFILE(BIBFTE/QCLSRC) SRCMBR(RTVDESC) REPLACE(*YES)
+	2.5.- CRTCMD CMD(QGPL/PRTREFPGM) PGM(QGPL/CLREFPGM) SRCFILE(BIBFTE/QCMDSRC) SRCMBR(PRTREFPGM)
+	
+	
+3.- Una vez compilados, la ejecucion sería de la siguiente manera:
+
+	Ejemplo: PRTREFPGM BIB(CARMAS_MAC) PGM(SI904COT)
+	Descripción : Genera Referencia del Programa SI904COT de la Biblioteca CARMAS_MAC
+	
+	
+4.- Parte del Resultado de la Ejecucón
+
++------------+                                        
+| SI1005PRG4 |                                        
++------------+                                        
+       |            +------------+                    
+       |---------- ( SI1005ARC1 (                     
+       |            +------------+                    
+       |            +------------+                    
+       |---------- ( SI1005ARC2 (                     
+       |            +------------+                    
+       |           +------------+                     
+       |---------- | QSQLCMIT   |                     
+       |           +------------+                     
+       |                 |          +------------+    
+       |                 |----------| QLEAWI     |    
+       |                 |          +------------+    
+       |                 |          +------------+    
+       |                 |----------| QQQSVDBG   |    
+       |                 |          +------------+    
+	   
+	   
+Programa :  SI904COT       Biblioteca :  CARMAS_MAC                 
+ 1 GMA29ROUND Procedimiento p/obtener Indic.Redondeo                
+ 1 PMSBALR101 Exc Tabla Lineas Automovi Execute external functio    
+ 1 QSQLCLSE                                                         
+ 1 QSQLOPEN   SQL OPEN                                              
+ 1 QSQROUTE   SQL ROUTER                                            
+ 1 SI1005PRG4 Devuelve cant polizas puntual de plan familiar aut    
+ 1 SI1005PRG5 Revisa un codigo punt plan familiar post renovacio    
+ 1 SI904ASBA  Carga ASBACPP  Datos de extensión póliza WEB          
+ 1 SI904ASBQ  Carga ARCH  nivel de riesgo SIAS - MAC                
+ 1 SI904CLBIT Incluye ejec coboles Bitácora-Se invoca desde CBLs    
+ 1 SI904CLP4  Carga LDA y llama al programa de TARIFACION DE PG     
+ 1 SI904CLP7  Carga LDA y llama al programa de TARIFACION DE PG     
+ 1 SI904DIA   Suma 1 dia a una fecha.                      SICEL    
+ 1 SI904ELICO Elimina cotización                                    
+ 1 SI904INTER Crea los 8 intermediarios en el ILAPPA00       FCP    
+ 1 SI904PIN   Extrae las tramas de cliente y ejecuta SI904EXPIN     
+ 1 SI904PINAD Extrae las tramas de cliente y ejecuta SI904EXPIN     
+ 1 SI904SER   Actualiza forma de pago y retorna prima.    COTINS    

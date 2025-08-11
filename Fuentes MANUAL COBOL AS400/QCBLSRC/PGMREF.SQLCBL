@@ -1,0 +1,807 @@
+       IDENTIFICATION DIVISION.
+      *-----------------------*
+       PROGRAM-ID. PGMREF.
+       AUTHOR. JORGE DUARTE.
+      *---------------------------------------------------------------**
+      * JORGE DUARTE URZUA                        11/12/2024          **
+      *                                                               **
+      * GENERA REFERENCIA DE PROGRAMAS HASTA 7 NIVELES                **
+      *---------------------------------------------------------------**
+      * Compilación..:
+      *   CRTSQLCBL PGM(QGPL/PGMREF )        SRCFILE(BIBFTE/QCBLSRC    )
+      *   OPTION(*SRC *XREF *APOSTSQL *LSTDBG) REPLACE(*YES)
+      *
+       ENVIRONMENT DIVISION.
+      *--------------------*
+       CONFIGURATION SECTION.
+       SOURCE-COMPUTER.      IBM-AS400.
+       OBJECT-COMPUTER.      IBM-AS400.
+       SPECIAL-NAMES.        LOCAL-DATA IS LOCAL-DATA-AREA .
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+
+           SELECT INFORME    ASSIGN TO FORMATFILE-PRTREF
+                             FILE STATUS FS-INFORME.
+
+       DATA DIVISION.
+      *--------------*
+       FILE SECTION.
+      *-------------*
+       FD  INFORME.
+       01  R-INFORME       PIC X(132).
+
+       WORKING-STORAGE SECTION.
+      *------------------------*
+       77 POS-STR              PIC 9(4) VALUE ZEROES.
+       77 POS-STR-2            PIC 9(4) VALUE ZEROES.
+       77 POS-STR-3            PIC 9(4) VALUE ZEROES.
+       77 POS-STR-4            PIC 9(4) VALUE ZEROES.
+       77 POS-STR-5            PIC 9(4) VALUE ZEROES.
+       77 POS-STR-6            PIC 9(4) VALUE ZEROES.
+       77 POS-STR-7            PIC 9(4) VALUE ZEROES.
+       77 WS-POS-STR           PIC 9(4) VALUE ZEROES.
+       77 WS-ESP               PIC X VALUE " ".
+
+       77 IMP-HEAD             PIC X(1).
+       77 STR-IMP              PIC X(66).
+
+       77 WS-OBJREF           PIC X(10).
+       77 WS-WHLIB            PIC X(10).
+       77 WS-TYPE             PIC X(01).
+       77 WS-OBJTYPE          PIC X(10).
+       77 WS-DESC             PIC X(50).
+       77 WS-ATR              PIC X(10).
+       77 I-ON                  PIC 1 VALUE B"1".
+       77 I-OFF                 PIC 1 VALUE B"0".
+
+       77 NIVEL-ACTUAL          PIC 9.
+       77 TIPO-DETALLE          PIC X.
+       77 USO-DETALLE           PIC 9(2).
+       77 OBJETO-IMP            PIC X(10).
+
+       77 INDICE-IMP            PIC 9(03).
+       77 INDICE-1              PIC 9(03).
+
+           EXEC SQL
+              INCLUDE SQLCA
+           END-EXEC.
+
+       01 VARIABLES-DE-STATUS.
+           05 FS-INFORME         PIC X(02).
+
+       01 DATOS-SQL.
+          05 SQL-OBJREF         PIC X(10).
+          05 SQL-OBJTYP         PIC X(01).
+          05 SQL-WHLNAM         PIC X(10).
+          05 SQL-USO            PIC S9(02).
+
+       01 DATOS-SQL-C2.
+          05 SQL-OBJREF-C2      PIC X(10).
+          05 SQL-OBJTYP-C2      PIC X(01).
+          05 SQL-WHLNAM-C2      PIC X(10).
+          05 SQL-USO-C2         PIC S9(02).
+
+       01 DATOS-SQL-C3.
+          05 SQL-OBJREF-C3      PIC X(10).
+          05 SQL-OBJTYP-C3      PIC X(01).
+          05 SQL-WHLNAM-C3      PIC X(10).
+          05 SQL-USO-C3         PIC S9(02).
+
+       01 DATOS-SQL-C4.
+          05 SQL-OBJREF-C4      PIC X(10).
+          05 SQL-OBJTYP-C4      PIC X(01).
+          05 SQL-WHLNAM-C4      PIC X(10).
+          05 SQL-USO-C4         PIC S9(02).
+
+       01 DATOS-SQL-C5.
+          05 SQL-OBJREF-C5      PIC X(10).
+          05 SQL-OBJTYP-C5      PIC X(01).
+          05 SQL-WHLNAM-C5      PIC X(10).
+          05 SQL-USO-C5         PIC S9(02).
+
+       01 DATOS-SQL-C6.
+          05 SQL-OBJREF-C6      PIC X(10).
+          05 SQL-OBJTYP-C6      PIC X(01).
+          05 SQL-WHLNAM-C6      PIC X(10).
+          05 SQL-USO-C6         PIC S9(02).
+
+       01 DATOS-SQL-C7.
+          05 SQL-OBJREF-C7      PIC X(10).
+          05 SQL-OBJTYP-C7      PIC X(01).
+          05 SQL-WHLNAM-C7      PIC X(10).
+          05 SQL-USO-C7         PIC S9(02).
+
+       01 TITULO-OO.
+          COPY DDS-TITULO-O     OF PRTREF .
+
+       01 PGM01-OO.
+          COPY DDS-RPGM01-O     OF PRTREF .
+       01 PGM02-OO.
+          COPY DDS-RPGM02-O     OF PRTREF .
+       01 PGM03-OO.
+          COPY DDS-RPGM03-O     OF PRTREF .
+       01 PGM04-OO.
+          COPY DDS-RPGM04-O     OF PRTREF .
+       01 PGM05-OO.
+          COPY DDS-RPGM05-O     OF PRTREF .
+       01 PGM06-OO.
+          COPY DDS-RPGM06-O     OF PRTREF .
+       01 PGM07-OO.
+          COPY DDS-RPGM07-O     OF PRTREF .
+
+       01 FIL01-OO.
+          COPY DDS-RFIL01-O     OF PRTREF .
+       01 FIL02-OO.
+          COPY DDS-RFIL02-O     OF PRTREF .
+       01 FIL03-OO.
+          COPY DDS-RFIL03-O     OF PRTREF .
+       01 FIL04-OO.
+          COPY DDS-RFIL04-O     OF PRTREF .
+       01 FIL05-OO.
+          COPY DDS-RFIL05-O     OF PRTREF .
+       01 FIL06-OO.
+          COPY DDS-RFIL06-O     OF PRTREF .
+       01 FIL07-OO.
+          COPY DDS-RFIL07-O     OF PRTREF .
+
+       01 PRT01-OO.
+          COPY DDS-RPRT01-O     OF PRTREF .
+       01 PRT02-OO.
+          COPY DDS-RPRT02-O     OF PRTREF .
+       01 PRT03-OO.
+          COPY DDS-RPRT03-O     OF PRTREF .
+       01 PRT04-OO.
+          COPY DDS-RPRT04-O     OF PRTREF .
+       01 PRT05-OO.
+          COPY DDS-RPRT05-O     OF PRTREF .
+       01 PRT06-OO.
+          COPY DDS-RPRT06-O     OF PRTREF .
+       01 PRT07-OO.
+          COPY DDS-RPRT07-O     OF PRTREF .
+
+       01 PGMNIVEL-OO.
+          COPY DDS-PGMNIVEL-O   OF PRTREF .
+
+       01 ARREGLO-NIVELES.
+            05 ARR-NIVEL-1 OCCURS 100 TIMES.
+               10 ARR-NIVEL       PIC 9(1).
+               10 ARR-PGM         PIC X(10).
+               10 ARR-DESC        PIC X(50).
+
+       LINKAGE SECTION.
+       01 LK-BIBLIOTECA       PIC X(10).
+       01 LK-PROGRAMA         PIC X(10).
+
+       PROCEDURE DIVISION USING LK-BIBLIOTECA LK-PROGRAMA.
+      *-----------------------------------------------------
+
+           OPEN OUTPUT INFORME
+
+           PERFORM NIVEL-01
+
+           PERFORM PRINT-PGM-NIVEL-1
+
+           CLOSE INFORME
+
+           GOBACK.
+
+      *
+       NIVEL-01.
+      *----------
+           MOVE ZEROES            TO INDICE-1
+
+           EXEC SQL
+           DECLARE C1 CURSOR FOR SELECT DISTINCT WHFNAM, WHOBJT,
+           WHLNAM, WHFUSG FROM QGPL/REFPGM WHERE WHLIB =
+           :LK-BIBLIOTECA AND WHPNAM = :LK-PROGRAMA AND WHFNAM <>
+           :WS-ESP ORDER BY WHOBJT, WHFNAM
+           END-EXEC
+           EXEC SQL  OPEN    C1    END-EXEC
+
+           MOVE "S"          TO IMP-HEAD
+           MOVE 1            TO POS-STR
+           PERFORM LEER-FETCH-C1
+           PERFORM UNTIL SQLCODE NOT = 0
+
+               IF IMP-HEAD  = "S" THEN
+                  PERFORM PRINT-HEAD
+                  MOVE "N"   TO IMP-HEAD
+               END-IF
+
+               MOVE SPACES       TO STR-IMP
+
+               MOVE SQL-WHLNAM   TO WS-WHLIB
+               MOVE SQL-OBJREF   TO WS-OBJREF
+               MOVE SQL-OBJTYP   TO WS-TYPE
+               PERFORM RESCATA-DESCRIPCION
+
+               MOVE POS-STR     TO WS-POS-STR
+               MOVE 1             TO NIVEL-ACTUAL
+               MOVE SQL-OBJREF    TO OBJETO-IMP
+               MOVE SQL-OBJTYP    TO TIPO-DETALLE
+               MOVE SQL-USO       TO USO-DETALLE
+               PERFORM ACUMULA-ARR-NIVEL-1
+               PERFORM PRINT-DETALLE
+               IF SQL-OBJTYP = "P" AND (
+                  SQL-OBJREF NOT = "QSQROUTE"       AND
+                  SQL-OBJREF NOT = "MQOPEN  "       AND
+                  SQL-OBJREF NOT = "MQCLOSE "       AND
+                  SQL-OBJREF NOT = "MQCONN  "       AND
+                  SQL-OBJREF NOT = "MQDISC  "       AND
+                  SQL-OBJREF NOT = "MQPUT   "       AND
+                  SQL-OBJREF NOT = "MQGET   "       AND
+                  SQL-OBJREF NOT = "QSQLCLSE"       AND
+                  SQL-OBJREF NOT = "QSQLOPEN"
+                  )
+                  COMPUTE POS-STR-2 = POS-STR + 4
+                  PERFORM NIVEL-2
+               END-IF
+               PERFORM LEER-FETCH-C1
+           END-PERFORM
+           EXEC SQL  CLOSE   C1    END-EXEC
+           .
+      *
+       NIVEL-2.
+      *--------
+           EXEC SQL
+           DECLARE C2 CURSOR FOR SELECT DISTINCT WHFNAM, WHOBJT,
+           WHLNAM, WHFUSG FROM QGPL/REFPGM WHERE WHPNAM = :SQL-OBJREF
+           AND WHFNAM <> :WS-ESP ORDER BY WHOBJT, WHFNAM
+           END-EXEC
+           EXEC SQL  OPEN    C2    END-EXEC
+
+           PERFORM LEER-FETCH-C2
+           PERFORM UNTIL SQLCODE NOT = 0
+
+
+               MOVE SPACES       TO STR-IMP
+               MOVE SQL-WHLNAM-C2   TO WS-WHLIB
+               MOVE SQL-OBJREF-C2   TO WS-OBJREF
+               MOVE SQL-OBJTYP-C2   TO WS-TYPE
+               PERFORM RESCATA-DESCRIPCION
+
+               MOVE 2             TO NIVEL-ACTUAL
+               MOVE SQL-OBJREF-C2 TO OBJETO-IMP
+               MOVE SQL-OBJTYP-C2 TO TIPO-DETALLE
+               MOVE SQL-USO-C2    TO USO-DETALLE
+               PERFORM PRINT-DETALLE
+               IF SQL-OBJTYP-C2 = "P" AND (
+                  SQL-OBJREF-C2 NOT = "QSQROUTE"       AND
+                  SQL-OBJREF-C2 NOT = "MQOPEN  "       AND
+                  SQL-OBJREF-C2 NOT = "MQCLOSE "       AND
+                  SQL-OBJREF-C2 NOT = "MQCONN  "       AND
+                  SQL-OBJREF-C2 NOT = "MQDISC  "       AND
+                  SQL-OBJREF-C2 NOT = "MQPUT   "       AND
+                  SQL-OBJREF-C2 NOT = "MQGET   "       AND
+                  SQL-OBJREF-C2 NOT = "QSQLCLSE"       AND
+                  SQL-OBJREF-C2 NOT = "QSQLOPEN"
+                  )
+                  COMPUTE POS-STR-3 = POS-STR-2 + 4
+                  PERFORM NIVEL-3
+               END-IF
+               PERFORM LEER-FETCH-C2
+           END-PERFORM
+           EXEC SQL  CLOSE   C2    END-EXEC
+           .
+      *
+       NIVEL-3.
+      *--------
+           EXEC SQL
+           DECLARE C3 CURSOR FOR SELECT DISTINCT WHFNAM, WHOBJT,
+           WHLNAM, WHFUSG FROM QGPL/REFPGM WHERE WHPNAM =
+           :SQL-OBJREF-C2 AND WHFNAM <> :WS-ESP ORDER BY WHOBJT, WHFNAM
+           END-EXEC
+           EXEC SQL  OPEN    C3    END-EXEC
+
+           PERFORM LEER-FETCH-C3
+           PERFORM UNTIL SQLCODE NOT = 0
+
+
+               MOVE SPACES       TO STR-IMP
+               MOVE SQL-WHLNAM-C3   TO WS-WHLIB
+               MOVE SQL-OBJREF-C3   TO WS-OBJREF
+               MOVE SQL-OBJTYP-C3   TO WS-TYPE
+               PERFORM RESCATA-DESCRIPCION
+
+               MOVE 3             TO NIVEL-ACTUAL
+               MOVE SQL-OBJREF-C3 TO OBJETO-IMP
+               MOVE SQL-OBJTYP-C3 TO TIPO-DETALLE
+               MOVE SQL-USO-C3    TO USO-DETALLE
+               PERFORM PRINT-DETALLE
+               IF SQL-OBJTYP-C3 = "P" AND (
+                  SQL-OBJREF-C3 NOT = "QSQROUTE"       AND
+                  SQL-OBJREF-C3 NOT = "MQOPEN  "       AND
+                  SQL-OBJREF-C3 NOT = "MQCLOSE "       AND
+                  SQL-OBJREF-C3 NOT = "MQCONN  "       AND
+                  SQL-OBJREF-C3 NOT = "MQDISC  "       AND
+                  SQL-OBJREF-C3 NOT = "MQPUT   "       AND
+                  SQL-OBJREF-C3 NOT = "MQGET   "       AND
+                  SQL-OBJREF-C3 NOT = "QSQLCLSE"       AND
+                  SQL-OBJREF-C3 NOT = "QSQLOPEN"
+                  )
+                  COMPUTE POS-STR-4 = POS-STR-3 + 4
+                  PERFORM NIVEL-4
+               END-IF
+               PERFORM LEER-FETCH-C3
+           END-PERFORM
+           EXEC SQL  CLOSE   C3    END-EXEC
+           .
+      *
+       NIVEL-4.
+      *--------
+           EXEC SQL
+           DECLARE C4 CURSOR FOR SELECT DISTINCT WHFNAM, WHOBJT,
+           WHLNAM, WHFUSG FROM QGPL/REFPGM WHERE WHPNAM =
+           :SQL-OBJREF-C3 AND WHFNAM <> :WS-ESP ORDER BY WHOBJT, WHFNAM
+           END-EXEC
+           EXEC SQL  OPEN    C4    END-EXEC
+
+           PERFORM LEER-FETCH-C4
+           PERFORM UNTIL SQLCODE NOT = 0
+
+
+               MOVE SPACES       TO STR-IMP
+               MOVE SQL-WHLNAM-C4   TO WS-WHLIB
+               MOVE SQL-OBJREF-C4   TO WS-OBJREF
+               MOVE SQL-OBJTYP-C4   TO WS-TYPE
+               PERFORM RESCATA-DESCRIPCION
+
+               MOVE 4             TO NIVEL-ACTUAL
+               MOVE SQL-OBJREF-C4 TO OBJETO-IMP
+               MOVE SQL-OBJTYP-C4 TO TIPO-DETALLE
+               MOVE SQL-USO-C4    TO USO-DETALLE
+               PERFORM PRINT-DETALLE
+               IF SQL-OBJTYP-C4 = "P" AND (
+                  SQL-OBJREF-C4 NOT = "QSQROUTE"       AND
+                  SQL-OBJREF-C4 NOT = "MQOPEN  "       AND
+                  SQL-OBJREF-C4 NOT = "MQCLOSE "       AND
+                  SQL-OBJREF-C4 NOT = "MQCONN  "       AND
+                  SQL-OBJREF-C4 NOT = "MQDISC  "       AND
+                  SQL-OBJREF-C4 NOT = "MQPUT   "       AND
+                  SQL-OBJREF-C4 NOT = "MQGET   "       AND
+                  SQL-OBJREF-C4 NOT = "QSQLCLSE"       AND
+                  SQL-OBJREF-C4 NOT = "QSQLOPEN"
+                  )
+                  COMPUTE POS-STR-5 = POS-STR-4 + 4
+                  PERFORM NIVEL-5
+               END-IF
+               PERFORM LEER-FETCH-C4
+           END-PERFORM
+           EXEC SQL  CLOSE   C4    END-EXEC
+           .
+      *
+       NIVEL-5.
+      *--------
+           EXEC SQL
+           DECLARE C5 CURSOR FOR SELECT DISTINCT WHFNAM, WHOBJT,
+           WHLNAM, WHFUSG FROM QGPL/REFPGM WHERE WHPNAM =
+           :SQL-OBJREF-C4 AND WHFNAM <> :WS-ESP ORDER BY WHOBJT, WHFNAM
+           END-EXEC
+           EXEC SQL  OPEN    C5    END-EXEC
+
+           PERFORM LEER-FETCH-C5
+           PERFORM UNTIL SQLCODE NOT = 0
+
+
+               MOVE SPACES       TO STR-IMP
+               MOVE SQL-WHLNAM-C5   TO WS-WHLIB
+               MOVE SQL-OBJREF-C5   TO WS-OBJREF
+               MOVE SQL-OBJTYP-C5   TO WS-TYPE
+               PERFORM RESCATA-DESCRIPCION
+
+               MOVE 5             TO NIVEL-ACTUAL
+               MOVE SQL-OBJREF-C5 TO OBJETO-IMP
+               MOVE SQL-OBJTYP-C5 TO TIPO-DETALLE
+               MOVE SQL-USO-C5    TO USO-DETALLE
+               PERFORM PRINT-DETALLE
+               IF SQL-OBJTYP-C5 = "P" AND (
+                  SQL-OBJREF-C5 NOT = "QSQROUTE"       AND
+                  SQL-OBJREF-C5 NOT = "MQOPEN  "       AND
+                  SQL-OBJREF-C5 NOT = "MQCLOSE "       AND
+                  SQL-OBJREF-C5 NOT = "MQCONN  "       AND
+                  SQL-OBJREF-C5 NOT = "MQDISC  "       AND
+                  SQL-OBJREF-C5 NOT = "MQPUT   "       AND
+                  SQL-OBJREF-C5 NOT = "MQGET   "       AND
+                  SQL-OBJREF-C5 NOT = "QSQLCLSE"       AND
+                  SQL-OBJREF-C5 NOT = "QSQLOPEN"
+                  )
+                  COMPUTE POS-STR-6 = POS-STR-5 + 4
+                  PERFORM NIVEL-6
+               END-IF
+               PERFORM LEER-FETCH-C5
+           END-PERFORM
+           EXEC SQL  CLOSE   C5    END-EXEC
+           .
+      *
+       NIVEL-6.
+      *--------
+           EXEC SQL
+           DECLARE C6 CURSOR FOR SELECT DISTINCT WHFNAM, WHOBJT,
+           WHLNAM, WHFUSG FROM QGPL/REFPGM WHERE WHPNAM =
+           :SQL-OBJREF-C5 AND WHFNAM <> :WS-ESP ORDER BY WHOBJT, WHFNAM
+           END-EXEC
+           EXEC SQL  OPEN    C6    END-EXEC
+
+           PERFORM LEER-FETCH-C6
+           PERFORM UNTIL SQLCODE NOT = 0
+
+
+               MOVE SPACES       TO STR-IMP
+               MOVE SQL-WHLNAM-C6   TO WS-WHLIB
+               MOVE SQL-OBJREF-C6   TO WS-OBJREF
+               MOVE SQL-OBJTYP-C6   TO WS-TYPE
+               PERFORM RESCATA-DESCRIPCION
+
+               MOVE 6             TO NIVEL-ACTUAL
+               MOVE SQL-OBJREF-C6 TO OBJETO-IMP
+               MOVE SQL-OBJTYP-C6 TO TIPO-DETALLE
+               MOVE SQL-USO-C6    TO USO-DETALLE
+               PERFORM PRINT-DETALLE
+               IF SQL-OBJTYP-C6 = "P" AND (
+                  SQL-OBJREF-C6 NOT = "QSQROUTE"       AND
+                  SQL-OBJREF-C6 NOT = "MQOPEN  "       AND
+                  SQL-OBJREF-C6 NOT = "MQCLOSE "       AND
+                  SQL-OBJREF-C6 NOT = "MQCONN  "       AND
+                  SQL-OBJREF-C6 NOT = "MQDISC  "       AND
+                  SQL-OBJREF-C6 NOT = "MQPUT   "       AND
+                  SQL-OBJREF-C6 NOT = "MQGET   "       AND
+                  SQL-OBJREF-C6 NOT = "QSQLCLSE"       AND
+                  SQL-OBJREF-C6 NOT = "QSQLOPEN"
+                  )
+                  COMPUTE POS-STR-7 = POS-STR-6 + 4
+                  PERFORM NIVEL-7
+               END-IF
+               PERFORM LEER-FETCH-C6
+           END-PERFORM
+           EXEC SQL  CLOSE   C6    END-EXEC
+           .
+      *
+       NIVEL-7.
+      *--------
+           EXEC SQL
+           DECLARE C7 CURSOR FOR SELECT DISTINCT WHFNAM, WHOBJT,
+           WHLNAM, WHFUSG FROM QGPL/REFPGM WHERE WHPNAM =
+           :SQL-OBJREF-C6 AND WHFNAM <> :WS-ESP ORDER BY WHOBJT, WHFNAM
+           END-EXEC
+           EXEC SQL  OPEN    C7    END-EXEC
+
+           PERFORM LEER-FETCH-C7
+           PERFORM UNTIL SQLCODE NOT = 0
+
+
+               MOVE SPACES       TO STR-IMP
+               MOVE SQL-WHLNAM-C7   TO WS-WHLIB
+               MOVE SQL-OBJREF-C7   TO WS-OBJREF
+               MOVE SQL-OBJTYP-C7   TO WS-TYPE
+
+               MOVE 7             TO NIVEL-ACTUAL
+               MOVE SQL-OBJREF-C7 TO OBJETO-IMP
+               MOVE SQL-OBJTYP-C7 TO TIPO-DETALLE
+               MOVE SQL-USO-C7    TO USO-DETALLE
+               PERFORM PRINT-DETALLE
+               PERFORM LEER-FETCH-C7
+           END-PERFORM
+           EXEC SQL  CLOSE   C7    END-EXEC
+           .
+      *
+       LEER-FETCH-C1.
+      *--------------
+           EXEC SQL
+           FETCH NEXT FROM C1 INTO :DATOS-SQL
+           END-EXEC.
+
+      *
+       LEER-FETCH-C2.
+      *--------------
+           EXEC SQL
+           FETCH NEXT FROM C2 INTO :DATOS-SQL-C2
+           END-EXEC.
+
+      *
+       LEER-FETCH-C3.
+      *--------------
+           EXEC SQL
+           FETCH NEXT FROM C3 INTO :DATOS-SQL-C3
+           END-EXEC.
+
+      *
+       LEER-FETCH-C4.
+      *--------------
+           EXEC SQL
+           FETCH NEXT FROM C4 INTO :DATOS-SQL-C4
+           END-EXEC.
+
+      *
+       LEER-FETCH-C5.
+      *--------------
+           EXEC SQL
+           FETCH NEXT FROM C5 INTO :DATOS-SQL-C5
+           END-EXEC.
+
+      *
+       LEER-FETCH-C6.
+      *--------------
+           EXEC SQL
+           FETCH NEXT FROM C6 INTO :DATOS-SQL-C6
+           END-EXEC.
+
+      *
+       LEER-FETCH-C7.
+      *--------------
+           EXEC SQL
+           FETCH NEXT FROM C7 INTO :DATOS-SQL-C7
+           END-EXEC.
+
+      *
+       PRINT-HEAD.
+      *-----------
+           MOVE LK-BIBLIOTECA          TO BIBLIOTECA OF TITULO-OO
+           MOVE LK-PROGRAMA            TO PROGRAMA  OF TITULO-OO
+
+           WRITE R-INFORME FROM TITULO-OO  FORMAT "TITULO"
+                            END-WRITE
+           .
+      *
+      * SQL-OBJREF
+      * SQL-OBJTYP
+      *
+       PRINT-DETALLE.
+      *----------------
+
+           EVALUATE NIVEL-ACTUAL
+             WHEN 1
+                       IF TIPO-DETALLE = "P"
+                          MOVE OBJETO-IMP TO PGM01 OF PGM01-OO
+                          WRITE R-INFORME FROM PGM01-OO FORMAT "RPGM01"
+                                AT END-OF-PAGE PERFORM PRINT-HEAD
+                          END-WRITE
+                       ELSE
+                          IF TIPO-DETALLE = "F"
+                             IF WS-ATR = "PRTF"
+                                MOVE OBJETO-IMP TO PRT01  OF PRT01-OO
+                                WRITE R-INFORME FROM PRT01-OO
+                                      FORMAT "RPRT01"
+                                      AT END-OF-PAGE PERFORM PRINT-HEAD
+                                END-WRITE
+                             ELSE
+                                MOVE OBJETO-IMP TO FILE01 OF FIL01-OO
+                                WRITE R-INFORME FROM FIL01-OO
+                                      FORMAT "RFIL01"
+                                      AT END-OF-PAGE PERFORM PRINT-HEAD
+                                END-WRITE
+                             END-IF
+                          ELSE
+                             MOVE OBJETO-IMP TO PGM01 OF PGM01-OO
+                             WRITE R-INFORME FROM PGM01-OO
+                                FORMAT "RPGM01"
+                                AT END-OF-PAGE PERFORM PRINT-HEAD
+                             END-WRITE
+                          END-IF
+                       END-IF
+             WHEN 2
+                       IF TIPO-DETALLE = "P"
+                          MOVE OBJETO-IMP TO PGM02 OF PGM02-OO
+                          WRITE R-INFORME FROM PGM02-OO FORMAT "RPGM02"
+                                AT END-OF-PAGE PERFORM PRINT-HEAD
+                          END-WRITE
+                       ELSE
+                          IF TIPO-DETALLE = "F"
+                             IF WS-ATR = "PRTF"
+                                MOVE OBJETO-IMP TO PRT02  OF PRT02-OO
+                                WRITE R-INFORME FROM PRT02-OO
+                                      FORMAT "RPRT02"
+                                      AT END-OF-PAGE PERFORM PRINT-HEAD
+                                END-WRITE
+                             ELSE
+                                MOVE OBJETO-IMP TO FILE02 OF FIL02-OO
+                                WRITE R-INFORME FROM FIL02-OO
+                                      FORMAT "RFIL02"
+                                      AT END-OF-PAGE PERFORM PRINT-HEAD
+                                END-WRITE
+                             END-IF
+                          ELSE
+                             MOVE OBJETO-IMP TO PGM02 OF PGM02-OO
+                             WRITE R-INFORME FROM PGM02-OO
+                                FORMAT "RPGM02"
+                                AT END-OF-PAGE PERFORM PRINT-HEAD
+                             END-WRITE
+                          END-IF
+                       END-IF
+             WHEN 3
+                       IF TIPO-DETALLE = "P"
+                          MOVE OBJETO-IMP TO PGM03 OF PGM03-OO
+                          WRITE R-INFORME FROM PGM03-OO FORMAT "RPGM03"
+                                AT END-OF-PAGE PERFORM PRINT-HEAD
+                          END-WRITE
+                       ELSE
+                          IF TIPO-DETALLE = "F"
+                             IF WS-ATR = "PRTF"
+                                MOVE OBJETO-IMP TO PRT03  OF PRT03-OO
+                                WRITE R-INFORME FROM PRT03-OO
+                                      FORMAT "RPRT03"
+                                      AT END-OF-PAGE PERFORM PRINT-HEAD
+                                END-WRITE
+                             ELSE
+                                MOVE OBJETO-IMP TO FILE03 OF FIL03-OO
+                                WRITE R-INFORME FROM FIL03-OO
+                                      FORMAT "RFIL03"
+                                      AT END-OF-PAGE PERFORM PRINT-HEAD
+                                END-WRITE
+                             END-IF
+                          ELSE
+                             MOVE OBJETO-IMP TO PGM03 OF PGM03-OO
+                             WRITE R-INFORME FROM PGM03-OO
+                                FORMAT "RPGM03"
+                                AT END-OF-PAGE PERFORM PRINT-HEAD
+                             END-WRITE
+                          END-IF
+                       END-IF
+             WHEN 4
+                       IF TIPO-DETALLE = "P"
+                          MOVE OBJETO-IMP TO PGM04 OF PGM04-OO
+                          WRITE R-INFORME FROM PGM04-OO FORMAT "RPGM04"
+                                AT END-OF-PAGE PERFORM PRINT-HEAD
+                          END-WRITE
+                       ELSE
+                          IF TIPO-DETALLE = "F"
+                             IF WS-ATR = "PRTF"
+                                MOVE OBJETO-IMP TO PRT04  OF PRT04-OO
+                                WRITE R-INFORME FROM PRT04-OO
+                                      FORMAT "RPRT04"
+                                      AT END-OF-PAGE PERFORM PRINT-HEAD
+                                END-WRITE
+                             ELSE
+                                MOVE OBJETO-IMP TO FILE04 OF FIL04-OO
+                                WRITE R-INFORME FROM FIL04-OO
+                                      FORMAT "RFIL04"
+                                      AT END-OF-PAGE PERFORM PRINT-HEAD
+                                END-WRITE
+                             END-IF
+                          ELSE
+                             MOVE OBJETO-IMP TO PGM04 OF PGM04-OO
+                             WRITE R-INFORME FROM PGM04-OO
+                                FORMAT "RPGM04"
+                                AT END-OF-PAGE PERFORM PRINT-HEAD
+                             END-WRITE
+                          END-IF
+                       END-IF
+             WHEN 5
+                       IF TIPO-DETALLE = "P"
+                          MOVE OBJETO-IMP TO PGM05 OF PGM05-OO
+                          WRITE R-INFORME FROM PGM05-OO FORMAT "RPGM05"
+                                AT END-OF-PAGE PERFORM PRINT-HEAD
+                          END-WRITE
+                       ELSE
+                          IF TIPO-DETALLE = "F"
+                             IF WS-ATR = "PRTF"
+                                MOVE OBJETO-IMP TO PRT05  OF PRT05-OO
+                                WRITE R-INFORME FROM PRT05-OO
+                                      FORMAT "RPRT05"
+                                      AT END-OF-PAGE PERFORM PRINT-HEAD
+                                END-WRITE
+                             ELSE
+                                MOVE OBJETO-IMP TO FILE05 OF FIL05-OO
+                                WRITE R-INFORME FROM FIL05-OO
+                                      FORMAT "RFIL05"
+                                      AT END-OF-PAGE PERFORM PRINT-HEAD
+                                END-WRITE
+                             END-IF
+                          ELSE
+                             MOVE OBJETO-IMP TO PGM05 OF PGM05-OO
+                             WRITE R-INFORME FROM PGM05-OO
+                                FORMAT "RPGM05"
+                                AT END-OF-PAGE PERFORM PRINT-HEAD
+                             END-WRITE
+                          END-IF
+                       END-IF
+             WHEN 6
+                       IF TIPO-DETALLE = "P"
+                          MOVE OBJETO-IMP TO PGM06 OF PGM06-OO
+                          WRITE R-INFORME FROM PGM06-OO FORMAT "RPGM06"
+                                AT END-OF-PAGE PERFORM PRINT-HEAD
+                          END-WRITE
+                       ELSE
+                          IF TIPO-DETALLE = "F"
+                             IF WS-ATR = "PRTF"
+                                MOVE OBJETO-IMP TO PRT06  OF PRT06-OO
+                                WRITE R-INFORME FROM PRT06-OO
+                                      FORMAT "RPRT06"
+                                      AT END-OF-PAGE PERFORM PRINT-HEAD
+                                END-WRITE
+                             ELSE
+                                MOVE OBJETO-IMP TO FILE06 OF FIL06-OO
+                                WRITE R-INFORME FROM FIL06-OO
+                                      FORMAT "RFIL06"
+                                      AT END-OF-PAGE PERFORM PRINT-HEAD
+                                END-WRITE
+                             END-IF
+                          ELSE
+                             MOVE OBJETO-IMP TO PGM06 OF PGM06-OO
+                             WRITE R-INFORME FROM PGM06-OO
+                                FORMAT "RPGM06"
+                                AT END-OF-PAGE PERFORM PRINT-HEAD
+                             END-WRITE
+                          END-IF
+                       END-IF
+             WHEN 7
+                       IF TIPO-DETALLE = "P"
+                          MOVE OBJETO-IMP TO PGM07 OF PGM07-OO
+                          WRITE R-INFORME FROM PGM07-OO FORMAT "RPGM07"
+                                AT END-OF-PAGE PERFORM PRINT-HEAD
+                          END-WRITE
+                       ELSE
+                          IF TIPO-DETALLE = "F"
+                             IF WS-ATR = "PRTF"
+                                MOVE OBJETO-IMP TO PRT07  OF PRT07-OO
+                                WRITE R-INFORME FROM PRT07-OO
+                                      FORMAT "RPRT07"
+                                      AT END-OF-PAGE PERFORM PRINT-HEAD
+                                END-WRITE
+                             ELSE
+                                MOVE OBJETO-IMP TO FILE07 OF FIL07-OO
+                                WRITE R-INFORME FROM FIL07-OO
+                                      FORMAT "RFIL07"
+                                      AT END-OF-PAGE PERFORM PRINT-HEAD
+                                END-WRITE
+                             END-IF
+                          ELSE
+                             MOVE OBJETO-IMP TO PGM07 OF PGM07-OO
+                             WRITE R-INFORME FROM PGM07-OO
+                                FORMAT "RPGM07"
+                                AT END-OF-PAGE PERFORM PRINT-HEAD
+                             END-WRITE
+                          END-IF
+                       END-IF
+           END-EVALUATE
+
+          .
+      *
+       RESCATA-DESCRIPCION.
+      *--------------------
+               MOVE SPACES         TO WS-DESC
+                                      WS-ATR
+               IF WS-TYPE   = "P" THEN
+                  MOVE "*PGM"    TO WS-OBJTYPE
+               ELSE
+                  IF WS-TYPE   = "F" THEN
+                     MOVE "*FILE"   TO WS-OBJTYPE
+                  END-IF
+               END-IF
+               IF WS-TYPE NOT = SPACES
+                   CALL "RTVDESC" USING WS-WHLIB
+                                        WS-OBJREF
+                                        WS-OBJTYPE
+                                        WS-DESC
+                                        WS-ATR
+               END-IF
+          .
+      *
+       ACUMULA-ARR-NIVEL-1.
+      *--------------------
+           IF TIPO-DETALLE = "P"
+              ADD 1             TO INDICE-1
+              MOVE 1            TO ARR-NIVEL(INDICE-1)
+              MOVE WS-OBJREF    TO ARR-PGM  (INDICE-1)
+              MOVE WS-DESC      TO ARR-DESC (INDICE-1)
+           END-IF
+           .
+
+      *
+       PRINT-PGM-NIVEL-1.
+      *------------------
+           PERFORM PRINT-HEAD
+           PERFORM VARYING INDICE-IMP FROM 1 BY 1 UNTIL
+                           INDICE-IMP > INDICE-1
+                   MOVE ARR-NIVEL  (INDICE-IMP)  TO
+                          NIVEL    OF PGMNIVEL-OO
+                   MOVE ARR-PGM    (INDICE-IMP)  TO
+                          PROGRAMA OF PGMNIVEL-OO
+                   MOVE ARR-DESC   (INDICE-IMP)  TO
+                          DESCRIP  OF PGMNIVEL-OO
+                   WRITE R-INFORME FROM PGMNIVEL-OO
+                                FORMAT "PGMNIVEL"
+                                AT END-OF-PAGE PERFORM PRINT-HEAD
+                   END-WRITE
+           END-PERFORM
+           .
+      *

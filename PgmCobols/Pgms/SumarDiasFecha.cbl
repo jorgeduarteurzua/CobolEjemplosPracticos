@@ -34,6 +34,7 @@
        01 PARAMETROS-ENTRADA-VALFEC.
            05 VALFEC-FECHA-YYYYMMDD PIC X(08).
            05 VALFEC-FECHA-FORMATO  PIC X.
+
       *       1 : YYYYMMDD
       *       2 : DDMMYYYY
 
@@ -45,7 +46,8 @@
        LINKAGE SECTION.
        01 PARAMETROS-ENTRADA.
            05 FECHA-YYYYMMDD PIC X(08).
-           05 SUM-RES-DIAS   PIC S9(03).
+           05 SUM-RES-DIAS   PIC 9(03).
+           05 SUM-RES-SIGNO  PIC X.
        01 PARAMETRO-SALIDA.
            05 FECHA-VALIDA         PIC X(01).
            05 NUEVA-FECHA-YYYYMMDD PIC X(08).
@@ -65,14 +67,15 @@
            CALL "ValidarFecha" USING PARAMETROS-ENTRADA-VALFEC
                                      PARAMETRO-SALIDA-VALFEC
            IF VALFEC-FECHA-VALIDA = "S" THEN
-              IF SUM-RES-DIAS >= 0 THEN
+              IF SUM-RES-SIGNO = "+" THEN
                  PERFORM SUMAR-DIAS
               ELSE
-                 PERFORM RESTAR-DIAS
+                 IF SUM-RES-SIGNO = "-" THEN
+                    PERFORM RESTAR-DIAS
+                 END-IF
               END-IF
 
            END-IF
-           MOVE VALFEC-FECHA-VALIDA TO FECHA-VALIDA
 
            MOVE ANO-2    TO NUEVA-FECHA-YYYYMMDD(1:4)
            MOVE MES-2    TO NUEVA-FECHA-YYYYMMDD(5:2)
@@ -115,12 +118,8 @@
 
            END-PERFORM
 
-           MOVE ANO-2    TO NUEVA-FECHA-YYYYMMDD(1:4)
-           MOVE MES-2    TO NUEVA-FECHA-YYYYMMDD(5:2)
-           MOVE DIA-2    TO NUEVA-FECHA-YYYYMMDD(7:2)
            .
        RESTAR-DIAS.
-           MULTIPLY SUM-RES-DIAS BY -1 GIVING SUM-RES-DIAS
 
             PERFORM VARYING I FROM 1 BY 1 UNTIL I > SUM-RES-DIAS
                SUBTRACT 1      FROM DIA-2

@@ -1,6 +1,6 @@
        IDENTIFICATION DIVISION.
       *-----------------------*
-       PROGRAM-ID. VERHLP.
+       PROGRAM-ID. VERHLPSRCH.
        AUTHOR. JORGE DUARTE U.
        ENVIRONMENT DIVISION.
       *--------------------*
@@ -145,9 +145,9 @@
                   '" '               DELIMITED SIZE
                                  INTO SEN-SQL
            IF BUSQUEDA OF WC01-II NOT = SPACES
-              STRING  SEN-SQL        DELIMITED BY '     '
+              STRING  SEN-SQL(1:60)  DELIMITED BY SIZE
                      ' AND FLDDESC LIKE "%' DELIMITED SIZE
-                     BUSQUEDA OF WC01-II DELIMITED SIZE
+                     BUSQUEDA OF WC01-II DELIMITED BY ' '
                      '%" '               DELIMITED SIZE
                                     INTO SEN-SQL
            END-IF
